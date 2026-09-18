@@ -5,6 +5,9 @@ class Denotation < ActiveRecord::Base
 	include RangeConcern
 	include DenotationsHelper
 
+	# The fixed hid prefix for every Denotation (e.g. 'T1', 'T2', ...).
+	HID_PREFIX = 'T'.freeze
+
 	belongs_to :project
 	belongs_to :doc
 

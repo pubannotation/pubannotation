@@ -37,6 +37,21 @@ class MediaTranscript < ApplicationRecord
     speech_segments.pluck('text').join(' ')
   end
 
+  # Each speech segment's char offset ('begin'/'end') into what #speech_text builds from them (a
+  # single space between consecutive speech segments, regardless of non-speech segments between
+  # them in `segments`), in the same order as #speech_segments.
+  def speech_segment_spans
+    char_position = 0
+
+    speech_segments.map do |segment|
+      char_begin = char_position
+      char_end = char_begin + segment['text'].length
+      char_position = char_end + 1
+
+      { 'begin' => char_begin, 'end' => char_end }
+    end
+  end
+
   private
 
   def doc_has_matching_medium
