@@ -196,6 +196,35 @@ RSpec.describe MediaTranscript, type: :model do
     end
   end
 
+  describe '#speech_segment_spans' do
+    it "returns each speech segment's char offset into #speech_text" do
+      media_transcript = build(:media_transcript, segments: [
+        { 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 300 },
+        { 'text' => 'world', 'start_ms' => 300, 'end_ms' => 600 }
+      ])
+
+      expect(media_transcript.speech_segment_spans).to eq([
+        { 'begin' => 0, 'end' => 5 },
+        { 'begin' => 6, 'end' => 11 }
+      ])
+    end
+
+    it 'excludes non-speech segments, without advancing the offset for later ones' do
+      media_transcript = build(:media_transcript, segments: [
+        { 'text' => '(upbeat music)', 'start_ms' => 0, 'end_ms' => 3000 },
+        { 'text' => 'Welcome.', 'start_ms' => 3000, 'end_ms' => 6000 }
+      ])
+
+      expect(media_transcript.speech_segment_spans).to eq([{ 'begin' => 0, 'end' => 8 }])
+    end
+
+    it 'is empty when there are no speech segments' do
+      media_transcript = build(:media_transcript, segments: [])
+
+      expect(media_transcript.speech_segment_spans).to eq([])
+    end
+  end
+
   describe 'text' do
     it 'defaults to nil' do
       medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
