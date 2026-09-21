@@ -1,0 +1,120 @@
+x-app: &app
+  build: .
+  environment:
+    RAILS_ENV: development
+    PGHOST: db
+    PGUSER: pubannotation
+    PGPASSWORD: pubannotation
+    REDIS_URL: redis://redis:6379/0
+    ELASTICSEARCH_URL: http://elasticsearch:9200
+    OLLAMA_HOST: ollama
+    OLLAMA_CAPTION_MODEL: ${OLLAMA_CAPTION_MODEL:-moondream}
+    PIDFILE: /tmp/pubannotation-server.pid
+  volumes:
+    - .:/app
+    - app_storage:/app/storage
+    - app_logs:/app/log
+    - app_tmp:/app/tmp
+  stdin_open: true
+  tty: true
+
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: pubannotation
+      POSTGRES_PASSWORD: pubannotation
+      POSTGRES_DB: pubannotation
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pubannotation -d pubannotation"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7.4
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.4.1
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS 'http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=5s' > /dev/null"]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+
+  ollama:
+    image: ollama/ollama:0.34.2
+    volumes:
+      - ollama_data:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  ollama-setup:
+    image: ollama/ollama:0.34.2
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+      OLLAMA_CAPTION_MODEL: ${OLLAMA_CAPTION_MODEL:-moondream}
+    entrypoint: ["/bin/sh", "-c"]
+    command: ['ollama show "$$OLLAMA_CAPTION_MODEL" >/dev/null 2>&1 || exec ollama pull "$$OLLAMA_CAPTION_MODEL"']
+    depends_on:
+      ollama:
+        condition: service_healthy
+
+  setup:
+    <<: *app
+    command: ["ruby", "bin/docker-setup"]
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+
+  web:
+    <<: *app
+    command: ["bin/rails", "server", "-b", "0.0.0.0", "-p", "3000"]
+    ports:
+      - "127.0.0.1:${PUBANNOTATION_PORT:-3000}:3000"
+    depends_on:
+      ollama-setup:
+        condition: service_completed_successfully
+      setup:
+        condition: service_completed_successfully
+
+  worker:
+    <<: *app
+    command: ["bundle", "exec", "sidekiq", "-C", "config/sidekiq.yml"]
+    depends_on:
+      ollama-setup:
+        condition: service_completed_successfully
+      setup:
+        condition: service_completed_successfully
+
+volumes:
+  postgres_data:
+  redis_data:
+  elasticsearch_data:
+  app_storage:
+  app_logs:
+  app_tmp:
+  ollama_data:

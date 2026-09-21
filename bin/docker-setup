@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+# Run once before web and worker start; db:prepare only seeds a new database.
+system("bin/rails", "db:prepare", exception: true)
+system("bin/rails", "runner", <<~RUBY, exception: true)
+  manager = Elasticsearch::IndexManager.new
+  unless manager.current_index
+    manager.create_index(version: 1)
+    manager.switch_alias(to_version: 1)
+  end
+  Elasticsearch::IndexQueue.schedule_processing if Elasticsearch::IndexQueue.queue_size.positive?
+RUBY

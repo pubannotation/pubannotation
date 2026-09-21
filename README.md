@@ -78,6 +78,68 @@ $ redis-server /usr/local/etc/redis.conf
 
 
 ## For development
+### Docker Compose
+
+With Docker Engine/Docker Desktop and Docker Compose installed, run:
+
+```sh
+docker compose up --build -d
+docker compose logs -f setup ollama-setup web worker
+```
+
+Open http://localhost:3000. Set `PUBANNOTATION_PORT=3001` before the command if
+port 3000 is already in use. The first build downloads Ruby and the gems and can
+take several minutes.
+
+The development stack includes Ruby 4.0.5, Rails, a Sidekiq worker, PostgreSQL 17,
+Redis 7.4, Elasticsearch 9 (matching the current Elasticsearch client gem), and
+Ollama 0.34.2.
+Compose waits for the backing services, then prepares the database and search
+index before starting web and worker. A fresh database loads `db/seeds.rb`,
+including the development account `admin@pubannotation.org` / `abc123`.
+This configuration is for local development; only the web port is published,
+on localhost.
+
+Source files are mounted from the checkout. Rebuild after changing the Gemfile
+or Dockerfile. Database, Redis, search, Ollama models, uploaded files, logs, and temporary files
+use Docker volumes, separate from the host's local development data.
+
+```sh
+docker compose exec web bin/rails console
+docker compose logs --tail=100 worker
+docker compose down
+```
+
+`docker compose down` keeps the data. `docker compose down --volumes` deletes all
+data belonging to this Compose stack. To rerun database preparation after adding
+migrations, run `docker compose run --rm setup`.
+
+Rails reads an optional `.env` in the mounted checkout for OAuth and reCAPTCHA
+credentials (see `.env.example`). Database, Redis, and Elasticsearch connections
+are set by Compose. No image-processing gems are added; the existing Active
+Storage image-variant warning may still appear.
+
+Ollama runs on CPU by default, without requiring a host installation or GPU.
+On first startup, `ollama-setup` downloads the `moondream` image-captioning model;
+web and worker wait until the download succeeds. This requires additional disk
+space and download time. The model is kept in the `ollama_data` volume and reused
+on subsequent starts. Rails and worker connect to `ollama:11434` internally;
+the Ollama port is not published on the host.
+
+Set `OLLAMA_CAPTION_MODEL` in `.env` to use another vision-capable model, then run
+`docker compose up -d` to download it and update web and worker together.
+To inspect the installed models or explicitly update the current model:
+
+```sh
+docker compose exec ollama ollama list
+docker compose run --rm --entrypoint /bin/sh ollama-setup -c 'ollama pull "$OLLAMA_CAPTION_MODEL"'
+```
+
+whisper.cpp and its model, the embedding service, and Stardog are not included.
+ffmpeg is installed, but transcription and features
+using those external services require additional configuration. Inside a
+container, `localhost` refers to that container, not the host machine.
+
 ### Setup and Start
 
 1. git clone https://github.com/pubannotation/pubannotation.git

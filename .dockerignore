@@ -1,0 +1,14 @@
+.git
+.bundle
+.env*
+!.env.example
+log/*
+tmp/*
+storage/*
+node_modules
+coverage
+config/master.key
+config/credentials/*.key
+config/certs/*
+public/downloads/*
+public/annotations/*.zip
