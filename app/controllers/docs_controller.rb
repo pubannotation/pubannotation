@@ -189,6 +189,7 @@ class DocsController < ApplicationController
 
 		@doc.set_ascii_body if params[:encoding] == 'ascii'
 		@medium = @doc.medium
+		@speech_segment_spans = @doc.speech_segment_spans
 
 		get_docs_projects
 		if @span
@@ -236,6 +237,7 @@ class DocsController < ApplicationController
 
 			@doc.set_ascii_body if (params[:encoding] == 'ascii')
 			@medium = @doc.medium
+			@speech_segment_spans = @doc.speech_segment_spans
 
 			respond_to do |format|
 				format.html
