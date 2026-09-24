@@ -196,6 +196,79 @@ RSpec.describe MediaTranscript, type: :model do
     end
   end
 
+  describe '#segments_with_spans' do
+    it 'sets each speech segment\'s span to its offset into the text #speech_text would build' do
+      media_transcript = build(:media_transcript, segments: [
+        { 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 300 },
+        { 'text' => 'world', 'start_ms' => 300, 'end_ms' => 600 }
+      ])
+
+      expect(media_transcript.segments_with_spans).to eq([
+        { 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 300, 'span' => { 'begin' => 0, 'end' => 5 } },
+        { 'text' => 'world', 'start_ms' => 300, 'end_ms' => 600, 'span' => { 'begin' => 6, 'end' => 11 } }
+      ])
+    end
+
+    it 'sets a nil span on non-speech segments, without advancing the position for later ones' do
+      media_transcript = build(:media_transcript, segments: [
+        { 'text' => '(upbeat music)', 'start_ms' => 0, 'end_ms' => 3000 },
+        { 'text' => 'Welcome.', 'start_ms' => 3000, 'end_ms' => 6000 }
+      ])
+
+      expect(media_transcript.segments_with_spans).to eq([
+        { 'text' => '(upbeat music)', 'start_ms' => 0, 'end_ms' => 3000, 'span' => nil },
+        { 'text' => 'Welcome.', 'start_ms' => 3000, 'end_ms' => 6000, 'span' => { 'begin' => 0, 'end' => 8 } }
+      ])
+    end
+
+    it 'passes malformed segments through unchanged' do
+      media_transcript = build(:media_transcript, segments: ['not a hash'])
+
+      expect(media_transcript.segments_with_spans).to eq(['not a hash'])
+    end
+  end
+
+  describe 'building a new record with segments' do
+    it 'derives text and stores spans on the segments, matching MediaTextGenerationService' do
+      medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
+
+      media_transcript = MediaTranscript.new(medium:, segments: [
+        { 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 300 },
+        { 'text' => 'world', 'start_ms' => 300, 'end_ms' => 600 }
+      ])
+
+      expect(media_transcript.text).to eq('Hello world')
+      expect(media_transcript.segments).to eq([
+        { 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 300, 'span' => { 'begin' => 0, 'end' => 5 } },
+        { 'text' => 'world', 'start_ms' => 300, 'end_ms' => 600, 'span' => { 'begin' => 6, 'end' => 11 } }
+      ])
+    end
+
+    it 'derives text from speech segments only, while still setting spans for non-speech ones to nil' do
+      medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
+
+      media_transcript = MediaTranscript.new(medium:, segments: [
+        { 'text' => '(upbeat music)', 'start_ms' => 0, 'end_ms' => 3000 },
+        { 'text' => 'Welcome to the conference.', 'start_ms' => 3000, 'end_ms' => 6000 }
+      ])
+
+      expect(media_transcript.text).to eq('Welcome to the conference.')
+      expect(media_transcript.segments).to eq([
+        { 'text' => '(upbeat music)', 'start_ms' => 0, 'end_ms' => 3000, 'span' => nil },
+        { 'text' => 'Welcome to the conference.', 'start_ms' => 3000, 'end_ms' => 6000,
+          'span' => { 'begin' => 0, 'end' => 26 } }
+      ])
+    end
+
+    it 'does not overwrite an explicitly given text (e.g. an image caption)' do
+      medium = create(:medium, media_type: :image, content_type: 'image/png')
+
+      media_transcript = MediaTranscript.new(medium:, text: 'A generated caption.')
+
+      expect(media_transcript.text).to eq('A generated caption.')
+    end
+  end
+
   describe 'text' do
     it 'defaults to nil' do
       medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
