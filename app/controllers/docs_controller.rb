@@ -189,7 +189,9 @@ class DocsController < ApplicationController
 
 		@doc.set_ascii_body if params[:encoding] == 'ascii'
 		@medium = @doc.medium
-		@speech_segment_spans = @doc.speech_segment_spans
+		# speech_segment_spans' offsets are into the original body; set_ascii_body replaces it with
+		# a same-meaning but differently-offset ASCII rewrite, so skip highlighting in that case.
+		@speech_segment_spans = @doc.speech_segment_spans unless params[:encoding] == 'ascii'
 
 		get_docs_projects
 		if @span
@@ -237,7 +239,9 @@ class DocsController < ApplicationController
 
 			@doc.set_ascii_body if (params[:encoding] == 'ascii')
 			@medium = @doc.medium
-			@speech_segment_spans = @doc.speech_segment_spans
+			# speech_segment_spans' offsets are into the original body; set_ascii_body replaces it with
+			# a same-meaning but differently-offset ASCII rewrite, so skip highlighting in that case.
+			@speech_segment_spans = @doc.speech_segment_spans unless params[:encoding] == 'ascii'
 
 			respond_to do |format|
 				format.html

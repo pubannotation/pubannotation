@@ -61,6 +61,13 @@ RSpec.describe 'GET /docs/:sourcedb/:sourceid speech segment highlighting', type
       expect(response.body)
         .to include('<span class="speech-segment" data-start-ms="300" data-end-ms="600">world</span>')
     end
+
+    it 'skips speech-segment wrapping when encoding=ascii, since the offsets no longer match set_ascii_body\'s rewritten text' do
+      get "/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}", params: { encoding: 'ascii' }
+
+      expect(response.body).not_to include('speech-segment')
+      expect(response.body).to include('Hello world')
+    end
   end
 
   context 'when the doc has no media_transcript' do
