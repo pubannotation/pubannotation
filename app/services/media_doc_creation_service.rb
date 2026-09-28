@@ -58,7 +58,7 @@ class MediaDocCreationService
 
     Denotation.insert_all(records, record_timestamps: true)
 
-    ProjectDoc.find_by(project_id: project.id, doc_id: doc.id)&.increment!(:denotations_num, records.size)
+    ProjectDoc.find_by!(project:, doc:).increment!(:denotations_num, records.size)
     doc.increment!(:denotations_num, records.size)
     project.increment!(:denotations_num, records.size)
     project.update_updated_at
