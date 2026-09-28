@@ -520,16 +520,16 @@ class Doc < ActiveRecord::Base
 		"<span class='context'>#{prev_text}</span><span class='highlight'>#{focus_text}</span><span class='context'>#{next_text}</span>"
 	end
 
-	# The AudioSegment Denotations MediaDocCreationService created for this doc (in the same order
-	# as media_transcript.speech_segments, since that's what they were created from), paired with
-	# their corresponding segment's start_ms/end_ms — empty if this doc has no media_transcript.
+	# Each speech segment's char offset (MediaTranscript#speech_segment_spans), paired with its
+	# start_ms/end_ms — empty if this doc has no media_transcript. Computed directly from
+	# media_transcript rather than from its AudioSegment Denotations, since those are ordinary
+	# Denotations that annotation cleanup (e.g. ProjectDoc#delete_annotations) can delete
+	# independently of media_transcript, which would desync a position-based pairing between them.
 	def speech_segment_spans
 		return [] unless media_transcript.present?
 
-		segment_denotations = denotations.where(obj: MediaDocCreationService::DENOTATION_OBJ).order(:begin)
-
-		segment_denotations.zip(media_transcript.speech_segments).map do |denotation, segment|
-			{ begin: denotation.begin, end: denotation.end,
+		media_transcript.speech_segment_spans.zip(media_transcript.speech_segments).map do |span, segment|
+			{ begin: span[:begin], end: span[:end],
 			  start_ms: segment['start_ms'], end_ms: segment['end_ms'] }
 		end
 	end

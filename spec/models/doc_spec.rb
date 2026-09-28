@@ -318,6 +318,43 @@ RSpec.describe Doc, type: :model do
     end
   end
 
+  describe '#speech_segment_spans' do
+    let(:medium) { create(:medium, media_type: :audio, content_type: 'audio/mpeg') }
+    let(:doc) { create(:doc, body: 'Hello world', medium: medium) }
+
+    it "returns each speech segment's char offset alongside its start_ms/end_ms" do
+      MediaTranscript.new(medium:, doc:, segments: [
+        { 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 300 },
+        { 'text' => 'world', 'start_ms' => 300, 'end_ms' => 600 }
+      ]).save!
+
+      expect(doc.speech_segment_spans).to eq([
+        { begin: 0, end: 5, start_ms: 0, end_ms: 300 },
+        { begin: 6, end: 11, start_ms: 300, end_ms: 600 }
+      ])
+    end
+
+    it 'is unaffected by the AudioSegment Denotations being missing or mismatched' do
+      # e.g. after a partial deletion via ProjectDoc#delete_annotations, which can delete these
+      # like any other Denotation, independently of media_transcript.
+      MediaTranscript.new(medium:, doc:, segments: [
+        { 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 300 },
+        { 'text' => 'world', 'start_ms' => 300, 'end_ms' => 600 }
+      ]).save!
+      project = create(:project, user: doc.medium.user)
+      create(:denotation, project:, doc:, hid: 'T1', begin: 0, end: 5, obj: 'AudioSegment')
+
+      expect(doc.speech_segment_spans).to eq([
+        { begin: 0, end: 5, start_ms: 0, end_ms: 300 },
+        { begin: 6, end: 11, start_ms: 300, end_ms: 600 }
+      ])
+    end
+
+    it 'is empty when the doc has no media_transcript' do
+      expect(create(:doc).speech_segment_spans).to eq([])
+    end
+  end
+
   describe '#body_with_speech_segments' do
     it "wraps each span's range in a <span> carrying its start_ms/end_ms" do
       doc = build(:doc, body: 'Hello world')

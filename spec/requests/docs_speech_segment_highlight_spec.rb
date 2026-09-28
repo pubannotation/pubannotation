@@ -34,9 +34,6 @@ RSpec.describe 'GET /docs/:sourcedb/:sourceid speech segment highlighting', type
           { 'text' => 'world', 'start_ms' => 300, 'end_ms' => 600 }
         ]
       ).save!
-
-      create(:denotation, project: project, doc: doc, hid: 'T1', begin: 0, end: 5, obj: 'AudioSegment')
-      create(:denotation, project: project, doc: doc, hid: 'T2', begin: 6, end: 11, obj: 'AudioSegment')
     end
 
     it 'wraps each speech segment in the rendered body with its playback time range' do
@@ -51,6 +48,18 @@ RSpec.describe 'GET /docs/:sourcedb/:sourceid speech segment highlighting', type
       get "/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}"
 
       expect(response.body).to include('id="media-player"')
+    end
+
+    it 'renders correctly even when the AudioSegment Denotations are missing or mismatched' do
+      # e.g. after a partial deletion via ProjectDoc#delete_annotations, which can delete these
+      # like any other Denotation, independently of media_transcript.
+      create(:denotation, project: project, doc: doc, hid: 'T1', begin: 0, end: 5, obj: 'AudioSegment')
+
+      get "/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}"
+
+      expect(response.body).to include('<span class="speech-segment" data-start-ms="0" data-end-ms="300">Hello</span>')
+      expect(response.body)
+        .to include('<span class="speech-segment" data-start-ms="300" data-end-ms="600">world</span>')
     end
   end
 
