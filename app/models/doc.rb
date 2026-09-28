@@ -529,28 +529,28 @@ class Doc < ActiveRecord::Base
 		segment_denotations = denotations.where(obj: MediaDocCreationService::DENOTATION_OBJ).order(:begin)
 
 		segment_denotations.zip(media_transcript.speech_segments).map do |denotation, segment|
-			{ 'begin' => denotation.begin, 'end' => denotation.end,
-			  'start_ms' => segment['start_ms'], 'end_ms' => segment['end_ms'] }
+			{ begin: denotation.begin, end: denotation.end,
+			  start_ms: segment['start_ms'], end_ms: segment['end_ms'] }
 		end
 	end
 
-	# `body`, with each of `spans` (each a {'begin', 'end', 'start_ms', 'end_ms'} hash) wrapped in
+	# `body`, with each of `spans` (each a {begin:, end:, start_ms:, end_ms:} hash) wrapped in
 	# a <span> carrying its playback time range, for JS to highlight as media plays.
 	def body_with_speech_segments(spans)
 		return body if spans.blank?
 
 		cursor = 0
 		wrapped = spans.map do |span|
-			text_before = CGI.escapeHTML(body[cursor...span['begin']])
-			cursor = span['end']
+			text_before = CGI.escapeHTML(body[cursor...span[:begin]])
+			cursor = span[:end]
 			text_before + speech_segment_span_tag(span)
 		end.join
 		wrapped + CGI.escapeHTML(body[cursor..])
 	end
 
 	def speech_segment_span_tag(span)
-		text = CGI.escapeHTML(body[span['begin']...span['end']])
-		%(<span class="speech-segment" data-start-ms="#{span['start_ms']}" data-end-ms="#{span['end_ms']}">#{text}</span>)
+		text = CGI.escapeHTML(body[span[:begin]...span[:end]])
+		%(<span class="speech-segment" data-start-ms="#{span[:start_ms]}" data-end-ms="#{span[:end_ms]}">#{text}</span>)
 	end
 	private :speech_segment_span_tag
 
