@@ -46,8 +46,14 @@ class MediaDocCreationService
     return if spans.empty?
 
     records = spans.map.with_index(1) do |span, index|
-      { hid: "#{Denotation::HID_PREFIX}#{index}", begin: span['begin'], end: span['end'],
-        obj: DENOTATION_OBJ, project_id: project.id, doc_id: doc.id }
+      {
+        hid: "#{Denotation::HID_PREFIX}#{index}",
+        begin: span[:begin],
+        end: span[:end],
+        obj: DENOTATION_OBJ,
+        project_id: project.id,
+        doc_id: doc.id
+      }
     end
 
     Denotation.insert_all(records, record_timestamps: true)

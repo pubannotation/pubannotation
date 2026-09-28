@@ -204,8 +204,8 @@ RSpec.describe MediaTranscript, type: :model do
       ])
 
       expect(media_transcript.speech_segment_spans).to eq([
-        { 'begin' => 0, 'end' => 5 },
-        { 'begin' => 6, 'end' => 11 }
+        { begin: 0, end: 5 },
+        { begin: 6, end: 11 }
       ])
     end
 
@@ -215,7 +215,7 @@ RSpec.describe MediaTranscript, type: :model do
         { 'text' => 'Welcome.', 'start_ms' => 3000, 'end_ms' => 6000 }
       ])
 
-      expect(media_transcript.speech_segment_spans).to eq([{ 'begin' => 0, 'end' => 8 }])
+      expect(media_transcript.speech_segment_spans).to eq([{ begin: 0, end: 8 }])
     end
 
     it 'is empty when there are no speech segments' do
