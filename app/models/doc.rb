@@ -520,11 +520,9 @@ class Doc < ActiveRecord::Base
 		"<span class='context'>#{prev_text}</span><span class='highlight'>#{focus_text}</span><span class='context'>#{next_text}</span>"
 	end
 
-	# Each speech segment's char offset (MediaTranscript#speech_segment_spans), paired with its
-	# start_ms/end_ms — empty if this doc has no media_transcript. Computed directly from
-	# media_transcript rather than from its AudioSegment Denotations, since those are ordinary
-	# Denotations that annotation cleanup (e.g. ProjectDoc#delete_annotations) can delete
-	# independently of media_transcript, which would desync a position-based pairing between them.
+	# Each speech segment's char offset, paired with its start_ms/end_ms. Computed from
+	# media_transcript rather than its AudioSegment Denotations, which annotation cleanup can
+	# delete independently.
 	def speech_segment_spans
 		return [] unless media_transcript.present?
 
