@@ -37,6 +37,13 @@
 			return previousSegment;
 		}
 
+		// Clicking a segment seeks the media to when it was spoken.
+		for (const segment of speechSegments) {
+			segment.addEventListener('click', () => {
+				mediaPlayer.currentTime = Number(segment.dataset.startMs) / 1000;
+			});
+		}
+
 		function setCurrentlyPlaying(segment) {
 			if (segment.classList.contains('now-playing')) return;
 

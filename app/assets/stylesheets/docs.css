@@ -3,6 +3,10 @@
 	overflow-y: auto;
 	white-space: pre-line;
 
+	.speech-segment {
+		cursor: pointer;
+	}
+
 	.now-playing {
 		background-color: #ff0;
 	}
