@@ -4,7 +4,7 @@
 		<% if @span %>
 			<div id="body" class="with_hilight"><%= @doc.highlight_span(@span).html_safe %></div>
 		<% elsif @speech_segment_spans.present? %>
-			<div id="body"><%= @doc.body_with_speech_segments(@speech_segment_spans).html_safe %></div>
+			<div id="body"><%= body_with_speech_segments(@doc.body, @speech_segment_spans) %></div>
 		<% else %>
 			<div id="body"><%= @doc.body %></div>
 		<% end %>

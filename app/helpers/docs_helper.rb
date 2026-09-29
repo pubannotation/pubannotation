@@ -139,4 +139,25 @@ module DocsHelper
 		end
 	end
 
+	# `body`, with each of `spans` (each a {begin:, end:, start_ms:, end_ms:} hash) wrapped in
+	# a <span> carrying its playback time range, for JS to highlight as media plays.
+	def body_with_speech_segments(body, spans)
+		return body if spans.blank?
+
+		cursor = 0
+		wrapped = spans.flat_map do |span|
+			text_before = body[cursor...span[:begin]]
+			cursor = span[:end]
+			[text_before, speech_segment_span_tag(body, span)]
+		end
+		safe_join(wrapped + [body[cursor..]])
+	end
+
+	private
+
+	def speech_segment_span_tag(body, span)
+		content_tag(:span, body[span[:begin]...span[:end]],
+		            class: 'speech-segment', data: { start_ms: span[:start_ms], end_ms: span[:end_ms] })
+	end
+
 end
