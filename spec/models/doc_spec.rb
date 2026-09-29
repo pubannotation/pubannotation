@@ -322,15 +322,15 @@ RSpec.describe Doc, type: :model do
     let(:medium) { create(:medium, media_type: :audio, content_type: 'audio/mpeg') }
     let(:doc) { create(:doc, body: 'Hello world', medium: medium) }
 
-    it "returns each speech segment's char offset alongside its start_ms/end_ms" do
+    it "returns each speech segment's char offset alongside its start_ms" do
       MediaTranscript.new(medium:, doc:, segments: [
         { 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 300 },
         { 'text' => 'world', 'start_ms' => 300, 'end_ms' => 600 }
       ]).save!
 
       expect(doc.speech_segment_spans).to eq([
-        { begin: 0, end: 5, start_ms: 0, end_ms: 300 },
-        { begin: 6, end: 11, start_ms: 300, end_ms: 600 }
+        { begin: 0, end: 5, start_ms: 0 },
+        { begin: 6, end: 11, start_ms: 300 }
       ])
     end
 
@@ -345,8 +345,8 @@ RSpec.describe Doc, type: :model do
       create(:denotation, project:, doc:, hid: 'T1', begin: 0, end: 5, obj: 'AudioSegment')
 
       expect(doc.speech_segment_spans).to eq([
-        { begin: 0, end: 5, start_ms: 0, end_ms: 300 },
-        { begin: 6, end: 11, start_ms: 300, end_ms: 600 }
+        { begin: 0, end: 5, start_ms: 0 },
+        { begin: 6, end: 11, start_ms: 300 }
       ])
     end
 

@@ -36,12 +36,12 @@ RSpec.describe 'GET /docs/:sourcedb/:sourceid speech segment highlighting', type
       ).save!
     end
 
-    it 'wraps each speech segment in the rendered body with its playback time range' do
+    it 'wraps each speech segment in the rendered body with its playback start time' do
       get "/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}"
 
-      expect(response.body).to include('<span class="speech-segment" data-start-ms="0" data-end-ms="300">Hello</span>')
+      expect(response.body).to include('<span class="speech-segment" data-start-ms="0">Hello</span>')
       expect(response.body)
-        .to include('<span class="speech-segment" data-start-ms="300" data-end-ms="600">world</span>')
+        .to include('<span class="speech-segment" data-start-ms="300">world</span>')
     end
 
     it 'gives the media player a stable id for JS to hook into' do
@@ -57,9 +57,9 @@ RSpec.describe 'GET /docs/:sourcedb/:sourceid speech segment highlighting', type
 
       get "/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}"
 
-      expect(response.body).to include('<span class="speech-segment" data-start-ms="0" data-end-ms="300">Hello</span>')
+      expect(response.body).to include('<span class="speech-segment" data-start-ms="0">Hello</span>')
       expect(response.body)
-        .to include('<span class="speech-segment" data-start-ms="300" data-end-ms="600">world</span>')
+        .to include('<span class="speech-segment" data-start-ms="300">world</span>')
     end
 
     it 'skips speech-segment wrapping when encoding=ascii, since the offsets no longer match set_ascii_body\'s rewritten text' do

@@ -21,7 +21,8 @@
 	$('#body').linkToSelectedSpan('#linkSpace');
 
 	<% if @speech_segment_spans.present? %>
-		// Highlight whichever speech segment is playing right now.
+		// Highlight the latest speech segment to have started, keeping it highlighted through the gap
+		// until the next one starts, and clear it once playback ends.
 		$(document).ready(function() {
 			var mediaPlayer = document.getElementById('media-player');
 			var speechSegments = document.querySelectorAll('#body .speech-segment');
@@ -29,23 +30,28 @@
 
 			var currentlyPlaying = null;
 
+			function setCurrentlyPlaying(segment) {
+				if (segment === currentlyPlaying) return;
+				if (currentlyPlaying) currentlyPlaying.classList.remove('now-playing');
+				if (segment) segment.classList.add('now-playing');
+				currentlyPlaying = segment;
+			}
+
 			mediaPlayer.addEventListener('timeupdate', function() {
 				var currentMs = mediaPlayer.currentTime * 1000;
 				var active = null;
 
+				// Segments are in chronological order, so the last one that has started is the current one.
 				for (var i = 0; i < speechSegments.length; i++) {
-					var segment = speechSegments[i];
-					if (currentMs >= Number(segment.dataset.startMs) && currentMs < Number(segment.dataset.endMs)) {
-						active = segment;
-						break;
-					}
+					if (currentMs < Number(speechSegments[i].dataset.startMs)) break;
+					active = speechSegments[i];
 				}
 
-				if (active !== currentlyPlaying) {
-					if (currentlyPlaying) currentlyPlaying.classList.remove('now-playing');
-					if (active) active.classList.add('now-playing');
-					currentlyPlaying = active;
-				}
+				setCurrentlyPlaying(active);
+			});
+
+			mediaPlayer.addEventListener('ended', function() {
+				setCurrentlyPlaying(null);
 			});
 		});
 	<% end %>

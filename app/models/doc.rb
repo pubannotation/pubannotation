@@ -520,15 +520,14 @@ class Doc < ActiveRecord::Base
 		"<span class='context'>#{prev_text}</span><span class='highlight'>#{focus_text}</span><span class='context'>#{next_text}</span>"
 	end
 
-	# Each speech segment's char offset, paired with its start_ms/end_ms. Computed from
+	# Each speech segment's char offset, paired with its start_ms. Computed from
 	# media_transcript rather than its AudioSegment Denotations, which annotation cleanup can
 	# delete independently.
 	def speech_segment_spans
 		return [] unless media_transcript.present?
 
 		media_transcript.speech_segment_spans.zip(media_transcript.speech_segments).map do |span, segment|
-			{ begin: span[:begin], end: span[:end],
-			  start_ms: segment['start_ms'], end_ms: segment['end_ms'] }
+			{ begin: span[:begin], end: span[:end], start_ms: segment['start_ms'] }
 		end
 	end
 
