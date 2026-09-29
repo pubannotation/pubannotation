@@ -157,7 +157,7 @@ class DocsController < ApplicationController
 				format.html {redirect_back fallback_location: root_path, flash: { notice: e.message }}
 			end
 		end
-	end 
+	end
 
 	def show
 		if params[:id].present?
@@ -187,11 +187,13 @@ class DocsController < ApplicationController
 			nil
 		end
 
-		@doc.set_ascii_body if params[:encoding] == 'ascii'
 		@medium = @doc.medium
-		# From media_transcript rather than its AudioSegment Denotations, which annotation cleanup can
-		# delete independently. set_ascii_body rewrites body, invalidating these offsets into it.
-		@speech_segment_spans = @doc.media_transcript&.speech_segment_spans unless params[:encoding] == 'ascii'
+		# set_ascii_body rewrites body, invalidating speech_segment_spans' offsets into it.
+		if params[:encoding] == 'ascii'
+			@doc.set_ascii_body
+		else
+			@speech_segment_spans = @doc.media_transcript&.speech_segment_spans
+		end
 
 		get_docs_projects
 		if @span
@@ -237,11 +239,13 @@ class DocsController < ApplicationController
 				nil
 			end
 
-			@doc.set_ascii_body if (params[:encoding] == 'ascii')
 			@medium = @doc.medium
-			# From media_transcript rather than its AudioSegment Denotations, which annotation cleanup can
-			# delete independently. set_ascii_body rewrites body, invalidating these offsets into it.
-			@speech_segment_spans = @doc.media_transcript&.speech_segment_spans unless params[:encoding] == 'ascii'
+			# set_ascii_body rewrites body, invalidating speech_segment_spans' offsets into it.
+			if params[:encoding] == 'ascii'
+				@doc.set_ascii_body
+			else
+				@speech_segment_spans = @doc.media_transcript&.speech_segment_spans
+			end
 
 			respond_to do |format|
 				format.html
@@ -282,7 +286,7 @@ class DocsController < ApplicationController
 	# GET /docs/new.json
 	def new
 		@doc = Doc.new
-		begin 
+		begin
 			@project = get_project2(params[:project_id])
 		rescue => e
 			notice = e.message
