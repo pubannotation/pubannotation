@@ -23,9 +23,11 @@ class MediaTextGenerationService
       MediaTranscript.new(medium: @medium, text: image_caption_service.call,
                           generation_model: image_caption_service.resolved_model)
     when 'audio'
-      MediaTranscript.new(medium: @medium, segments: AudioTranscriptionService.new(file_path).call)
+      MediaTranscript.new(medium: @medium, segments: AudioTranscriptionService.new(file_path).call,
+                          generation_model: AudioTranscriptionService.resolved_model)
     when 'video'
-      MediaTranscript.new(medium: @medium, segments: VideoTranscriptionService.new(file_path).call)
+      MediaTranscript.new(medium: @medium, segments: VideoTranscriptionService.new(file_path).call,
+                          generation_model: VideoTranscriptionService.resolved_model)
     else
       raise ArgumentError, "Unsupported media type: #{@medium.media_type.inspect}"
     end
