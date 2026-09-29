@@ -189,8 +189,9 @@ class DocsController < ApplicationController
 
 		@doc.set_ascii_body if params[:encoding] == 'ascii'
 		@medium = @doc.medium
-		# set_ascii_body rewrites body, invalidating speech_segment_spans' offsets into it.
-		@speech_segment_spans = @doc.speech_segment_spans unless params[:encoding] == 'ascii'
+		# From media_transcript rather than its AudioSegment Denotations, which annotation cleanup can
+		# delete independently. set_ascii_body rewrites body, invalidating these offsets into it.
+		@speech_segment_spans = @doc.media_transcript&.speech_segment_spans unless params[:encoding] == 'ascii'
 
 		get_docs_projects
 		if @span
@@ -238,8 +239,9 @@ class DocsController < ApplicationController
 
 			@doc.set_ascii_body if (params[:encoding] == 'ascii')
 			@medium = @doc.medium
-			# set_ascii_body rewrites body, invalidating speech_segment_spans' offsets into it.
-			@speech_segment_spans = @doc.speech_segment_spans unless params[:encoding] == 'ascii'
+			# From media_transcript rather than its AudioSegment Denotations, which annotation cleanup can
+			# delete independently. set_ascii_body rewrites body, invalidating these offsets into it.
+			@speech_segment_spans = @doc.media_transcript&.speech_segment_spans unless params[:encoding] == 'ascii'
 
 			respond_to do |format|
 				format.html
