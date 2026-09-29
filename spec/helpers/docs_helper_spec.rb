@@ -29,4 +29,18 @@ RSpec.describe DocsHelper, type: :helper do
       expect(helper.body_with_speech_segments('Hello world', nil)).to eq('Hello world')
     end
   end
+
+  describe '#body_with_highlighted_span' do
+    it 'wraps the span in a .highlight <span> and the text on either side in .context ones' do
+      expect(helper.body_with_highlighted_span('Hello big world', { begin: 6, end: 9 })).to eq(
+        '<span class="context">Hello </span><span class="highlight">big</span><span class="context"> world</span>'
+      )
+    end
+
+    it 'HTML-escapes the text inside and outside the highlight' do
+      expect(helper.body_with_highlighted_span('<b>Hi</b> & bye', { begin: 3, end: 5 })).to eq(
+        '<span class="context">&lt;b&gt;</span><span class="highlight">Hi</span><span class="context">&lt;/b&gt; &amp; bye</span>'
+      )
+    end
+  end
 end
