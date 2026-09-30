@@ -8,11 +8,11 @@
 	// Highlight the latest speech segment to have started, keeping it highlighted through the gap
 	// until the next one starts, and clear it once playback ends.
 	function highlightCurrentSpeechSegment() {
-		var mediaPlayer = document.getElementById('media-player');
-		var speechSegments = document.querySelectorAll('#body .speech-segment');
+		const mediaPlayer = document.getElementById('media-player');
+		const speechSegments = document.querySelectorAll('#body .speech-segment');
 		if (!mediaPlayer || speechSegments.length === 0) return;
 
-		var currentlyPlaying = null;
+		let currentlyPlaying = null;
 
 		function setCurrentlyPlaying(segment) {
 			if (segment === currentlyPlaying) return;
@@ -22,11 +22,11 @@
 		}
 
 		mediaPlayer.addEventListener('timeupdate', function() {
-			var currentMs = mediaPlayer.currentTime * 1000;
-			var active = null;
+			const currentMs = mediaPlayer.currentTime * 1000;
+			let active = null;
 
 			// Segments are in chronological order, so the last one that has started is the current one.
-			for (var i = 0; i < speechSegments.length; i++) {
+			for (let i = 0; i < speechSegments.length; i++) {
 				if (currentMs < Number(speechSegments[i].dataset.startMs)) break;
 				active = speechSegments[i];
 			}
@@ -41,7 +41,7 @@
 
 	// Scroll to and focus on the highlighted span
 	function focusHighlightedSpan() {
-		var highlightedSpan = $('#body .highlight');
+		const highlightedSpan = $('#body .highlight');
 		if (highlightedSpan.length === 0) return;
 
 		// Make the span focusable by adding tabindex
