@@ -138,7 +138,7 @@ RSpec.describe 'MediaController', type: :request do
             sourceid: 'img-001'
           }
         }
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
       end
 
       it 'rejects a video/quicktime file that browsers cannot play inline' do
@@ -151,7 +151,7 @@ RSpec.describe 'MediaController', type: :request do
             }
           }
         }.not_to change(Medium, :count)
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
       end
     end
 

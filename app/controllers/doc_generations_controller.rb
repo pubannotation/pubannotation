@@ -22,7 +22,7 @@ class DocGenerationsController < ApplicationController
       format.json { render json: { message: notice, job_name: active_job.job_name, task_location: project_job_url(@project.name, job.id, format: :json) }, status: :accepted }
     end
   rescue ArgumentError, Exceptions::TooManyBackgroundJobsError => e
-    render_error(message: e.message, status: :unprocessable_entity)
+    render_error(message: e.message, status: :unprocessable_content)
   end
 
   private

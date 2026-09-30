@@ -26,7 +26,7 @@ class MediaController < ApplicationController
     if @medium.save
       redirect_to new_medium_path, notice: 'Media was successfully uploaded.'
     else
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
