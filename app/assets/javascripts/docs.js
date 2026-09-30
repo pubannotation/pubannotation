@@ -17,9 +17,9 @@
 			let active = null;
 
 			// Segments are in chronological order, so the last one that has started is the current one.
-			for (let i = 0; i < speechSegments.length; i++) {
-				if (currentMs < Number(speechSegments[i].dataset.startMs)) break;
-				active = speechSegments[i];
+			for (const segment of speechSegments) {
+				if (currentMs < Number(segment.dataset.startMs)) break;
+				active = segment;
 			}
 
 			if (active) {
