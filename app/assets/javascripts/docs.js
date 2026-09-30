@@ -12,15 +12,6 @@
 		const speechSegments = document.querySelectorAll('#body .speech-segment');
 		if (!mediaPlayer || speechSegments.length === 0) return;
 
-		let currentlyPlaying = null;
-
-		function setCurrentlyPlaying(segment) {
-			if (segment === currentlyPlaying) return;
-			if (currentlyPlaying) currentlyPlaying.classList.remove('now-playing');
-			if (segment) segment.classList.add('now-playing');
-			currentlyPlaying = segment;
-		}
-
 		mediaPlayer.addEventListener('timeupdate', function() {
 			const currentMs = mediaPlayer.currentTime * 1000;
 			let active = null;
@@ -31,12 +22,25 @@
 				active = speechSegments[i];
 			}
 
-			setCurrentlyPlaying(active);
+			if (active) {
+				setCurrentlyPlaying(active);
+			} else {
+				clearCurrentlyPlaying();
+			}
 		});
 
-		mediaPlayer.addEventListener('ended', function() {
-			setCurrentlyPlaying(null);
-		});
+		mediaPlayer.addEventListener('ended', clearCurrentlyPlaying);
+
+		function setCurrentlyPlaying(segment) {
+			if (segment.classList.contains('now-playing')) return;
+
+			clearCurrentlyPlaying();
+			segment.classList.add('now-playing');
+		}
+
+		function clearCurrentlyPlaying() {
+			document.querySelector('#body .now-playing')?.classList.remove('now-playing');
+		}
 	}
 
 	// Scroll to and focus on the highlighted span
