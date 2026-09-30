@@ -13,7 +13,18 @@
 		if (!mediaPlayer || speechSegments.length === 0) return;
 
 		mediaPlayer.addEventListener('timeupdate', () => {
-			const currentMs = mediaPlayer.currentTime * 1000;
+			const playingSegment = findPlayingSegment(mediaPlayer.currentTime * 1000);
+
+			if (playingSegment) {
+				setCurrentlyPlaying(playingSegment);
+			} else {
+				clearCurrentlyPlaying();
+			}
+		});
+
+		mediaPlayer.addEventListener('ended', clearCurrentlyPlaying);
+
+		function findPlayingSegment(currentMs) {
 			let previousSegment = null;
 
 			// Segments are in chronological order: once a segment hasn't started yet, the one before it is
@@ -23,14 +34,8 @@
 				previousSegment = segment;
 			}
 
-			if (previousSegment) {
-				setCurrentlyPlaying(previousSegment);
-			} else {
-				clearCurrentlyPlaying();
-			}
-		});
-
-		mediaPlayer.addEventListener('ended', clearCurrentlyPlaying);
+			return previousSegment;
+		}
 
 		function setCurrentlyPlaying(segment) {
 			if (segment.classList.contains('now-playing')) return;
