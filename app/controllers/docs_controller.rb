@@ -84,8 +84,8 @@ class DocsController < ApplicationController
 
 		respond_to do |format|
 			format.html {redirect_to (@project.present? ? project_path(@project.name) : home_path), notice: e.message}
-			format.json {render json: {message:e.message}, status: :unprocessable_entity}
-			format.tsv  {render plain: e.message, status: :unprocessable_entity}
+			format.json {render json: {message:e.message}, status: :unprocessable_content}
+			format.tsv  {render plain: e.message, status: :unprocessable_content}
 		end
 	end
 
@@ -213,8 +213,8 @@ class DocsController < ApplicationController
 	rescue => e
 		respond_to do |format|
 			format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : home_path), notice: e.message}
-			format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-			format.txt  {render plain: e.message, status: :unprocessable_entity}
+			format.json {render json: {notice:e.message}, status: :unprocessable_content}
+			format.txt  {render plain: e.message, status: :unprocessable_content}
 		end
 	end
 
@@ -246,8 +246,8 @@ class DocsController < ApplicationController
 		rescue => e
 			respond_to do |format|
 				format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : home_path), notice: e.message}
-				format.json {render json: {notice:e.message}, status: :unprocessable_entity}
-				format.txt  {render status: :unprocessable_entity}
+				format.json {render json: {notice:e.message}, status: :unprocessable_content}
+				format.txt  {render status: :unprocessable_content}
 			end
 		end
 	end
@@ -337,7 +337,7 @@ class DocsController < ApplicationController
 		rescue => e
 			respond_to do |format|
 				format.html { redirect_to new_project_doc_path(@project.name), notice: e.message }
-				format.json { render json: {message: e.message}, status: :unprocessable_entity }
+				format.json { render json: {message: e.message}, status: :unprocessable_content }
 			end
 		end
 	end
@@ -417,7 +417,7 @@ class DocsController < ApplicationController
 				format.json { head :no_content }
 			else
 				format.html { render action: "edit" }
-				format.json { render json: @doc.errors, status: :unprocessable_entity }
+				format.json { render json: @doc.errors, status: :unprocessable_content }
 			end
 		end
 	end
@@ -451,7 +451,7 @@ class DocsController < ApplicationController
 	rescue => e
 		respond_to do |format|
 			format.html {redirect_back fallback_location: root_path, notice: e.message }
-			format.json {render json: {message: e.message}, status: :unprocessable_entity}
+			format.json {render json: {message: e.message}, status: :unprocessable_content}
 		end
 	end
 
@@ -585,8 +585,8 @@ class DocsController < ApplicationController
 		rescue => e
 			respond_to do |format|
 				format.html { redirect_to redirect_path, notice: e.message }
-				format.json { render json: {message: e.message}, status: :unprocessable_entity }
-				format.txt  { render plain: e.message, status: :unprocessable_entity }
+				format.json { render json: {message: e.message}, status: :unprocessable_content }
+				format.txt  { render plain: e.message, status: :unprocessable_content }
 			end
 		end
 	end
@@ -610,8 +610,8 @@ class DocsController < ApplicationController
 	rescue => e
 		respond_to do |format|
 			format.html { redirect_to project_docs_path(project.name), notice:e.message }
-			format.json { render json: {message: e.message}, status: :unprocessable_entity }
-			format.txt  { render plain: e.message, status: :unprocessable_entity }
+			format.json { render json: {message: e.message}, status: :unprocessable_content }
+			format.txt  { render plain: e.message, status: :unprocessable_content }
 		end
 	end
 

@@ -17,7 +17,7 @@ RSpec.describe 'Docs API', type: :request do
     it 'returns 404 for non-existent document' do
       get '/docs/sourcedb/PubMed/sourceid/nonexistent.txt'
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
     end
   end
 

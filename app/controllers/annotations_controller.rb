@@ -8,8 +8,8 @@ class AnnotationsController < ApplicationController
 		message = "The route does not exist.\n"
 		respond_to do |format|
 			format.html {redirect_to home_path, notice: message}
-			format.json {render json: {message:message}, status: :unprocessable_entity}
-			format.txt  {render plain: message, status: :unprocessable_entity}
+			format.json {render json: {message:message}, status: :unprocessable_content}
+			format.txt  {render plain: message, status: :unprocessable_content}
 		end
 	end
 
@@ -47,7 +47,7 @@ class AnnotationsController < ApplicationController
 
 		respond_to do |format|
 			format.html {redirect_to (@project.present? ? project_docs_path(@project.name) : home_path), notice: e.message}
-			format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+			format.json {render json: {notice:e.message}, status: :unprocessable_content}
 		end
 	end
 
@@ -84,7 +84,7 @@ class AnnotationsController < ApplicationController
 	rescue => e
 		respond_to do |format|
 			format.html {redirect_back fallback_location: root_path, notice: e.message}
-			format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+			format.json {render json: {notice:e.message}, status: :unprocessable_content}
 			format.tsv  {render plain: 'Error'}
 		end
 	end
@@ -97,7 +97,7 @@ class AnnotationsController < ApplicationController
 		rescue => e
 			respond_to do |format|
 				format.html {redirect_to home_path, notice: e.message}
-				format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+				format.json {render json: {notice:e.message}, status: :unprocessable_content}
 			end
 		end
 	end
@@ -110,7 +110,7 @@ class AnnotationsController < ApplicationController
 		rescue => e
 			respond_to do |format|
 				format.html {redirect_to home_path, notice: e.message}
-				format.json {render json: {notice:e.message}, status: :unprocessable_entity}
+				format.json {render json: {notice:e.message}, status: :unprocessable_content}
 			end
 		end
 	end
@@ -216,7 +216,7 @@ class AnnotationsController < ApplicationController
 	rescue => e
 		respond_to do |format|
 			format.html {redirect_to (project.present? ? project_path(project.name) : home_path), notice: e.message}
-			format.json {render :json => {error: e.message}, :status => :unprocessable_entity}
+			format.json {render :json => {error: e.message}, :status => :unprocessable_content}
 		end
 	end
 
@@ -250,7 +250,7 @@ class AnnotationsController < ApplicationController
 
 		rescue => e
 			respond_to do |format|
-				format.json {render :json => {error: e.message}, :status => :unprocessable_entity}
+				format.json {render :json => {error: e.message}, :status => :unprocessable_content}
 			end
 		end
 	end
@@ -447,7 +447,7 @@ class AnnotationsController < ApplicationController
 			raise if Rails.env.development? && !e.is_a?(Exceptions::TooManyBackgroundJobsError)
 			respond_to do |format|
 				format.html {redirect_back fallback_location: root_path, notice: e.message}
-				format.json {render json: {message: e.message}, status: :unprocessable_entity}
+				format.json {render json: {message: e.message}, status: :unprocessable_content}
 			end
 		end
 	end

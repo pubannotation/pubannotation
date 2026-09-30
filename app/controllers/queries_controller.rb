@@ -55,7 +55,7 @@ class QueriesController < ApplicationController
 				format.json { render json: query, status: :created, location: query_path(query) }
 			else
 				format.html { render action: "new" }
-				format.json { render json: query.errors, status: :unprocessable_entity }
+				format.json { render json: query.errors, status: :unprocessable_content }
 			end
 		end
 	end
@@ -78,7 +78,7 @@ class QueriesController < ApplicationController
 				format.html { redirect_to redirect_queries_path(organization) }
 			else
 				format.html { redirect_to redirect_query_path(query) }
-				format.json { render json: @query.errors, status: :unprocessable_entity }
+				format.json { render json: @query.errors, status: :unprocessable_content }
 			end
 		end
 	end

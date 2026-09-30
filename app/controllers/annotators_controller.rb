@@ -44,7 +44,7 @@ class AnnotatorsController < ApplicationController
 				message = "A problem is reported from the server: #{e.message}."
 				flash[:notice] = message
 			end
-			format.json {head :unprocessable_entity}
+			format.json {head :unprocessable_content}
 		end
 	end
 
@@ -80,7 +80,7 @@ class AnnotatorsController < ApplicationController
 				format.html {
 					render action: "new"
 				}
-				format.json { render json: @annotator.errors, status: :unprocessable_entity }
+				format.json { render json: @annotator.errors, status: :unprocessable_content }
 			end
 		end
 	end
@@ -103,7 +103,7 @@ class AnnotatorsController < ApplicationController
 				format.html {
 					render action: "edit"
 				}
-				format.json { render json: @annotator.errors, status: :unprocessable_entity }
+				format.json { render json: @annotator.errors, status: :unprocessable_content }
 			end
 		end
 	end
