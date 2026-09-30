@@ -45,14 +45,14 @@
 
 	// Scroll to and focus on the highlighted span
 	function focusHighlightedSpan() {
-		const highlightedSpan = $('#body .highlight');
-		if (highlightedSpan.length === 0) return;
+		const highlightedSpan = document.querySelector('#body .highlight');
+		if (!highlightedSpan) return;
 
 		// Make the span focusable by adding tabindex
-		highlightedSpan.attr('tabindex', '-1');
+		highlightedSpan.setAttribute('tabindex', '-1');
 		// Scroll to the element
-		highlightedSpan[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
-		// Focus on the element
-		highlightedSpan.focus();
+		highlightedSpan.scrollIntoView({ behavior: 'smooth', block: 'center' });
+		// Focus on the element, leaving the scrolling to scrollIntoView above
+		highlightedSpan.focus({ preventScroll: true });
 	}
 })();
