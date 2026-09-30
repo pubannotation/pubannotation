@@ -1,5 +1,5 @@
 // Loaded with defer only by docs/_content, so the DOM is already parsed when this runs.
-(function() {
+(() => {
 	$('#body').linkToSelectedSpan('#linkSpace');
 
 	highlightCurrentSpeechSegment();
@@ -12,7 +12,7 @@
 		const speechSegments = document.querySelectorAll('#body .speech-segment');
 		if (!mediaPlayer || speechSegments.length === 0) return;
 
-		mediaPlayer.addEventListener('timeupdate', function() {
+		mediaPlayer.addEventListener('timeupdate', () => {
 			const currentMs = mediaPlayer.currentTime * 1000;
 			let active = null;
 
