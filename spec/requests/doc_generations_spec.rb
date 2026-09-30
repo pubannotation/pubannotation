@@ -89,7 +89,9 @@ RSpec.describe 'DocGenerationsController', type: :request do
       end
 
       it 'creates a doc with the generated caption when the job runs' do
-        allow(ImageCaptionService).to receive(:new).and_return(instance_double(ImageCaptionService, call: 'A generated caption.'))
+        allow(ImageCaptionService).to receive(:new).and_return(
+          instance_double(ImageCaptionService, call: 'A generated caption.', resolved_model: 'moondream')
+        )
 
         perform_enqueued_jobs do
           post project_doc_generations_path(project.name),
@@ -151,6 +153,7 @@ RSpec.describe 'DocGenerationsController', type: :request do
         allow(VideoTranscriptionService).to receive(:new).and_return(
           instance_double(VideoTranscriptionService, call: [{ 'text' => 'A generated transcript.', 'start_ms' => 0, 'end_ms' => 1000 }])
         )
+        allow(VideoTranscriptionService).to receive(:resolved_model).and_return('whisper:ggml-base.en')
 
         perform_enqueued_jobs do
           post project_doc_generations_path(project.name),

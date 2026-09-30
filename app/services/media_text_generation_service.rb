@@ -1,6 +1,7 @@
 class MediaTextGenerationService
-  def initialize(medium)
+  def initialize(medium, caption_model: nil)
     @medium = medium
+    @caption_model = caption_model
   end
 
   # Returns an unsaved MediaTranscript. Its text is the caption as-is for an image, or the
@@ -18,11 +19,15 @@ class MediaTextGenerationService
   def build_media_transcript(file_path)
     case @medium.media_type
     when 'image'
-      MediaTranscript.new(medium: @medium, text: ImageCaptionService.new(file_path).call)
+      image_caption_service = ImageCaptionService.new(file_path, model: @caption_model)
+      MediaTranscript.new(medium: @medium, text: image_caption_service.call,
+                          generation_model: image_caption_service.resolved_model)
     when 'audio'
-      MediaTranscript.new(medium: @medium, segments: AudioTranscriptionService.new(file_path).call)
+      MediaTranscript.new(medium: @medium, segments: AudioTranscriptionService.new(file_path).call,
+                          generation_model: AudioTranscriptionService.resolved_model)
     when 'video'
-      MediaTranscript.new(medium: @medium, segments: VideoTranscriptionService.new(file_path).call)
+      MediaTranscript.new(medium: @medium, segments: VideoTranscriptionService.new(file_path).call,
+                          generation_model: VideoTranscriptionService.resolved_model)
     else
       raise ArgumentError, "Unsupported media type: #{@medium.media_type.inspect}"
     end

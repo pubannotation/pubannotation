@@ -34,7 +34,9 @@ RSpec.describe MediaTextGenerationService do
   describe '#call' do
     context 'with a valid image medium' do
       before do
-        allow(ImageCaptionService).to receive(:new).and_return(instance_double(ImageCaptionService, call: 'A generated caption.'))
+        allow(ImageCaptionService).to receive(:new).and_return(
+          instance_double(ImageCaptionService, call: 'A generated caption.', resolved_model: 'moondream')
+        )
       end
 
       it 'returns an unsaved MediaTranscript with the caption as its text and no segments' do
@@ -45,6 +47,18 @@ RSpec.describe MediaTextGenerationService do
         expect(media_transcript.text).to eq('A generated caption.')
         expect(media_transcript.segments).to eq([])
       end
+
+      it 'passes a given caption_model through to ImageCaptionService' do
+        described_class.new(image_medium, caption_model: 'medgemma:4b').call
+
+        expect(ImageCaptionService).to have_received(:new).with(anything, model: 'medgemma:4b')
+      end
+
+      it "sets generation_model from ImageCaptionService's resolved_model" do
+        media_transcript = described_class.new(image_medium).call
+
+        expect(media_transcript.generation_model).to eq('moondream')
+      end
     end
 
     context 'with a valid audio medium' do
@@ -54,6 +68,7 @@ RSpec.describe MediaTextGenerationService do
         allow(AudioTranscriptionService).to receive(:new).and_return(
           instance_double(AudioTranscriptionService, call: segments)
         )
+        allow(AudioTranscriptionService).to receive(:resolved_model).and_return('whisper:ggml-base.en')
       end
 
       it 'returns an unsaved MediaTranscript with the speech text and the raw segments' do
@@ -63,6 +78,12 @@ RSpec.describe MediaTextGenerationService do
         expect(media_transcript.medium).to eq(audio_medium)
         expect(media_transcript.text).to eq('A generated transcript.')
         expect(media_transcript.segments).to eq(segments)
+      end
+
+      it "sets generation_model from AudioTranscriptionService's resolved_model" do
+        media_transcript = described_class.new(audio_medium).call
+
+        expect(media_transcript.generation_model).to eq('whisper:ggml-base.en')
       end
 
       context 'when segments mix speech and non-speech labels' do
@@ -89,6 +110,7 @@ RSpec.describe MediaTextGenerationService do
         allow(VideoTranscriptionService).to receive(:new).and_return(
           instance_double(VideoTranscriptionService, call: segments)
         )
+        allow(VideoTranscriptionService).to receive(:resolved_model).and_return('whisper:ggml-base.en')
       end
 
       it 'returns an unsaved MediaTranscript with the speech text and the raw segments' do
@@ -98,6 +120,12 @@ RSpec.describe MediaTextGenerationService do
         expect(media_transcript.medium).to eq(video_medium)
         expect(media_transcript.text).to eq('A generated transcript.')
         expect(media_transcript.segments).to eq(segments)
+      end
+
+      it "sets generation_model from VideoTranscriptionService's resolved_model" do
+        media_transcript = described_class.new(video_medium).call
+
+        expect(media_transcript.generation_model).to eq('whisper:ggml-base.en')
       end
     end
 

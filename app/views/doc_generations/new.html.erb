@@ -26,6 +26,13 @@
 								<th>Media Source Id</th>
 								<td><%= text_field_tag 'media[sourceid]', nil, required: true %></td>
 							</tr>
+							<tr>
+								<th>Image Caption Model</th>
+								<td>
+									<%= select_tag :caption_model, options_for_select(@available_caption_models) %>
+									<br>Used only if the specified media is an image.
+								</td>
+							</tr>
 						</table>
 					</td>
 				</tr>

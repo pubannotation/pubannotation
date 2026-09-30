@@ -6,6 +6,16 @@ class AudioTranscriptionService
   #   [00:00:00.000 --> 00:00:03.500]   Ask not what your country
   SEGMENT_LINE = /\A\[(\d{2}):(\d{2}):(\d{2})\.(\d{3}) --> (\d{2}):(\d{2}):(\d{2})\.(\d{3})\]\s*(.*)\z/
 
+  # The Whisper model in use, e.g. "whisper:ggml-base.en" for WHISPER_MODEL_PATH=~/models/ggml-base.en.bin.
+  # Exposed so callers can record which model produced a transcript.
+  def self.resolved_model
+    "whisper:#{File.basename(model_path, '.bin')}"
+  end
+
+  def self.model_path
+    File.expand_path(ENV.fetch('WHISPER_MODEL_PATH'))
+  end
+
   def initialize(audio_path)
     @audio_path = audio_path
   end
@@ -20,7 +30,7 @@ class AudioTranscriptionService
 
   def transcribe
     cli_path   = ENV.fetch('WHISPER_CLI_PATH', 'whisper-cli')
-    model_path = File.expand_path(ENV.fetch('WHISPER_MODEL_PATH'))
+    model_path = self.class.model_path
 
     # -np keeps stdout limited to the timestamped segment lines; diagnostics go to stderr.
     stdout, stderr, status = Open3.capture3(cli_path, '-m', model_path, '-f', @audio_path, '-np')

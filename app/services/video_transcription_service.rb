@@ -1,4 +1,8 @@
 class VideoTranscriptionService
+  def self.resolved_model
+    AudioTranscriptionService.resolved_model
+  end
+
   def initialize(video_path)
     @video_path = video_path
   end
