@@ -24,8 +24,10 @@
 
 		mediaPlayer.addEventListener('ended', clearCurrentlyPlaying);
 
-		// Clicking a segment seeks the media to when it was spoken.
+		// Clicking a segment seeks the media to when it was spoken. Only these get .seekable (and its
+		// pointer cursor), so the segments don't look clickable when there's no player to seek.
 		for (const segment of speechSegments) {
+			segment.classList.add('seekable');
 			segment.addEventListener('click', () => {
 				mediaPlayer.currentTime = Number(segment.dataset.startMs) / 1000;
 			});
