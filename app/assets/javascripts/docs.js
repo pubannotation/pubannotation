@@ -14,16 +14,17 @@
 
 		mediaPlayer.addEventListener('timeupdate', () => {
 			const currentMs = mediaPlayer.currentTime * 1000;
-			let active = null;
+			let previousSegment = null;
 
-			// Segments are in chronological order, so the last one that has started is the current one.
+			// Segments are in chronological order: once a segment hasn't started yet, the one before it is
+			// the one playing (or the last one, once all have started; none, before the first one starts).
 			for (const segment of speechSegments) {
 				if (currentMs < Number(segment.dataset.startMs)) break;
-				active = segment;
+				previousSegment = segment;
 			}
 
-			if (active) {
-				setCurrentlyPlaying(active);
+			if (previousSegment) {
+				setCurrentlyPlaying(previousSegment);
 			} else {
 				clearCurrentlyPlaying();
 			}
