@@ -6,7 +6,7 @@
 	focusHighlightedSpan();
 
 	// Highlight the latest speech segment to have started, keeping it highlighted through the gap
-	// until the next one starts, and clear it once playback ends.
+	// until the next one starts, and clear it once playback ends. Clicking a segment seeks to it.
 	function highlightCurrentSpeechSegment() {
 		const mediaPlayer = document.getElementById('media-player');
 		const speechSegments = document.querySelectorAll('#body .speech-segment');
@@ -24,6 +24,13 @@
 
 		mediaPlayer.addEventListener('ended', clearCurrentlyPlaying);
 
+		// Clicking a segment seeks the media to when it was spoken.
+		for (const segment of speechSegments) {
+			segment.addEventListener('click', () => {
+				mediaPlayer.currentTime = Number(segment.dataset.startMs) / 1000;
+			});
+		}
+
 		function findPlayingSegment(currentMs) {
 			let previousSegment = null;
 
@@ -35,13 +42,6 @@
 			}
 
 			return previousSegment;
-		}
-
-		// Clicking a segment seeks the media to when it was spoken.
-		for (const segment of speechSegments) {
-			segment.addEventListener('click', () => {
-				mediaPlayer.currentTime = Number(segment.dataset.startMs) / 1000;
-			});
 		}
 
 		function setCurrentlyPlaying(segment) {
