@@ -197,15 +197,15 @@ RSpec.describe MediaTranscript, type: :model do
   end
 
   describe '#speech_segment_spans' do
-    it "returns each speech segment's char offset into #speech_text" do
+    it "returns each speech segment's char offset into #speech_text alongside its start_ms" do
       media_transcript = build(:media_transcript, segments: [
         { 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 300 },
         { 'text' => 'world', 'start_ms' => 300, 'end_ms' => 600 }
       ])
 
       expect(media_transcript.speech_segment_spans).to eq([
-        { begin: 0, end: 5 },
-        { begin: 6, end: 11 }
+        { begin: 0, end: 5, start_ms: 0 },
+        { begin: 6, end: 11, start_ms: 300 }
       ])
     end
 
@@ -215,7 +215,7 @@ RSpec.describe MediaTranscript, type: :model do
         { 'text' => 'Welcome.', 'start_ms' => 3000, 'end_ms' => 6000 }
       ])
 
-      expect(media_transcript.speech_segment_spans).to eq([{ begin: 0, end: 8 }])
+      expect(media_transcript.speech_segment_spans).to eq([{ begin: 0, end: 8, start_ms: 3000 }])
     end
 
     it 'is empty when there are no speech segments' do

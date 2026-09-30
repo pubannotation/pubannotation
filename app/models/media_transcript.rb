@@ -39,7 +39,7 @@ class MediaTranscript < ApplicationRecord
 
   # Each speech segment's char offset ({begin:, end:}) into what #speech_text builds from them (a
   # single space between consecutive speech segments, regardless of non-speech segments between
-  # them in `segments`), in the same order as #speech_segments.
+  # them in `segments`), in the same order as #speech_segments, paired with its start_ms.
   def speech_segment_spans
     char_position = 0
 
@@ -48,7 +48,7 @@ class MediaTranscript < ApplicationRecord
       char_end = char_begin + segment['text'].length
       char_position = char_end + 1
 
-      { begin: char_begin, end: char_end }
+      { begin: char_begin, end: char_end, start_ms: segment['start_ms'] }
     end
   end
 
