@@ -28,5 +28,36 @@ RSpec.describe DocsHelper, type: :helper do
       expect(helper.body_with_speech_segments('Hello world', [])).to eq('Hello world')
       expect(helper.body_with_speech_segments('Hello world', nil)).to eq('Hello world')
     end
+
+    context 'with a highlight' do
+      let(:spans) do
+        [
+          { begin: 0, end: 5, start_ms: 0 },
+          { begin: 6, end: 11, start_ms: 300 }
+        ]
+      end
+
+      it 'wraps the highlighted text inside a segment in a .highlight <span>' do
+        expect(helper.body_with_speech_segments('Hello world', spans, highlight: { begin: 1, end: 4 })).to eq(
+          '<span class="speech-segment" data-start-ms="0">H<span class="highlight">ell</span>o</span> ' \
+          '<span class="speech-segment" data-start-ms="300">world</span>'
+        )
+      end
+
+      it 'splits a highlight that crosses segments at their boundaries, including the text between them' do
+        expect(helper.body_with_speech_segments('Hello world', spans, highlight: { begin: 3, end: 8 })).to eq(
+          '<span class="speech-segment" data-start-ms="0">Hel<span class="highlight">lo</span></span>' \
+          '<span class="highlight"> </span>' \
+          '<span class="speech-segment" data-start-ms="300"><span class="highlight">wo</span>rld</span>'
+        )
+      end
+
+      it 'HTML-escapes the highlighted text' do
+        expect(helper.body_with_speech_segments('<b> & c', [{ begin: 4, end: 7, start_ms: 0 }], highlight: { begin: 0, end: 5 })).to eq(
+          '<span class="highlight">&lt;b&gt; </span>' \
+          '<span class="speech-segment" data-start-ms="0"><span class="highlight">&amp;</span> c</span>'
+        )
+      end
+    end
   end
 end

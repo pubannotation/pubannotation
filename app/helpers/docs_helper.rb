@@ -141,22 +141,44 @@ module DocsHelper
 
 	# `body`, with each of `spans` (each a {begin:, end:, start_ms:} hash) wrapped in a <span>
 	# carrying its playback start time, for JS to highlight as media plays.
-	def body_with_speech_segments(body, spans)
+	#
+	# With `highlight` ({begin:, end:}), the text it covers is wrapped in .highlight too. Segment
+	# <span>s are kept whole, since JS treats each as one unit, so the highlight is split instead:
+	# one .highlight per piece it overlaps (a segment, or the text between two).
+	def body_with_speech_segments(body, spans, highlight: nil)
 		return body if spans.blank?
 
 		cursor = 0
 		wrapped = spans.flat_map do |span|
-			text_before = body[cursor...span[:begin]]
+			text_before = highlighted_text(body, cursor, span[:begin], highlight)
 			cursor = span[:end]
-			[text_before, speech_segment_span_tag(body, span)]
+			[text_before, speech_segment_span_tag(body, span, highlight)]
 		end
-		safe_join(wrapped + [body[cursor..]])
+		safe_join(wrapped + [highlighted_text(body, cursor, body.length, highlight)])
 	end
 
 	private
 
-	def speech_segment_span_tag(body, span)
-		content_tag(:span, body[span[:begin]...span[:end]], class: 'speech-segment', data: { start_ms: span[:start_ms] })
+	def speech_segment_span_tag(body, span, highlight)
+		content_tag(:span, highlighted_text(body, span[:begin], span[:end], highlight),
+		            class: 'speech-segment', data: { start_ms: span[:start_ms] })
+	end
+
+	# body[from...to], with just the part that overlaps `highlight` wrapped in a .highlight <span>.
+	# Returned as-is when they don't overlap, so no empty .highlight is left for JS to scroll to.
+	def highlighted_text(body, from, to, highlight)
+		text = body[from...to]
+		return text if highlight.nil?
+
+		highlight_begin = highlight[:begin].clamp(from, to)
+		highlight_end = highlight[:end].clamp(from, to)
+		return text if highlight_begin >= highlight_end
+
+		safe_join([
+			body[from...highlight_begin],
+			content_tag(:span, body[highlight_begin...highlight_end], class: 'highlight'),
+			body[highlight_end...to]
+		])
 	end
 
 end

@@ -62,6 +62,16 @@ RSpec.describe 'GET /docs/:sourcedb/:sourceid speech segment highlighting', type
         .to include('<span class="speech-segment" data-start-ms="300">world</span>')
     end
 
+    it 'wraps speech segments on a span page too, highlighting the span inside them' do
+      get "/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}/spans/0-5"
+
+      expect(response.body).to include(
+        '<div id="body" class="with_hilight">' \
+        '<span class="speech-segment" data-start-ms="0"><span class="highlight">Hello</span></span> ' \
+        '<span class="speech-segment" data-start-ms="300">world</span></div>'
+      )
+    end
+
     it 'skips speech-segment wrapping when encoding=ascii, since the offsets no longer match set_ascii_body\'s rewritten text' do
       get "/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}", params: { encoding: 'ascii' }
 
