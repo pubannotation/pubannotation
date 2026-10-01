@@ -9,6 +9,11 @@
 
 	.now-playing {
 		background-color: #ff0;
+
+		/* Let the playing segment's yellow show through a span highlight inside it */
+		.highlight {
+			background-color: transparent;
+		}
 	}
 }
 
