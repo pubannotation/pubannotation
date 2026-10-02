@@ -54,7 +54,7 @@ module DocsHelper
 			link_to doc.sourcedb, doc_sourcedb_index_path(doc.sourcedb)
 		end
 	end
-	
+
 	def source_db_index_docs_count_helper(docs, doc)
 		count = docs.same_sourcedb_sourceid(doc.sourcedb, doc.sourceid).count
 		if count.class == Fixnum
@@ -166,18 +166,21 @@ module DocsHelper
 
 	# body[from...to], with just the part that overlaps `highlight` wrapped in a .highlight <span>.
 	# Returned as-is when they don't overlap, so no empty .highlight is left for JS to scroll to.
+	# The end is capped at body's length, since the segments can run past a body edited after they
+	# were transcribed.
 	def highlighted_text(body, from, to, highlight)
-		text = body[from...to]
-		return text if highlight.nil?
+		text_end = [to, body.length].min
+		text = body[from...text_end]
+		return text if highlight.nil? || from >= text_end
 
-		highlight_begin = highlight[:begin].clamp(from, to)
-		highlight_end = highlight[:end].clamp(from, to)
+		highlight_begin = highlight[:begin].clamp(from, text_end)
+		highlight_end = highlight[:end].clamp(from, text_end)
 		return text if highlight_begin >= highlight_end
 
 		safe_join([
 			body[from...highlight_begin],
 			content_tag(:span, body[highlight_begin...highlight_end], class: 'highlight'),
-			body[highlight_end...to]
+			body[highlight_end...text_end]
 		])
 	end
 
