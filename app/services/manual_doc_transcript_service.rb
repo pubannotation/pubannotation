@@ -14,7 +14,6 @@ class ManualDocTranscriptService
     duration_ms = medium.file.open { |file| (AudioAnalyzer.new(file.path).duration * 1000).round }
     MediaTranscript.new(
       medium:,
-      text: body,
       segments: [{ 'text' => body, 'start_ms' => 0, 'end_ms' => duration_ms }]
     )
   end
