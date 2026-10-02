@@ -1,8 +1,10 @@
 <table style="width:100%">
 <tr>
 	<td class="text">
-		<% if @span %>
-			<div id="body" class="with_hilight"><%= @doc.highlight_span(@span).html_safe %></div>
+		<% if @span && @speech_segment_spans.present? %>
+			<div id="body" class="with_hilight"><%= body_with_speech_segments(@doc.body, @speech_segment_spans, highlight: @span) %></div>
+		<% elsif @span %>
+			<div id="body" class="with_hilight"><%= body_with_highlighted_span(@doc.body, @span) %></div>
 		<% elsif @speech_segment_spans.present? %>
 			<div id="body"><%= body_with_speech_segments(@doc.body, @speech_segment_spans) %></div>
 		<% else %>
