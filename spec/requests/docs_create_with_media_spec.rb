@@ -52,6 +52,61 @@ RSpec.describe 'POST /docs.json', type: :request do
     expect(Doc.last.medium).to eq(medium)
   end
 
+  context 'with an audio medium' do
+    let(:medium) do
+      create(:medium, media_type: :audio, content_type: 'audio/mpeg').tap do |medium|
+        medium.file.attach(
+          io: File.open(Rails.root.join('spec', 'fixtures', 'files', 'test_audio.mp3')),
+          filename: 'test_audio.mp3',
+          content_type: 'audio/mpeg'
+        )
+      end
+    end
+    let(:media_params) { { media: { sourcedb: medium.sourcedb, sourceid: medium.sourceid } } }
+
+    it "creates a media_transcript with the body as one segment spanning the media's duration" do
+      allow(MediaDurationService).to receive(:call).and_return(4_980)
+
+      post '/docs.json', params: params.merge(media_params), headers: headers
+
+      expect(response).to have_http_status(:created)
+      media_transcript = Doc.last.media_transcript
+      expect(media_transcript.medium).to eq(medium)
+      expect(media_transcript.text).to eq('doctor findings')
+      expect(media_transcript.segments).to eq([{ 'text' => 'doctor findings', 'start_ms' => 0, 'end_ms' => 4_980 }])
+    end
+
+    it "does not create the doc when the media's duration cannot be read" do
+      allow(MediaDurationService).to receive(:call).and_raise(MediaDurationService::DurationDetectionError, 'ffprobe failed')
+
+      expect {
+        post '/docs.json', params: params.merge(media_params), headers: headers
+      }.not_to change(Doc, :count)
+
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+  end
+
+  it 'does not create a media_transcript for an audio medium with no attached file' do
+    audio_medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
+
+    post '/docs.json',
+         params: params.merge(media: { sourcedb: audio_medium.sourcedb, sourceid: audio_medium.sourceid }),
+         headers: headers
+
+    expect(response).to have_http_status(:created)
+    expect(Doc.last.media_transcript).to be_nil
+  end
+
+  it 'does not create a media_transcript for an image medium' do
+    post '/docs.json',
+         params: params.merge(media: { sourcedb: medium.sourcedb, sourceid: medium.sourceid }),
+         headers: headers
+
+    expect(response).to have_http_status(:created)
+    expect(Doc.last.media_transcript).to be_nil
+  end
+
   it 'creates a doc without a medium when media is omitted' do
     post '/docs.json', params: params, headers: headers
 
