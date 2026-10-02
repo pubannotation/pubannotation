@@ -18,6 +18,10 @@ class Medium < ApplicationRecord
 
   before_validation :set_media_type_from_content_type
 
+  def transcribable?
+    audio? || video?
+  end
+
   validates :sourcedb, presence: true
   validates :sourceid, presence: true, uniqueness: { scope: :sourcedb }
   validates :media_type, presence: true

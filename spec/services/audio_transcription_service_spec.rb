@@ -121,7 +121,7 @@ RSpec.describe AudioTranscriptionService do
       it 'raises instead of returning an unclamped transcription' do
         expect {
           described_class.new(audio_path).call
-        }.to raise_error(AudioTranscriptionService::DurationDetectionError, /Failed to determine audio duration via ffprobe/)
+        }.to raise_error(MediaDurationService::DurationDetectionError, /Failed to determine media duration via ffprobe/)
       end
     end
 
@@ -138,7 +138,7 @@ RSpec.describe AudioTranscriptionService do
       it 'raises instead of collapsing the offsets to 0' do
         expect {
           described_class.new(audio_path).call
-        }.to raise_error(AudioTranscriptionService::DurationDetectionError)
+        }.to raise_error(MediaDurationService::DurationDetectionError)
       end
     end
 
@@ -155,7 +155,7 @@ RSpec.describe AudioTranscriptionService do
       it 'raises instead of misreading a partial number' do
         expect {
           described_class.new(audio_path).call
-        }.to raise_error(AudioTranscriptionService::DurationDetectionError)
+        }.to raise_error(MediaDurationService::DurationDetectionError)
       end
     end
 
@@ -189,7 +189,7 @@ RSpec.describe AudioTranscriptionService do
       it 'raises instead of later raising FloatDomainError from rounding' do
         expect {
           described_class.new(audio_path).call
-        }.to raise_error(AudioTranscriptionService::DurationDetectionError, /ffprobe reported an invalid audio duration/)
+        }.to raise_error(MediaDurationService::DurationDetectionError, /ffprobe reported an invalid media duration/)
       end
     end
 
