@@ -5,6 +5,41 @@ require 'rails_helper'
 RSpec.describe ImageCaptionService do
   let(:image_path) { Rails.root.join('spec', 'fixtures', 'files', 'test_image.png').to_s }
 
+  describe '.available_models' do
+    it 'splits OLLAMA_AVAILABLE_CAPTION_MODELS on commas' do
+      original = ENV['OLLAMA_AVAILABLE_CAPTION_MODELS']
+      ENV['OLLAMA_AVAILABLE_CAPTION_MODELS'] = 'moondream,medgemma:4b'
+
+      expect(described_class.available_models).to eq(['moondream', 'medgemma:4b'])
+    ensure
+      ENV['OLLAMA_AVAILABLE_CAPTION_MODELS'] = original
+    end
+
+    it 'defaults to moondream when unset' do
+      original = ENV['OLLAMA_AVAILABLE_CAPTION_MODELS']
+      ENV.delete('OLLAMA_AVAILABLE_CAPTION_MODELS')
+
+      expect(described_class.available_models).to eq(['moondream'])
+    ensure
+      ENV['OLLAMA_AVAILABLE_CAPTION_MODELS'] = original
+    end
+  end
+
+  describe '#resolved_model' do
+    it 'returns the given model' do
+      expect(described_class.new(image_path, model: 'medgemma:4b').resolved_model).to eq('medgemma:4b')
+    end
+
+    it 'falls back to OLLAMA_CAPTION_MODEL when no model is given' do
+      original = ENV['OLLAMA_CAPTION_MODEL']
+      ENV['OLLAMA_CAPTION_MODEL'] = 'moondream'
+
+      expect(described_class.new(image_path).resolved_model).to eq('moondream')
+    ensure
+      ENV['OLLAMA_CAPTION_MODEL'] = original
+    end
+  end
+
   describe '#call' do
     let(:mock_http)     { instance_double(Net::HTTP) }
     let(:mock_request)  { instance_double(Net::HTTP::Post) }
@@ -28,6 +63,12 @@ RSpec.describe ImageCaptionService do
       it 'returns the generated caption' do
         result = described_class.new(image_path).call
         expect(result).to eq('A chest X-ray image.')
+      end
+
+      it 'uses the given model instead of OLLAMA_CAPTION_MODEL when one is passed' do
+        described_class.new(image_path, model: 'medgemma:4b').call
+
+        expect(mock_request).to have_received(:body=).with(a_string_including('"model":"medgemma:4b"'))
       end
     end
 
