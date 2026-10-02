@@ -188,10 +188,11 @@ class DocsController < ApplicationController
 		end
 
 		@medium = @doc.medium
-		# set_ascii_body rewrites body, invalidating speech_segment_spans' offsets into it.
+		# set_ascii_body rewrites body, invalidating speech_segment_spans' offsets into it. The segments
+		# only work with the media player, which is shown only to users who can access media.
 		if params[:encoding] == 'ascii'
 			@doc.set_ascii_body
-		else
+		elsif current_user&.can_access_media?
 			@speech_segment_spans = @doc.media_transcript&.speech_segment_spans
 		end
 
@@ -240,10 +241,11 @@ class DocsController < ApplicationController
 			end
 
 			@medium = @doc.medium
-			# set_ascii_body rewrites body, invalidating speech_segment_spans' offsets into it.
+			# set_ascii_body rewrites body, invalidating speech_segment_spans' offsets into it. The segments
+			# only work with the media player, which is shown only to users who can access media.
 			if params[:encoding] == 'ascii'
 				@doc.set_ascii_body
-			else
+			elsif current_user&.can_access_media?
 				@speech_segment_spans = @doc.media_transcript&.speech_segment_spans
 			end
 
