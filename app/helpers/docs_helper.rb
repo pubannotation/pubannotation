@@ -142,45 +142,46 @@ module DocsHelper
 	# `body`, with each of `spans` (each a {begin:, end:, start_ms:} hash) wrapped in a <span>
 	# carrying its playback start time, for JS to highlight as media plays.
 	#
-	# With `highlight` ({begin:, end:}), the text it covers is wrapped in .highlight too. Segment
-	# <span>s are kept whole, since JS treats each as one unit, so the highlight is split instead:
-	# one .highlight per piece it overlaps (a segment, or the text between two).
-	def body_with_speech_segments(body, spans, highlight: nil)
+	# With `selected_span` ({begin:, end:}, the span the user selected), the text it covers is wrapped
+	# in .highlight too. Segment <span>s are kept whole, since JS treats each as one unit, so the
+	# selected span is split instead: one .highlight per piece it overlaps (a segment, or the text
+	# between two).
+	def body_with_speech_segments(body, spans, selected_span: nil)
 		return body if spans.blank?
 
 		cursor = 0
 		wrapped = spans.flat_map do |span|
-			text_before = highlighted_text(body, cursor, span[:begin], highlight)
+			text_before = highlighted_text(body, cursor, span[:begin], selected_span)
 			cursor = span[:end]
-			[text_before, speech_segment_span_tag(body, span, highlight)]
+			[text_before, speech_segment_span_tag(body, span, selected_span)]
 		end
-		safe_join(wrapped + [highlighted_text(body, cursor, body.length, highlight)])
+		safe_join(wrapped + [highlighted_text(body, cursor, body.length, selected_span)])
 	end
 
 	private
 
-	def speech_segment_span_tag(body, span, highlight)
-		content_tag(:span, highlighted_text(body, span[:begin], span[:end], highlight),
+	def speech_segment_span_tag(body, span, selected_span)
+		content_tag(:span, highlighted_text(body, span[:begin], span[:end], selected_span),
 		            class: 'speech-segment', data: { start_ms: span[:start_ms] })
 	end
 
-	# body[from...to], with just the part that overlaps `highlight` wrapped in a .highlight <span>.
+	# body[from...to], with just the part that overlaps `selected_span` wrapped in a .highlight <span>.
 	# Returned as-is when they don't overlap, so no empty .highlight is left for JS to scroll to.
 	# The end is capped at body's length, since the segments can run past a body edited after they
 	# were transcribed.
-	def highlighted_text(body, from, to, highlight)
+	def highlighted_text(body, from, to, selected_span)
 		text_end = [to, body.length].min
 		text = body[from...text_end]
-		return text if highlight.nil? || from >= text_end
+		return text if selected_span.nil? || from >= text_end
 
-		highlight_begin = highlight[:begin].clamp(from, text_end)
-		highlight_end = highlight[:end].clamp(from, text_end)
-		return text if highlight_begin >= highlight_end
+		selected_begin = selected_span[:begin].clamp(from, text_end)
+		selected_end = selected_span[:end].clamp(from, text_end)
+		return text if selected_begin >= selected_end
 
 		safe_join([
-			body[from...highlight_begin],
-			content_tag(:span, body[highlight_begin...highlight_end], class: 'highlight'),
-			body[highlight_end...text_end]
+			body[from...selected_begin],
+			content_tag(:span, body[selected_begin...selected_end], class: 'highlight'),
+			body[selected_end...text_end]
 		])
 	end
 

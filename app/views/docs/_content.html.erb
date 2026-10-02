@@ -2,7 +2,7 @@
 <tr>
 	<td class="text">
 		<% if @span && @speech_segment_spans.present? %>
-			<div id="body" class="with_hilight"><%= body_with_speech_segments(@doc.body, @speech_segment_spans, highlight: @span) %></div>
+			<div id="body" class="with_hilight"><%= body_with_speech_segments(@doc.body, @speech_segment_spans, selected_span: @span) %></div>
 		<% elsif @span %>
 			<div id="body" class="with_hilight"><%= @doc.highlight_span(@span).html_safe %></div>
 		<% elsif @speech_segment_spans.present? %>
