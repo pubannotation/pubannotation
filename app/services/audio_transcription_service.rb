@@ -1,6 +1,5 @@
 class AudioTranscriptionService
   class TranscriptionError < StandardError; end
-  class DurationDetectionError < StandardError; end
 
   # Each line of whisper-cli's `-np` output looks like:
   #   [00:00:00.000 --> 00:00:03.500]   Ask not what your country
@@ -22,7 +21,9 @@ class AudioTranscriptionService
   def call
     raise ArgumentError, "Audio file appears to be silent." if AudioSilenceDetector.new(@audio_path).silent?
 
-    parse_segments(transcribe, audio_duration_ms)
+    # Whisper pads the last segment of a chunk out to its 30s processing window rather than
+    # the audio's actual end, so offsets are clamped against ffprobe's duration.
+    parse_segments(transcribe, MediaDurationService.call(@audio_path))
   end
 
   private
@@ -36,28 +37,6 @@ class AudioTranscriptionService
     raise TranscriptionError, "Whisper transcription failed (status #{status.exitstatus}): #{stderr.strip}" unless status.success?
 
     stdout
-  end
-
-  # Whisper pads the last segment of a chunk out to its 30s processing window rather than
-  # the audio's actual end, so offsets are clamped against ffprobe's duration. `Float()` is
-  # used instead of `String#to_f` because `to_f` silently accepts garbage like "N/A" or
-  # "5abc" as 0.0/5.0 instead of raising, and 0 is truthy in Ruby so a lenient parse wouldn't
-  # even be caught by a nil check; `finite?` additionally guards against a numeric string large
-  # enough to overflow to Infinity when parsed (e.g. "1e400"), which would otherwise raise
-  # FloatDomainError when rounded.
-  def audio_duration_ms
-    stdout, stderr, status = Open3.capture3(
-      'ffprobe', '-v', 'error', '-show_entries', 'format=duration',
-      '-of', 'default=noprint_wrappers=1:nokey=1', @audio_path
-    )
-    raise DurationDetectionError, "Failed to determine audio duration via ffprobe (status #{status.exitstatus}): #{stderr.strip}" unless status.success?
-
-    duration_seconds = Float(stdout.strip)
-    raise DurationDetectionError, "ffprobe reported an invalid audio duration: #{stdout.strip.inspect}" unless duration_seconds.finite? && duration_seconds.positive?
-
-    (duration_seconds * 1000).round
-  rescue ArgumentError => e
-    raise DurationDetectionError, e.message
   end
 
   def parse_segments(stdout, duration_ms)
