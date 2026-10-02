@@ -24,6 +24,19 @@ RSpec.describe DocsHelper, type: :helper do
       )
     end
 
+    it 'drops segments past a shortened body and cuts the one running past its end' do
+      spans = [
+        { begin: 0, end: 5, start_ms: 0 },
+        { begin: 6, end: 11, start_ms: 300 },
+        { begin: 12, end: 17, start_ms: 600 }
+      ]
+
+      expect(helper.body_with_speech_segments('Hello wo', spans)).to eq(
+        '<span class="speech-segment" data-start-ms="0">Hello</span> ' \
+        '<span class="speech-segment" data-start-ms="300">wo</span>'
+      )
+    end
+
     it 'returns the plain body when there are no spans' do
       expect(helper.body_with_speech_segments('Hello world', [])).to eq('Hello world')
       expect(helper.body_with_speech_segments('Hello world', nil)).to eq('Hello world')
@@ -57,6 +70,14 @@ RSpec.describe DocsHelper, type: :helper do
           expect(helper.body_with_speech_segments('Hello wo', spans, selected_span: { begin: 0, end: 3 })).to eq(
             '<span class="speech-segment" data-start-ms="0"><span class="highlight">Hel</span>lo</span> ' \
             '<span class="speech-segment" data-start-ms="300">wo</span>'
+          )
+        end
+
+        it 'still highlights the selected span when every segment is past the shortened body' do
+          spans = [{ begin: 3, end: 8, start_ms: 0 }]
+
+          expect(helper.body_with_speech_segments('Hi', spans, selected_span: { begin: 0, end: 1 })).to eq(
+            '<span class="highlight">H</span>i'
           )
         end
 
