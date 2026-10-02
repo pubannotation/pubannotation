@@ -3,7 +3,7 @@
 	overflow-y: auto;
 	white-space: pre-line;
 
-	.speech-segment.seekable {
+	.speech-segment {
 		cursor: pointer;
 	}
 
