@@ -52,6 +52,22 @@ RSpec.describe DocsHelper, type: :helper do
         )
       end
 
+      context 'when the body is shorter than the segments, e.g. edited after transcription' do
+        it 'renders without raising when the highlight is past the shortened body' do
+          expect(helper.body_with_speech_segments('Hello wo', spans, highlight: { begin: 0, end: 3 })).to eq(
+            '<span class="speech-segment" data-start-ms="0"><span class="highlight">Hel</span>lo</span> ' \
+            '<span class="speech-segment" data-start-ms="300">wo</span>'
+          )
+        end
+
+        it 'highlights only the remaining text of a cut-off segment, with no empty .highlight' do
+          expect(helper.body_with_speech_segments('Hello wo', spans, highlight: { begin: 7, end: 11 })).to eq(
+            '<span class="speech-segment" data-start-ms="0">Hello</span> ' \
+            '<span class="speech-segment" data-start-ms="300">w<span class="highlight">o</span></span>'
+          )
+        end
+      end
+
       it 'HTML-escapes the highlighted text' do
         expect(helper.body_with_speech_segments('<b> & c', [{ begin: 4, end: 7, start_ms: 0 }], highlight: { begin: 0, end: 5 })).to eq(
           '<span class="highlight">&lt;b&gt; </span>' \
