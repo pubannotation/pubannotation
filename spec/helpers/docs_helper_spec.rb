@@ -29,7 +29,7 @@ RSpec.describe DocsHelper, type: :helper do
       expect(helper.body_with_speech_segments('Hello world', nil)).to eq('Hello world')
     end
 
-    context 'with a highlight' do
+    context 'with a selected span' do
       let(:spans) do
         [
           { begin: 0, end: 5, start_ms: 0 },
@@ -37,15 +37,15 @@ RSpec.describe DocsHelper, type: :helper do
         ]
       end
 
-      it 'wraps the highlighted text inside a segment in a .highlight <span>' do
-        expect(helper.body_with_speech_segments('Hello world', spans, highlight: { begin: 1, end: 4 })).to eq(
+      it 'wraps the selected text inside a segment in a .highlight <span>' do
+        expect(helper.body_with_speech_segments('Hello world', spans, selected_span: { begin: 1, end: 4 })).to eq(
           '<span class="speech-segment" data-start-ms="0">H<span class="highlight">ell</span>o</span> ' \
           '<span class="speech-segment" data-start-ms="300">world</span>'
         )
       end
 
-      it 'splits a highlight that crosses segments at their boundaries, including the text between them' do
-        expect(helper.body_with_speech_segments('Hello world', spans, highlight: { begin: 3, end: 8 })).to eq(
+      it 'splits a selected span that crosses segments at their boundaries, including the text between them' do
+        expect(helper.body_with_speech_segments('Hello world', spans, selected_span: { begin: 3, end: 8 })).to eq(
           '<span class="speech-segment" data-start-ms="0">Hel<span class="highlight">lo</span></span>' \
           '<span class="highlight"> </span>' \
           '<span class="speech-segment" data-start-ms="300"><span class="highlight">wo</span>rld</span>'
@@ -53,23 +53,23 @@ RSpec.describe DocsHelper, type: :helper do
       end
 
       context 'when the body is shorter than the segments, e.g. edited after transcription' do
-        it 'renders without raising when the highlight is past the shortened body' do
-          expect(helper.body_with_speech_segments('Hello wo', spans, highlight: { begin: 0, end: 3 })).to eq(
+        it 'renders without raising when the selected span is past the shortened body' do
+          expect(helper.body_with_speech_segments('Hello wo', spans, selected_span: { begin: 0, end: 3 })).to eq(
             '<span class="speech-segment" data-start-ms="0"><span class="highlight">Hel</span>lo</span> ' \
             '<span class="speech-segment" data-start-ms="300">wo</span>'
           )
         end
 
         it 'highlights only the remaining text of a cut-off segment, with no empty .highlight' do
-          expect(helper.body_with_speech_segments('Hello wo', spans, highlight: { begin: 7, end: 11 })).to eq(
+          expect(helper.body_with_speech_segments('Hello wo', spans, selected_span: { begin: 7, end: 11 })).to eq(
             '<span class="speech-segment" data-start-ms="0">Hello</span> ' \
             '<span class="speech-segment" data-start-ms="300">w<span class="highlight">o</span></span>'
           )
         end
       end
 
-      it 'HTML-escapes the highlighted text' do
-        expect(helper.body_with_speech_segments('<b> & c', [{ begin: 4, end: 7, start_ms: 0 }], highlight: { begin: 0, end: 5 })).to eq(
+      it 'HTML-escapes the selected text' do
+        expect(helper.body_with_speech_segments('<b> & c', [{ begin: 4, end: 7, start_ms: 0 }], selected_span: { begin: 0, end: 5 })).to eq(
           '<span class="highlight">&lt;b&gt; </span>' \
           '<span class="speech-segment" data-start-ms="0"><span class="highlight">&amp;</span> c</span>'
         )
