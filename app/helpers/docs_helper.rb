@@ -147,7 +147,11 @@ module DocsHelper
 	# selected span is split instead: one .highlight per piece it overlaps (a segment, or the text
 	# between two).
 	def body_with_speech_segments(body, spans, selected_span: nil)
-		return body if spans.blank?
+		# Segments can run past a body edited after they were transcribed, so fit them to it first.
+		spans = spans.to_a.filter_map do |span|
+			span.merge(end: [span[:end], body.length].min) if span[:begin] < body.length
+		end
+		return body if spans.empty? && selected_span.nil?
 
 		cursor = 0
 		wrapped = spans.flat_map do |span|
@@ -167,21 +171,18 @@ module DocsHelper
 
 	# body[from...to], with just the part that overlaps `selected_span` wrapped in a .highlight <span>.
 	# Returned as-is when they don't overlap, so no empty .highlight is left for JS to scroll to.
-	# The end is capped at body's length, since the segments can run past a body edited after they
-	# were transcribed.
 	def highlighted_text(body, from, to, selected_span)
-		text_end = [to, body.length].min
-		text = body[from...text_end]
-		return text if selected_span.nil? || from >= text_end
+		text = body[from...to]
+		return text if selected_span.nil?
 
-		selected_begin = selected_span[:begin].clamp(from, text_end)
-		selected_end = selected_span[:end].clamp(from, text_end)
+		selected_begin = selected_span[:begin].clamp(from, to)
+		selected_end = selected_span[:end].clamp(from, to)
 		return text if selected_begin >= selected_end
 
 		safe_join([
 			body[from...selected_begin],
 			content_tag(:span, body[selected_begin...selected_end], class: 'highlight'),
-			body[selected_end...text_end]
+			body[selected_end...to]
 		])
 	end
 
