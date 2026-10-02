@@ -34,7 +34,7 @@ class CollectionsController < ApplicationController
 		rescue => e
 			respond_to do |format|
 				format.html {redirect_to collections_path, :notice => e.message}
-				format.json {head :unprocessable_entity}
+				format.json {head :unprocessable_content}
 			end
 		end
 	end
@@ -55,7 +55,7 @@ class CollectionsController < ApplicationController
 				format.json { render json: @collection, status: :created, location: @collection }
 			else
 				format.html { render action: "new" }
-				format.json { render json: @collection.errors, status: :unprocessable_entity }
+				format.json { render json: @collection.errors, status: :unprocessable_content }
 			end
 		end
 	end
@@ -74,7 +74,7 @@ class CollectionsController < ApplicationController
 				format.json { head :no_content }
 			else
 				format.html { render action: "edit" }
-				format.json { render json: @collection.errors, status: :unprocessable_entity }
+				format.json { render json: @collection.errors, status: :unprocessable_content }
 			end
 		end
 	end
