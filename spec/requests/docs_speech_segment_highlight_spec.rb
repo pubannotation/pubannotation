@@ -72,6 +72,19 @@ RSpec.describe 'GET /docs/:sourcedb/:sourceid speech segment highlighting', type
       )
     end
 
+    it 'renders a span page whose body was shortened after transcription' do
+      doc.update_column(:body, 'Hello wo')
+
+      get "/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}/spans/0-3"
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include(
+        '<div id="body" class="with_hilight">' \
+        '<span class="speech-segment" data-start-ms="0"><span class="highlight">Hel</span>lo</span> ' \
+        '<span class="speech-segment" data-start-ms="300">wo</span></div>'
+      )
+    end
+
     it 'skips speech-segment wrapping when encoding=ascii, since the offsets no longer match set_ascii_body\'s rewritten text' do
       get "/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}", params: { encoding: 'ascii' }
 
