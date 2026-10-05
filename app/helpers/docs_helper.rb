@@ -154,19 +154,11 @@ module DocsHelper
 		content_tag(:div, body, id: 'body', class: ('with_hilight' if selected_span))
 	end
 
-	# `body`, with each of `spans` (each a {begin:, end:, start_ms:} hash) wrapped in a <span>
-	# carrying its playback start time, for JS to highlight as media plays.
-	#
-	# With `selected_span` ({begin:, end:}, the span the user selected), the text it covers is wrapped
-	# in .highlight too. Segment <span>s are kept whole, since JS treats each as one unit, so the
-	# selected span is split instead: one .highlight per piece it overlaps (a segment, or the text
-	# between two).
+	# `body` with each of `spans` (fit to it, as Doc#speech_segment_spans returns them) wrapped in a
+	# .speech-segment <span>, and the text in `selected_span` wrapped in .highlight. Segment <span>s
+	# stay whole, since JS treats each as one unit, so the highlight is split at their boundaries.
 	def body_with_speech_segments(body, spans, selected_span: nil)
-		# Segments can run past a body edited after they were transcribed, so fit them to it first.
-		spans = spans.to_a.filter_map do |span|
-			span.merge(end: [span[:end], body.length].min) if span[:begin] < body.length
-		end
-		return body if spans.empty? && selected_span.nil?
+		return body if spans.blank?
 
 		cursor = 0
 		wrapped = spans.flat_map do |span|
