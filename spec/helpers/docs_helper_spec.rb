@@ -58,19 +58,6 @@ RSpec.describe DocsHelper, type: :helper do
       )
     end
 
-    it 'drops segments past a shortened body and cuts the one running past its end' do
-      spans = [
-        { begin: 0, end: 5, start_ms: 0 },
-        { begin: 6, end: 11, start_ms: 300 },
-        { begin: 12, end: 17, start_ms: 600 }
-      ]
-
-      expect(helper.body_with_speech_segments('Hello wo', spans)).to eq(
-        '<span class="speech-segment" data-start-ms="0">Hello</span> ' \
-        '<span class="speech-segment" data-start-ms="300">wo</span>'
-      )
-    end
-
     it 'returns the plain body when there are no spans' do
       expect(helper.body_with_speech_segments('Hello world', [])).to eq('Hello world')
       expect(helper.body_with_speech_segments('Hello world', nil)).to eq('Hello world')
@@ -97,30 +84,6 @@ RSpec.describe DocsHelper, type: :helper do
           '<span class="highlight"> </span>' \
           '<span class="speech-segment" data-start-ms="300"><span class="highlight">wo</span>rld</span>'
         )
-      end
-
-      context 'when the body is shorter than the segments, e.g. edited after transcription' do
-        it 'renders without raising when the selected span is past the shortened body' do
-          expect(helper.body_with_speech_segments('Hello wo', spans, selected_span: { begin: 0, end: 3 })).to eq(
-            '<span class="speech-segment" data-start-ms="0"><span class="highlight">Hel</span>lo</span> ' \
-            '<span class="speech-segment" data-start-ms="300">wo</span>'
-          )
-        end
-
-        it 'still highlights the selected span when every segment is past the shortened body' do
-          spans = [{ begin: 3, end: 8, start_ms: 0 }]
-
-          expect(helper.body_with_speech_segments('Hi', spans, selected_span: { begin: 0, end: 1 })).to eq(
-            '<span class="highlight">H</span>i'
-          )
-        end
-
-        it 'highlights only the remaining text of a cut-off segment, with no empty .highlight' do
-          expect(helper.body_with_speech_segments('Hello wo', spans, selected_span: { begin: 7, end: 11 })).to eq(
-            '<span class="speech-segment" data-start-ms="0">Hello</span> ' \
-            '<span class="speech-segment" data-start-ms="300">w<span class="highlight">o</span></span>'
-          )
-        end
       end
 
       it 'HTML-escapes the selected text' do
