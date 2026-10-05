@@ -40,4 +40,39 @@ RSpec.describe Doc, type: :model do
       end
     end
   end
+
+  describe 'body immutability with audio or video' do
+    { audio: 'audio/mpeg', video: 'video/mp4' }.each do |media_type, content_type|
+      it "cannot change the body with an #{media_type} medium" do
+        doc = create(:doc, medium: create(:medium, media_type:, content_type:))
+        doc.body = 'Changed body'
+
+        expect(doc).not_to be_valid
+        expect(doc.errors[:base]).to include('Body cannot be changed for a document with audio or video')
+      end
+    end
+
+    it 'can still change other attributes with an audio medium' do
+      doc = create(:doc, medium: create(:medium, media_type: :audio, content_type: 'audio/mpeg'))
+      doc.source = 'https://example.com/changed'
+
+      expect(doc).to be_valid
+    end
+
+    it 'can change the body with an image medium, even with a media transcript' do
+      medium = create(:medium, media_type: :image, content_type: 'image/png')
+      doc = create(:doc, medium:)
+      MediaTranscript.create!(medium:, doc:, text: doc.body)
+      doc.reload.body = 'Changed body'
+
+      expect(doc).to be_valid
+    end
+
+    it 'can change the body without a medium' do
+      doc = create(:doc)
+      doc.body = 'Changed body'
+
+      expect(doc).to be_valid
+    end
+  end
 end

@@ -72,6 +72,7 @@ class Doc < ActiveRecord::Base
 	has_one :media_transcript, dependent: :destroy
 
 	validate :media_reference_immutable, on: :update
+	validate :body_immutable_with_timed_media, on: :update
 
 	validates :body,     presence: true
 	validates :sourcedb, presence: true
@@ -1062,6 +1063,12 @@ class Doc < ActiveRecord::Base
 
 	def update_all_references_in_sentences = sentences.each { _1.update_references denotations }
 
+	# Whether the body is tied to its audio/video medium: its transcript's segments are timed against
+	# the body as it was transcribed, so changing the body would leave them out of step with it.
+	def body_tied_to_medium?
+		medium.present? && (medium.audio? || medium.video?)
+	end
+
 	private
 
 	# default sort order
@@ -1125,6 +1132,12 @@ class Doc < ActiveRecord::Base
 	def media_reference_immutable
 		if medium_id_changed?
 			errors.add(:base, 'Media reference cannot be changed after creation')
+		end
+	end
+
+	def body_immutable_with_timed_media
+		if body_changed? && body_tied_to_medium?
+			errors.add(:base, 'Body cannot be changed for a document with audio or video')
 		end
 	end
 end
