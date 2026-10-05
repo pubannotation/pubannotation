@@ -154,14 +154,15 @@ module DocsHelper
 		content_tag(:div, body, id: 'body', class: ('with_hilight' if selected_span))
 	end
 
-	# `body` with each of `spans` (fit to it, as Doc#speech_segment_spans returns them) wrapped in a
-	# .speech-segment <span>, and the text in `selected_span` wrapped in .highlight. Segment <span>s
-	# stay whole, since JS treats each as one unit, so the highlight is split at their boundaries.
-	def body_with_speech_segments(body, spans, selected_span: nil)
-		return body if spans.blank?
+	# `body` with each of `speech_segment_spans` (fit to it, as Doc#speech_segment_spans returns them)
+	# wrapped in a .speech-segment <span>, and the text in `selected_span` wrapped in .highlight.
+	# Segment <span>s stay whole, since JS treats each as one unit, so the highlight is split at their
+	# boundaries.
+	def body_with_speech_segments(body, speech_segment_spans, selected_span: nil)
+		return body if speech_segment_spans.blank?
 
 		cursor = 0
-		wrapped = spans.flat_map do |span|
+		wrapped = speech_segment_spans.flat_map do |span|
 			text_before = highlighted_text(body, cursor, span[:begin], selected_span)
 			segment_text = highlighted_text(body, span[:begin], span[:end], selected_span)
 			cursor = span[:end]
