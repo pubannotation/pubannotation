@@ -46,7 +46,7 @@ class ProjectsController < ApplicationController
 		rescue => e
 			respond_to do |format|
 				format.html {redirect_to home_path, :notice => e.message}
-				format.json {head :unprocessable_entity}
+				format.json {head :unprocessable_content}
 			end
 		end
 	end
@@ -95,7 +95,7 @@ class ProjectsController < ApplicationController
 				format.json { render json: @project, status: :created, location: @project }
 			else
 				format.html { render action: "new" }
-				format.json { render json: @project.errors, status: :unprocessable_entity }
+				format.json { render json: @project.errors, status: :unprocessable_content }
 			end
 		end
 	end
@@ -115,7 +115,7 @@ class ProjectsController < ApplicationController
 				format.json { head :no_content }
 			else
 				format.html { render action: "edit" }
-				format.json { render json: @project.errors, status: :unprocessable_entity }
+				format.json { render json: @project.errors, status: :unprocessable_content }
 			end
 		end
 	end
@@ -326,8 +326,8 @@ class ProjectsController < ApplicationController
 		rescue => e
 			respond_to do |format|
 				format.html {redirect_to project_path(project.name), notice: e.message}
-				format.json {render json:{message: e.message}, status: :unprocessable_entity}
-				format.txt  {render plain:e.message, status: :unprocessable_entity}
+				format.json {render json:{message: e.message}, status: :unprocessable_content}
+				format.txt  {render plain:e.message, status: :unprocessable_content}
 			end
 		end
 	end
@@ -348,8 +348,8 @@ class ProjectsController < ApplicationController
 		rescue => e
 			respond_to do |format|
 				format.html {redirect_to project_path(project.name), notice: e.message}
-				format.json {render json:{message: e.message}, status: :unprocessable_entity}
-				format.txt  {render plain:e.message, status: :unprocessable_entity}
+				format.json {render json:{message: e.message}, status: :unprocessable_content}
+				format.txt  {render plain:e.message, status: :unprocessable_content}
 			end
 		end
 	end
