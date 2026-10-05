@@ -3,6 +3,40 @@
 require 'rails_helper'
 
 RSpec.describe DocsHelper, type: :helper do
+  describe '#doc_body_tag' do
+    let(:doc) { build(:doc, body: 'Hello world') }
+    let(:spans) do
+      [
+        { begin: 0, end: 5, start_ms: 0 },
+        { begin: 6, end: 11, start_ms: 300 }
+      ]
+    end
+
+    it 'renders the plain, HTML-escaped body without speech segments or a selected span' do
+      expect(helper.doc_body_tag(build(:doc, body: '<b>Hi</b>'))).to eq('<div id="body">&lt;b&gt;Hi&lt;/b&gt;</div>')
+    end
+
+    it 'wraps the body in speech segments' do
+      expect(helper.doc_body_tag(doc, speech_segment_spans: spans)).to eq(
+        '<div id="body"><span class="speech-segment" data-start-ms="0">Hello</span> ' \
+        '<span class="speech-segment" data-start-ms="300">world</span></div>'
+      )
+    end
+
+    it 'highlights the selected span inside the speech segments, marking the <div> with_hilight' do
+      expect(helper.doc_body_tag(doc, speech_segment_spans: spans, selected_span: { begin: 0, end: 5 })).to eq(
+        '<div id="body" class="with_hilight"><span class="speech-segment" data-start-ms="0">' \
+        '<span class="highlight">Hello</span></span> <span class="speech-segment" data-start-ms="300">world</span></div>'
+      )
+    end
+
+    it 'highlights the selected span without speech segments, marking the <div> with_hilight' do
+      expect(helper.doc_body_tag(doc, selected_span: { begin: 0, end: 5 })).to eq(
+        '<div id="body" class="with_hilight">' + helper.body_with_highlighted_span(doc.body, { begin: 0, end: 5 }) + '</div>'
+      )
+    end
+  end
+
   describe '#body_with_speech_segments' do
     it "wraps each span's range in a <span> carrying its start_ms" do
       spans = [
