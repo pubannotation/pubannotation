@@ -163,8 +163,9 @@ module DocsHelper
 		cursor = 0
 		wrapped = spans.flat_map do |span|
 			text_before = highlighted_text(body, cursor, span[:begin], selected_span)
+			segment_text = highlighted_text(body, span[:begin], span[:end], selected_span)
 			cursor = span[:end]
-			[text_before, speech_segment_span_tag(body, span, selected_span)]
+			[text_before, speech_segment_span_tag(segment_text, span[:start_ms])]
 		end
 		safe_join(wrapped + [highlighted_text(body, cursor, body.length, selected_span)])
 	end
@@ -183,9 +184,8 @@ module DocsHelper
 
 	private
 
-	def speech_segment_span_tag(body, span, selected_span)
-		content_tag(:span, highlighted_text(body, span[:begin], span[:end], selected_span),
-		            class: 'speech-segment', data: { start_ms: span[:start_ms] })
+	def speech_segment_span_tag(text, start_ms)
+		content_tag(:span, text, class: 'speech-segment', data: { start_ms: })
 	end
 
 	# body[from...to], with just the part that overlaps `selected_span` wrapped in a .highlight <span>.
