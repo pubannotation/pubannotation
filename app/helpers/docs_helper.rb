@@ -139,6 +139,21 @@ module DocsHelper
 		end
 	end
 
+	# The Doc's body as the #body <div>: wrapped in speech segments when there are any, with the
+	# selected span highlighted when there is one.
+	def doc_body_tag(doc, speech_segment_spans: nil, selected_span: nil)
+		body =
+			if speech_segment_spans.present?
+				body_with_speech_segments(doc.body, speech_segment_spans, selected_span:)
+			elsif selected_span
+				body_with_highlighted_span(doc.body, selected_span)
+			else
+				doc.body
+			end
+
+		content_tag(:div, body, id: 'body', class: ('with_hilight' if selected_span))
+	end
+
 	# `body`, with each of `spans` (each a {begin:, end:, start_ms:} hash) wrapped in a <span>
 	# carrying its playback start time, for JS to highlight as media plays.
 	#
