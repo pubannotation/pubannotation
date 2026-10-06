@@ -425,9 +425,10 @@ class DocsController < ApplicationController
 		@doc = Doc.find_by(id: params[:id])
 
 		params = doc_params
-		text = params.delete(:text)
-		text&.gsub!(/\r\n/, "\n")
-		is_success = @doc.update(params.merge(body: text))
+		submitted_text = params.delete(:text)&.gsub(/\r\n/, "\n")
+		# Keep the stored body when only its line endings differ (browsers submit CRLF).
+		body = submitted_text == @doc.body.gsub(/\r\n/, "\n") ? @doc.body : submitted_text
+		is_success = @doc.update(params.merge(body:))
 
 		respond_to do |format|
 			if is_success

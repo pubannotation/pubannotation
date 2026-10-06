@@ -37,6 +37,18 @@ RSpec.describe 'Editing a doc with audio or video', type: :request do
       expect(doc.reload.source).to eq('https://example.com/changed')
     end
 
+    it 'accepts a metadata-only edit to a body stored with CRLF line endings, keeping the body as stored' do
+      doc.update_column(:body, "Hello\r\nworld")
+
+      put doc_path(doc, format: :json),
+          params: { doc: { text: "Hello\r\nworld", source: 'https://example.com/changed' } }
+
+      expect(response).to have_http_status(:no_content)
+      doc.reload
+      expect(doc.source).to eq('https://example.com/changed')
+      expect(doc.body).to eq("Hello\r\nworld")
+    end
+
     it 'rejects a body change' do
       put doc_path(doc, format: :json), params: { doc: { text: 'Changed body' } }
 
