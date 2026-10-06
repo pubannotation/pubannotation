@@ -1,5 +1,5 @@
 class MediaTextGenerationService
-  def initialize(medium, caption_model: nil)
+  def initialize(medium, caption_model:)
     @medium = medium
     @caption_model = caption_model
   end

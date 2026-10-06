@@ -50,13 +50,13 @@ RSpec.describe ImageCaptionService do
       end
 
       it 'returns the generated caption' do
-        result = described_class.new(image_path).call
+        result = described_class.new(image_path, model: 'moondream').call
         expect(result).to eq('A chest X-ray image.')
       end
 
-      it 'uses the default model when none is passed' do
+      it 'uses the default model when given none' do
         with_env('OLLAMA_AVAILABLE_CAPTION_MODELS' => 'moondream,medgemma:4b') do
-          described_class.new(image_path).call
+          described_class.new(image_path, model: nil).call
         end
 
         expect(mock_request).to have_received(:body=).with(a_string_including('"model":"moondream"'))
@@ -84,7 +84,7 @@ RSpec.describe ImageCaptionService do
       end
 
       it 'buffers the partial chunks and parses the complete line' do
-        result = described_class.new(image_path).call
+        result = described_class.new(image_path, model: 'moondream').call
         expect(result).to eq('A chest X-ray image.')
       end
     end
@@ -97,7 +97,7 @@ RSpec.describe ImageCaptionService do
 
       it 'raises an error' do
         expect {
-          described_class.new(image_path).call
+          described_class.new(image_path, model: 'moondream').call
         }.to raise_error('Ollama request failed (status 500)')
       end
     end
@@ -109,7 +109,7 @@ RSpec.describe ImageCaptionService do
 
       it 'raises an error' do
         expect {
-          described_class.new(image_path).call
+          described_class.new(image_path, model: 'moondream').call
         }.to raise_error(StandardError, 'Connection refused')
       end
     end

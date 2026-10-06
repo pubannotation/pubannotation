@@ -10,7 +10,7 @@ class ImageCaptionService
     available_models.first
   end
 
-  def initialize(image_path, model: nil)
+  def initialize(image_path, model:)
     @image_path = image_path
     @model = model
   end

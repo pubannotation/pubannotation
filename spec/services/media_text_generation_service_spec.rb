@@ -38,7 +38,7 @@ RSpec.describe MediaTextGenerationService do
       end
 
       it 'returns an unsaved MediaTranscript with the caption as its text and no segments' do
-        media_transcript = described_class.new(image_medium).call
+        media_transcript = described_class.new(image_medium, caption_model: 'moondream').call
 
         expect(media_transcript).not_to be_persisted
         expect(media_transcript.medium).to eq(image_medium)
@@ -63,7 +63,7 @@ RSpec.describe MediaTextGenerationService do
       end
 
       it 'returns an unsaved MediaTranscript with the speech text and the raw segments' do
-        media_transcript = described_class.new(audio_medium).call
+        media_transcript = described_class.new(audio_medium, caption_model: 'moondream').call
 
         expect(media_transcript).not_to be_persisted
         expect(media_transcript.medium).to eq(audio_medium)
@@ -80,7 +80,7 @@ RSpec.describe MediaTextGenerationService do
         end
 
         it 'sets text from speech segments only, while keeping all segments' do
-          media_transcript = described_class.new(audio_medium).call
+          media_transcript = described_class.new(audio_medium, caption_model: 'moondream').call
 
           expect(media_transcript.text).to eq('Welcome to the conference.')
           expect(media_transcript.segments).to eq(segments)
@@ -98,7 +98,7 @@ RSpec.describe MediaTextGenerationService do
       end
 
       it 'returns an unsaved MediaTranscript with the speech text and the raw segments' do
-        media_transcript = described_class.new(video_medium).call
+        media_transcript = described_class.new(video_medium, caption_model: 'moondream').call
 
         expect(media_transcript).not_to be_persisted
         expect(media_transcript.medium).to eq(video_medium)
@@ -113,7 +113,7 @@ RSpec.describe MediaTextGenerationService do
         allow(medium).to receive_messages(image?: false, audio?: false, video?: false, media_type: nil)
 
         expect {
-          described_class.new(medium).call
+          described_class.new(medium, caption_model: 'moondream').call
         }.to raise_error(ArgumentError, /Unsupported media type/)
       end
     end
@@ -123,7 +123,7 @@ RSpec.describe MediaTextGenerationService do
 
       it 'raises' do
         expect {
-          described_class.new(medium_without_file).call
+          described_class.new(medium_without_file, caption_model: 'moondream').call
         }.to raise_error(ArgumentError, /no attached file/)
       end
     end
