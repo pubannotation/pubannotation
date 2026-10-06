@@ -33,8 +33,8 @@ RSpec.describe 'DocGenerationsController', type: :request do
         expect(response).to have_http_status(:ok)
       end
 
-      it 'lists the default caption model first, so the form preselects it' do
-        with_env('OLLAMA_CAPTION_MODEL' => 'medgemma:4b', 'OLLAMA_AVAILABLE_CAPTION_MODELS' => 'moondream,medgemma:4b') do
+      it 'offers OLLAMA_AVAILABLE_CAPTION_MODELS in order, so the form preselects the first as the default' do
+        with_env('OLLAMA_AVAILABLE_CAPTION_MODELS' => 'medgemma:4b,moondream') do
           get new_project_doc_generation_path(project.name)
         end
 
@@ -87,7 +87,7 @@ RSpec.describe 'DocGenerationsController', type: :request do
       end
 
       it 'passes an available caption model to the job' do
-        with_env('OLLAMA_CAPTION_MODEL' => 'moondream', 'OLLAMA_AVAILABLE_CAPTION_MODELS' => 'moondream,medgemma:4b') do
+        with_env('OLLAMA_AVAILABLE_CAPTION_MODELS' => 'moondream,medgemma:4b') do
           expect {
             post project_doc_generations_path(project.name),
                  params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, caption_model: 'medgemma:4b' }
@@ -96,7 +96,7 @@ RSpec.describe 'DocGenerationsController', type: :request do
       end
 
       it 'passes nil to the job instead of a caption model that is not available' do
-        with_env('OLLAMA_CAPTION_MODEL' => 'moondream', 'OLLAMA_AVAILABLE_CAPTION_MODELS' => 'moondream,medgemma:4b') do
+        with_env('OLLAMA_AVAILABLE_CAPTION_MODELS' => 'moondream,medgemma:4b') do
           expect {
             post project_doc_generations_path(project.name),
                  params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, caption_model: 'llava:34b' }

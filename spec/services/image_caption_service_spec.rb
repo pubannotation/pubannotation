@@ -7,30 +7,24 @@ RSpec.describe ImageCaptionService do
 
   describe '.available_models' do
     it 'splits OLLAMA_AVAILABLE_CAPTION_MODELS on commas' do
-      with_env('OLLAMA_AVAILABLE_CAPTION_MODELS' => 'moondream,medgemma:4b', 'OLLAMA_CAPTION_MODEL' => 'moondream') do
+      with_env('OLLAMA_AVAILABLE_CAPTION_MODELS' => 'moondream,medgemma:4b') do
         expect(described_class.available_models).to eq(['moondream', 'medgemma:4b'])
       end
     end
 
-    it 'puts OLLAMA_CAPTION_MODEL first, adding it when OLLAMA_AVAILABLE_CAPTION_MODELS lacks it' do
-      with_env('OLLAMA_AVAILABLE_CAPTION_MODELS' => 'moondream,medgemma:4b', 'OLLAMA_CAPTION_MODEL' => 'medgemma:4b') do
-        expect(described_class.available_models).to eq(['medgemma:4b', 'moondream'])
-      end
-
-      with_env('OLLAMA_AVAILABLE_CAPTION_MODELS' => 'moondream', 'OLLAMA_CAPTION_MODEL' => 'medgemma:4b') do
-        expect(described_class.available_models).to eq(['medgemma:4b', 'moondream'])
+    it 'defaults to moondream when unset or blank' do
+      [nil, ''].each do |value|
+        with_env('OLLAMA_AVAILABLE_CAPTION_MODELS' => value) do
+          expect(described_class.available_models).to eq(['moondream'])
+        end
       end
     end
+  end
 
-    it 'falls back to OLLAMA_CAPTION_MODEL when unset' do
-      with_env('OLLAMA_AVAILABLE_CAPTION_MODELS' => nil, 'OLLAMA_CAPTION_MODEL' => 'medgemma:4b') do
-        expect(described_class.available_models).to eq(['medgemma:4b'])
-      end
-    end
-
-    it 'defaults to moondream when neither is set' do
-      with_env('OLLAMA_AVAILABLE_CAPTION_MODELS' => nil, 'OLLAMA_CAPTION_MODEL' => nil) do
-        expect(described_class.available_models).to eq(['moondream'])
+  describe '.default_model' do
+    it 'is the first of OLLAMA_AVAILABLE_CAPTION_MODELS' do
+      with_env('OLLAMA_AVAILABLE_CAPTION_MODELS' => 'medgemma:4b,moondream') do
+        expect(described_class.default_model).to eq('medgemma:4b')
       end
     end
   end
@@ -60,8 +54,18 @@ RSpec.describe ImageCaptionService do
         expect(result).to eq('A chest X-ray image.')
       end
 
-      it 'uses the given model instead of OLLAMA_CAPTION_MODEL when one is passed' do
-        described_class.new(image_path, model: 'medgemma:4b').call
+      it 'uses the default model when none is passed' do
+        with_env('OLLAMA_AVAILABLE_CAPTION_MODELS' => 'moondream,medgemma:4b') do
+          described_class.new(image_path).call
+        end
+
+        expect(mock_request).to have_received(:body=).with(a_string_including('"model":"moondream"'))
+      end
+
+      it 'uses the given model instead of the default one when one is passed' do
+        with_env('OLLAMA_AVAILABLE_CAPTION_MODELS' => 'moondream,medgemma:4b') do
+          described_class.new(image_path, model: 'medgemma:4b').call
+        end
 
         expect(mock_request).to have_received(:body=).with(a_string_including('"model":"medgemma:4b"'))
       end

@@ -1,15 +1,13 @@
 class ImageCaptionService
   PROMPT = 'Describe the content of this image concisely.'
 
-  def self.default_model
-    ENV.fetch('OLLAMA_CAPTION_MODEL', 'moondream')
+  # The models users can choose on the doc generation page; the first is the default.
+  def self.available_models
+    (ENV['OLLAMA_AVAILABLE_CAPTION_MODELS'].presence || 'moondream').split(',')
   end
 
-  # Always includes the default model, first, so installs that only set OLLAMA_CAPTION_MODEL keep
-  # using it and the form preselects it.
-  def self.available_models
-    models = ENV.fetch('OLLAMA_AVAILABLE_CAPTION_MODELS') { default_model }.split(',')
-    ([default_model] + models).uniq
+  def self.default_model
+    available_models.first
   end
 
   def initialize(image_path, model: nil)
