@@ -8,7 +8,7 @@ x-app: &app
     REDIS_URL: redis://redis:6379/0
     ELASTICSEARCH_URL: http://elasticsearch:9200
     OLLAMA_HOST: ollama
-    OLLAMA_AVAILABLE_CAPTION_MODELS: ${OLLAMA_AVAILABLE_CAPTION_MODELS:-moondream}
+    OLLAMA_CAPTION_MODELS: ${OLLAMA_CAPTION_MODELS:-moondream}
     PIDFILE: /tmp/pubannotation-server.pid
   volumes:
     - .:/app
@@ -72,13 +72,13 @@ services:
     image: ollama/ollama:0.34.2
     environment:
       OLLAMA_HOST: http://ollama:11434
-      OLLAMA_AVAILABLE_CAPTION_MODELS: ${OLLAMA_AVAILABLE_CAPTION_MODELS:-moondream}
+      OLLAMA_CAPTION_MODELS: ${OLLAMA_CAPTION_MODELS:-moondream}
     entrypoint: ["/bin/sh", "-c"]
     # Pulls every caption model users can choose, skipping those already installed.
     command:
       - |
         set -e
-        for model in $$(echo "$$OLLAMA_AVAILABLE_CAPTION_MODELS" | tr ',' ' '); do
+        for model in $$(echo "$$OLLAMA_CAPTION_MODELS" | tr ',' ' '); do
           ollama show "$$model" >/dev/null 2>&1 || ollama pull "$$model"
         done
     depends_on:

@@ -3,7 +3,7 @@ class ImageCaptionService
 
   # The models users can choose on the doc generation page; the first is the default.
   def self.available_models
-    (ENV['OLLAMA_AVAILABLE_CAPTION_MODELS'].presence || 'moondream').split(',')
+    (ENV['OLLAMA_CAPTION_MODELS'].presence || 'moondream').split(',')
   end
 
   def initialize(image_path, model)

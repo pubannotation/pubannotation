@@ -32,7 +32,7 @@ Pull the moondream model:
 $ ollama pull moondream
 ```
 
-For medical images, also pull a medically-tuned model and add it to `OLLAMA_AVAILABLE_CAPTION_MODELS`
+For medical images, also pull a medically-tuned model and add it to `OLLAMA_CAPTION_MODELS`
 (comma-separated; the first is the default):
 ```
 $ ollama pull medgemma:4b
@@ -124,14 +124,14 @@ Storage image-variant warning may still appear.
 
 Ollama runs on CPU by default, without requiring a host installation or GPU.
 On first startup, `ollama-setup` downloads every image-captioning model in
-`OLLAMA_AVAILABLE_CAPTION_MODELS` (the ones users can choose on the doc generation
+`OLLAMA_CAPTION_MODELS` (the ones users can choose on the doc generation
 page, the first being the default; `moondream` unless set in `.env`); web and worker
 wait until the downloads succeed. This requires additional disk space and download time (`medgemma:4b`, for
 instance, is several GB). The models are kept in the `ollama_data` volume and reused
 on subsequent starts. Rails and worker connect to `ollama:11434` internally; the
 Ollama port is not published on the host.
 
-Set `OLLAMA_AVAILABLE_CAPTION_MODELS` in `.env` to use other vision-capable models,
+Set `OLLAMA_CAPTION_MODELS` in `.env` to use other vision-capable models,
 then run `docker compose up -d` to download any missing ones and update web and worker
 together. To inspect the installed models or explicitly update one:
 

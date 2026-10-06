@@ -6,15 +6,15 @@ RSpec.describe ImageCaptionService do
   let(:image_path) { Rails.root.join('spec', 'fixtures', 'files', 'test_image.png').to_s }
 
   describe '.available_models' do
-    it 'splits OLLAMA_AVAILABLE_CAPTION_MODELS on commas' do
-      with_env('OLLAMA_AVAILABLE_CAPTION_MODELS' => 'moondream,medgemma:4b') do
+    it 'splits OLLAMA_CAPTION_MODELS on commas' do
+      with_env('OLLAMA_CAPTION_MODELS' => 'moondream,medgemma:4b') do
         expect(described_class.available_models).to eq(['moondream', 'medgemma:4b'])
       end
     end
 
     it 'defaults to moondream when unset or blank' do
       [nil, ''].each do |value|
-        with_env('OLLAMA_AVAILABLE_CAPTION_MODELS' => value) do
+        with_env('OLLAMA_CAPTION_MODELS' => value) do
           expect(described_class.available_models).to eq(['moondream'])
         end
       end
