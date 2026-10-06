@@ -43,13 +43,14 @@ RSpec.describe 'DocGenerationsController', type: :request do
         expect(response).to have_http_status(:ok)
       end
 
-      it 'preselects the default caption model among the available ones' do
+      it 'lists the default caption model first, so the form preselects it' do
         with_caption_model_env(default: 'medgemma:4b', available: 'moondream,medgemma:4b') do
           get new_project_doc_generation_path(project.name)
         end
 
-        expect(response.body).to include('<option value="moondream">moondream</option>')
-        expect(response.body).to include('<option selected="selected" value="medgemma:4b">medgemma:4b</option>')
+        expect(response.body).to match(
+          %r{<option value="medgemma:4b">medgemma:4b</option>\s*<option value="moondream">moondream</option>}
+        )
       end
     end
 

@@ -5,9 +5,11 @@ class ImageCaptionService
     ENV.fetch('OLLAMA_CAPTION_MODEL', 'moondream')
   end
 
-  # Falls back to the default model, so installs that only set OLLAMA_CAPTION_MODEL keep using it.
+  # Always includes the default model, first, so installs that only set OLLAMA_CAPTION_MODEL keep
+  # using it and the form preselects it.
   def self.available_models
-    ENV.fetch('OLLAMA_AVAILABLE_CAPTION_MODELS') { default_model }.split(',')
+    models = ENV.fetch('OLLAMA_AVAILABLE_CAPTION_MODELS') { default_model }.split(',')
+    ([default_model] + models).uniq
   end
 
   def initialize(image_path, model: nil)
