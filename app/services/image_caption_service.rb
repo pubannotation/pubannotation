@@ -1,8 +1,13 @@
 class ImageCaptionService
   PROMPT = 'Describe the content of this image concisely.'
 
+  def self.default_model
+    ENV.fetch('OLLAMA_CAPTION_MODEL', 'moondream')
+  end
+
+  # Falls back to the default model, so installs that only set OLLAMA_CAPTION_MODEL keep using it.
   def self.available_models
-    ENV.fetch('OLLAMA_AVAILABLE_CAPTION_MODELS', 'moondream').split(',')
+    ENV.fetch('OLLAMA_AVAILABLE_CAPTION_MODELS') { default_model }.split(',')
   end
 
   def initialize(image_path, model: nil)
@@ -12,7 +17,7 @@ class ImageCaptionService
 
   def call
     host  = ENV.fetch('OLLAMA_HOST', 'localhost')
-    model = @model.presence || ENV.fetch('OLLAMA_CAPTION_MODEL', 'moondream')
+    model = @model.presence || self.class.default_model
     image_data = Base64.strict_encode64(File.binread(@image_path))
     uri      = URI("http://#{host}:11434/api/chat")
     # Single-message format (content+images together) makes moondream return

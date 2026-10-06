@@ -7,6 +7,7 @@ class DocGenerationsController < ApplicationController
 
   def new
     @available_caption_models = ImageCaptionService.available_models
+    @default_caption_model = ImageCaptionService.default_model
   end
 
   def create

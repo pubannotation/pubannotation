@@ -15,13 +15,28 @@ RSpec.describe ImageCaptionService do
       ENV['OLLAMA_AVAILABLE_CAPTION_MODELS'] = original
     end
 
-    it 'defaults to moondream when unset' do
-      original = ENV['OLLAMA_AVAILABLE_CAPTION_MODELS']
+    it 'falls back to OLLAMA_CAPTION_MODEL when unset' do
+      original_available = ENV['OLLAMA_AVAILABLE_CAPTION_MODELS']
+      original_default = ENV['OLLAMA_CAPTION_MODEL']
       ENV.delete('OLLAMA_AVAILABLE_CAPTION_MODELS')
+      ENV['OLLAMA_CAPTION_MODEL'] = 'medgemma:4b'
+
+      expect(described_class.available_models).to eq(['medgemma:4b'])
+    ensure
+      ENV['OLLAMA_AVAILABLE_CAPTION_MODELS'] = original_available
+      ENV['OLLAMA_CAPTION_MODEL'] = original_default
+    end
+
+    it 'defaults to moondream when neither is set' do
+      original_available = ENV['OLLAMA_AVAILABLE_CAPTION_MODELS']
+      original_default = ENV['OLLAMA_CAPTION_MODEL']
+      ENV.delete('OLLAMA_AVAILABLE_CAPTION_MODELS')
+      ENV.delete('OLLAMA_CAPTION_MODEL')
 
       expect(described_class.available_models).to eq(['moondream'])
     ensure
-      ENV['OLLAMA_AVAILABLE_CAPTION_MODELS'] = original
+      ENV['OLLAMA_AVAILABLE_CAPTION_MODELS'] = original_available
+      ENV['OLLAMA_CAPTION_MODEL'] = original_default
     end
   end
 
