@@ -80,7 +80,7 @@ RSpec.describe 'DocGenerationsController', type: :request do
       it 'enqueues a job to generate the doc instead of creating it synchronously' do
         expect {
           post project_doc_generations_path(project.name),
-               params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, sourcedb: 'Example', sourceid: '001' }
+               params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, sourcedb: 'Example', sourceid: '001', caption_model: 'moondream' }
         }.to have_enqueued_job(DocGenerationFromMediaJob).and change(Doc, :count).by(0)
 
         expect(response).to redirect_to(project_docs_path(project.name))
@@ -95,18 +95,30 @@ RSpec.describe 'DocGenerationsController', type: :request do
         end
       end
 
-      it 'passes nil to the job instead of a caption model that is not available' do
+      it 'returns an error without enqueuing a job for a caption model that is not available' do
         with_env('OLLAMA_AVAILABLE_CAPTION_MODELS' => 'moondream,medgemma:4b') do
           expect {
             post project_doc_generations_path(project.name),
                  params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, caption_model: 'llava:34b' }
-          }.to have_enqueued_job(DocGenerationFromMediaJob).with(project, image_medium, user, anything, nil)
+          }.not_to have_enqueued_job(DocGenerationFromMediaJob)
         end
+
+        expect(response).to redirect_to(new_project_doc_generation_path(project.name))
+        expect(flash[:notice]).to eq('Specified caption model is not available.')
+      end
+
+      it 'returns an error without enqueuing a job when no caption model is given' do
+        expect {
+          post project_doc_generations_path(project.name),
+               params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid } }
+        }.not_to have_enqueued_job(DocGenerationFromMediaJob)
+
+        expect(response).to redirect_to(new_project_doc_generation_path(project.name))
       end
 
       it 'returns the job location for JSON requests' do
         post project_doc_generations_path(project.name, format: :json),
-             params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, sourcedb: 'Example', sourceid: '001' }
+             params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, sourcedb: 'Example', sourceid: '001', caption_model: 'moondream' }
 
         expect(response).to have_http_status(:accepted)
 
@@ -121,7 +133,7 @@ RSpec.describe 'DocGenerationsController', type: :request do
 
         perform_enqueued_jobs do
           post project_doc_generations_path(project.name),
-               params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, sourcedb: 'Example', sourceid: '001' }
+               params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, sourcedb: 'Example', sourceid: '001', caption_model: 'moondream' }
         end
 
         doc = Doc.last
@@ -182,7 +194,7 @@ RSpec.describe 'DocGenerationsController', type: :request do
 
         perform_enqueued_jobs do
           post project_doc_generations_path(project.name),
-               params: { media: { sourcedb: video_medium.sourcedb, sourceid: video_medium.sourceid }, sourcedb: 'Example', sourceid: '004' }
+               params: { media: { sourcedb: video_medium.sourcedb, sourceid: video_medium.sourceid }, sourcedb: 'Example', sourceid: '004', caption_model: 'moondream' }
         end
 
         doc = Doc.last
@@ -198,7 +210,7 @@ RSpec.describe 'DocGenerationsController', type: :request do
         expect {
           perform_enqueued_jobs do
             post project_doc_generations_path(project.name),
-                 params: { media: { sourcedb: medium_without_file.sourcedb, sourceid: medium_without_file.sourceid } }
+                 params: { media: { sourcedb: medium_without_file.sourcedb, sourceid: medium_without_file.sourceid }, caption_model: 'moondream' }
           end
         }.not_to change(Doc, :count)
 

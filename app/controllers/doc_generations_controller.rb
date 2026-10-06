@@ -40,7 +40,9 @@ class DocGenerationsController < ApplicationController
   # always use Whisper). Restricted to a fixed, configured list rather than accepting any Ollama
   # model name from the request.
   def caption_model
-    params[:caption_model] if ImageCaptionService.available_models.include?(params[:caption_model])
+    return params[:caption_model] if ImageCaptionService.available_models.include?(params[:caption_model])
+
+    raise ArgumentError, "Specified caption model is not available."
   end
 
   def ensure_editable_project!
