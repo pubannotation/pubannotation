@@ -24,16 +24,6 @@ RSpec.describe 'DocGenerationsController', type: :request do
     allow(Elasticsearch::IndexQueue).to receive(:update_embedding)
   end
 
-  def with_caption_model_env(default:, available:)
-    original = ENV.to_h.slice('OLLAMA_CAPTION_MODEL', 'OLLAMA_AVAILABLE_CAPTION_MODELS')
-    ENV['OLLAMA_CAPTION_MODEL'] = default
-    ENV['OLLAMA_AVAILABLE_CAPTION_MODELS'] = available
-    yield
-  ensure
-    ENV['OLLAMA_CAPTION_MODEL'] = original['OLLAMA_CAPTION_MODEL']
-    ENV['OLLAMA_AVAILABLE_CAPTION_MODELS'] = original['OLLAMA_AVAILABLE_CAPTION_MODELS']
-  end
-
   describe 'GET /projects/:project_id/doc_generations/new' do
     context 'when logged in' do
       before { sign_in user }
@@ -44,7 +34,7 @@ RSpec.describe 'DocGenerationsController', type: :request do
       end
 
       it 'lists the default caption model first, so the form preselects it' do
-        with_caption_model_env(default: 'medgemma:4b', available: 'moondream,medgemma:4b') do
+        with_env('OLLAMA_CAPTION_MODEL' => 'medgemma:4b', 'OLLAMA_AVAILABLE_CAPTION_MODELS' => 'moondream,medgemma:4b') do
           get new_project_doc_generation_path(project.name)
         end
 
@@ -97,7 +87,7 @@ RSpec.describe 'DocGenerationsController', type: :request do
       end
 
       it 'passes an available caption model to the job' do
-        with_caption_model_env(default: 'moondream', available: 'moondream,medgemma:4b') do
+        with_env('OLLAMA_CAPTION_MODEL' => 'moondream', 'OLLAMA_AVAILABLE_CAPTION_MODELS' => 'moondream,medgemma:4b') do
           expect {
             post project_doc_generations_path(project.name),
                  params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, caption_model: 'medgemma:4b' }
@@ -106,7 +96,7 @@ RSpec.describe 'DocGenerationsController', type: :request do
       end
 
       it 'passes nil to the job instead of a caption model that is not available' do
-        with_caption_model_env(default: 'moondream', available: 'moondream,medgemma:4b') do
+        with_env('OLLAMA_CAPTION_MODEL' => 'moondream', 'OLLAMA_AVAILABLE_CAPTION_MODELS' => 'moondream,medgemma:4b') do
           expect {
             post project_doc_generations_path(project.name),
                  params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, caption_model: 'llava:34b' }

@@ -7,54 +7,31 @@ RSpec.describe ImageCaptionService do
 
   describe '.available_models' do
     it 'splits OLLAMA_AVAILABLE_CAPTION_MODELS on commas' do
-      original_available = ENV['OLLAMA_AVAILABLE_CAPTION_MODELS']
-      original_default = ENV['OLLAMA_CAPTION_MODEL']
-      ENV['OLLAMA_AVAILABLE_CAPTION_MODELS'] = 'moondream,medgemma:4b'
-      ENV['OLLAMA_CAPTION_MODEL'] = 'moondream'
-
-      expect(described_class.available_models).to eq(['moondream', 'medgemma:4b'])
-    ensure
-      ENV['OLLAMA_AVAILABLE_CAPTION_MODELS'] = original_available
-      ENV['OLLAMA_CAPTION_MODEL'] = original_default
+      with_env('OLLAMA_AVAILABLE_CAPTION_MODELS' => 'moondream,medgemma:4b', 'OLLAMA_CAPTION_MODEL' => 'moondream') do
+        expect(described_class.available_models).to eq(['moondream', 'medgemma:4b'])
+      end
     end
 
     it 'puts OLLAMA_CAPTION_MODEL first, adding it when OLLAMA_AVAILABLE_CAPTION_MODELS lacks it' do
-      original_available = ENV['OLLAMA_AVAILABLE_CAPTION_MODELS']
-      original_default = ENV['OLLAMA_CAPTION_MODEL']
-      ENV['OLLAMA_CAPTION_MODEL'] = 'medgemma:4b'
+      with_env('OLLAMA_AVAILABLE_CAPTION_MODELS' => 'moondream,medgemma:4b', 'OLLAMA_CAPTION_MODEL' => 'medgemma:4b') do
+        expect(described_class.available_models).to eq(['medgemma:4b', 'moondream'])
+      end
 
-      ENV['OLLAMA_AVAILABLE_CAPTION_MODELS'] = 'moondream,medgemma:4b'
-      expect(described_class.available_models).to eq(['medgemma:4b', 'moondream'])
-
-      ENV['OLLAMA_AVAILABLE_CAPTION_MODELS'] = 'moondream'
-      expect(described_class.available_models).to eq(['medgemma:4b', 'moondream'])
-    ensure
-      ENV['OLLAMA_AVAILABLE_CAPTION_MODELS'] = original_available
-      ENV['OLLAMA_CAPTION_MODEL'] = original_default
+      with_env('OLLAMA_AVAILABLE_CAPTION_MODELS' => 'moondream', 'OLLAMA_CAPTION_MODEL' => 'medgemma:4b') do
+        expect(described_class.available_models).to eq(['medgemma:4b', 'moondream'])
+      end
     end
 
     it 'falls back to OLLAMA_CAPTION_MODEL when unset' do
-      original_available = ENV['OLLAMA_AVAILABLE_CAPTION_MODELS']
-      original_default = ENV['OLLAMA_CAPTION_MODEL']
-      ENV.delete('OLLAMA_AVAILABLE_CAPTION_MODELS')
-      ENV['OLLAMA_CAPTION_MODEL'] = 'medgemma:4b'
-
-      expect(described_class.available_models).to eq(['medgemma:4b'])
-    ensure
-      ENV['OLLAMA_AVAILABLE_CAPTION_MODELS'] = original_available
-      ENV['OLLAMA_CAPTION_MODEL'] = original_default
+      with_env('OLLAMA_AVAILABLE_CAPTION_MODELS' => nil, 'OLLAMA_CAPTION_MODEL' => 'medgemma:4b') do
+        expect(described_class.available_models).to eq(['medgemma:4b'])
+      end
     end
 
     it 'defaults to moondream when neither is set' do
-      original_available = ENV['OLLAMA_AVAILABLE_CAPTION_MODELS']
-      original_default = ENV['OLLAMA_CAPTION_MODEL']
-      ENV.delete('OLLAMA_AVAILABLE_CAPTION_MODELS')
-      ENV.delete('OLLAMA_CAPTION_MODEL')
-
-      expect(described_class.available_models).to eq(['moondream'])
-    ensure
-      ENV['OLLAMA_AVAILABLE_CAPTION_MODELS'] = original_available
-      ENV['OLLAMA_CAPTION_MODEL'] = original_default
+      with_env('OLLAMA_AVAILABLE_CAPTION_MODELS' => nil, 'OLLAMA_CAPTION_MODEL' => nil) do
+        expect(described_class.available_models).to eq(['moondream'])
+      end
     end
   end
 
