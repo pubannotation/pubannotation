@@ -9,6 +9,7 @@ x-app: &app
     ELASTICSEARCH_URL: http://elasticsearch:9200
     OLLAMA_HOST: ollama
     OLLAMA_CAPTION_MODEL: ${OLLAMA_CAPTION_MODEL:-moondream}
+    OLLAMA_AVAILABLE_CAPTION_MODELS: ${OLLAMA_AVAILABLE_CAPTION_MODELS:-moondream}
     PIDFILE: /tmp/pubannotation-server.pid
   volumes:
     - .:/app
@@ -73,8 +74,15 @@ services:
     environment:
       OLLAMA_HOST: http://ollama:11434
       OLLAMA_CAPTION_MODEL: ${OLLAMA_CAPTION_MODEL:-moondream}
+      OLLAMA_AVAILABLE_CAPTION_MODELS: ${OLLAMA_AVAILABLE_CAPTION_MODELS:-moondream}
     entrypoint: ["/bin/sh", "-c"]
-    command: ['ollama show "$$OLLAMA_CAPTION_MODEL" >/dev/null 2>&1 || exec ollama pull "$$OLLAMA_CAPTION_MODEL"']
+    # Pulls the default caption model and every one users can choose, skipping those already installed.
+    command:
+      - |
+        set -e
+        for model in "$$OLLAMA_CAPTION_MODEL" $$(echo "$$OLLAMA_AVAILABLE_CAPTION_MODELS" | tr ',' ' '); do
+          ollama show "$$model" >/dev/null 2>&1 || ollama pull "$$model"
+        done
     depends_on:
       ollama:
         condition: service_healthy
