@@ -49,6 +49,15 @@ RSpec.describe 'Editing a doc with audio or video', type: :request do
       expect(doc.body).to eq("Hello\r\nworld")
     end
 
+    it 're-renders a rejected body change with the stored body in the read-only field' do
+      patch doc_path(doc), params: { doc: { text: 'Changed body' } }
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include('Body cannot be changed for a document with audio or video')
+      expect(response.body).to match(/<textarea[^>]*readonly="readonly"[^>]*>\n?Hello world<\/textarea>/)
+      expect(doc.reload.body).to eq('Hello world')
+    end
+
     it 'rejects a body change' do
       put doc_path(doc, format: :json), params: { doc: { text: 'Changed body' } }
 
