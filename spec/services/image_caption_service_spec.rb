@@ -21,14 +21,6 @@ RSpec.describe ImageCaptionService do
     end
   end
 
-  describe '.default_model' do
-    it 'is the first of OLLAMA_AVAILABLE_CAPTION_MODELS' do
-      with_env('OLLAMA_AVAILABLE_CAPTION_MODELS' => 'medgemma:4b,moondream') do
-        expect(described_class.default_model).to eq('medgemma:4b')
-      end
-    end
-  end
-
   describe '#call' do
     let(:mock_http)     { instance_double(Net::HTTP) }
     let(:mock_request)  { instance_double(Net::HTTP::Post) }
@@ -54,18 +46,8 @@ RSpec.describe ImageCaptionService do
         expect(result).to eq('A chest X-ray image.')
       end
 
-      it 'uses the default model when given none' do
-        with_env('OLLAMA_AVAILABLE_CAPTION_MODELS' => 'moondream,medgemma:4b') do
-          described_class.new(image_path, nil).call
-        end
-
-        expect(mock_request).to have_received(:body=).with(a_string_including('"model":"moondream"'))
-      end
-
-      it 'uses the given model instead of the default one when one is passed' do
-        with_env('OLLAMA_AVAILABLE_CAPTION_MODELS' => 'moondream,medgemma:4b') do
-          described_class.new(image_path, 'medgemma:4b').call
-        end
+      it 'requests a caption from the given model' do
+        described_class.new(image_path, 'medgemma:4b').call
 
         expect(mock_request).to have_received(:body=).with(a_string_including('"model":"medgemma:4b"'))
       end

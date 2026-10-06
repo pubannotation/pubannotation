@@ -6,18 +6,13 @@ class ImageCaptionService
     (ENV['OLLAMA_AVAILABLE_CAPTION_MODELS'].presence || 'moondream').split(',')
   end
 
-  def self.default_model
-    available_models.first
-  end
-
   def initialize(image_path, model)
     @image_path = image_path
     @model = model
   end
 
   def call
-    host  = ENV.fetch('OLLAMA_HOST', 'localhost')
-    model = @model.presence || self.class.default_model
+    host = ENV.fetch('OLLAMA_HOST', 'localhost')
     image_data = Base64.strict_encode64(File.binread(@image_path))
     uri      = URI("http://#{host}:11434/api/chat")
     # Single-message format (content+images together) makes moondream return
@@ -29,7 +24,7 @@ class ImageCaptionService
     ]
     # Explicit because the response-parsing below assumes newline-delimited
     # JSON chunks (Ollama's streaming format), not a single JSON object.
-    body     = {model: model, messages: messages, stream: true}.to_json
+    body     = {model: @model, messages: messages, stream: true}.to_json
 
     caption = +''
     Net::HTTP.start(uri.host, uri.port) do |http|
