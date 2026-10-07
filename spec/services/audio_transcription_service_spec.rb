@@ -25,9 +25,9 @@ RSpec.describe AudioTranscriptionService do
     allow(Open3).to receive(:capture3).with(*ffprobe_args).and_return(["#{duration_seconds}\n", '', success_status])
   end
 
-  describe '.resolved_model' do
+  describe '.generation_model' do
     it "is WHISPER_MODEL_PATH's file name, without .bin, prefixed with whisper:" do
-      expect(described_class.resolved_model).to eq('whisper:ggml-base.en')
+      expect(described_class.generation_model).to eq('whisper:ggml-base.en')
     end
   end
 

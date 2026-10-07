@@ -7,8 +7,7 @@ class AudioTranscriptionService
   SEGMENT_LINE = /\A\[(\d{2}):(\d{2}):(\d{2})\.(\d{3}) --> (\d{2}):(\d{2}):(\d{2})\.(\d{3})\]\s*(.*)\z/
 
   # The Whisper model in use, e.g. "whisper:ggml-base.en" for WHISPER_MODEL_PATH=~/models/ggml-base.en.bin.
-  # Exposed so callers can record which model produced a transcript.
-  def self.resolved_model
+  def self.generation_model
     "whisper:#{File.basename(model_path, '.bin')}"
   end
 

@@ -1,6 +1,6 @@
 class VideoTranscriptionService
-  def self.resolved_model
-    AudioTranscriptionService.resolved_model
+  def self.generation_model
+    AudioTranscriptionService.generation_model
   end
 
   def initialize(video_path)
