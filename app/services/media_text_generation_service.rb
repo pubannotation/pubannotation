@@ -19,11 +19,14 @@ class MediaTextGenerationService
   def build_media_transcript(file_path)
     case @medium.media_type
     when 'image'
-      MediaTranscript.new(medium: @medium, text: ImageCaptionService.new(file_path, @caption_model).call)
+      MediaTranscript.new(medium: @medium, text: ImageCaptionService.new(file_path, @caption_model).call,
+                          generation_model: @caption_model)
     when 'audio'
-      MediaTranscript.new(medium: @medium, segments: AudioTranscriptionService.new(file_path).call)
+      MediaTranscript.new(medium: @medium, segments: AudioTranscriptionService.new(file_path).call,
+                          generation_model: AudioTranscriptionService.generation_model)
     when 'video'
-      MediaTranscript.new(medium: @medium, segments: VideoTranscriptionService.new(file_path).call)
+      MediaTranscript.new(medium: @medium, segments: VideoTranscriptionService.new(file_path).call,
+                          generation_model: VideoTranscriptionService.generation_model)
     else
       raise ArgumentError, "Unsupported media type: #{@medium.media_type.inspect}"
     end

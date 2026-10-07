@@ -5,6 +5,14 @@ require 'rails_helper'
 RSpec.describe VideoTranscriptionService do
   let(:video_path) { Rails.root.join('spec', 'fixtures', 'files', 'test_video.mp4').to_s }
 
+  describe '.generation_model' do
+    it "is AudioTranscriptionService's, since it transcribes the extracted audio with it" do
+      allow(AudioTranscriptionService).to receive(:generation_model).and_return('whisper:ggml-base.en')
+
+      expect(described_class.generation_model).to eq('whisper:ggml-base.en')
+    end
+  end
+
   describe '#call' do
     context 'when ffmpeg succeeds' do
       before do

@@ -1,4 +1,8 @@
 class VideoTranscriptionService
+  def self.generation_model
+    AudioTranscriptionService.generation_model
+  end
+
   def initialize(video_path)
     @video_path = video_path
   end
