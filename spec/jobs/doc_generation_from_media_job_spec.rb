@@ -21,7 +21,7 @@ RSpec.describe DocGenerationFromMediaJob, type: :job do
       let(:generated_media_transcript) { MediaTranscript.new(medium:, text: 'A generated caption.', segments: []) }
 
       it 'persists the transcript returned by MediaTextGenerationService, linked to the task' do
-        DocGenerationFromMediaJob.perform_now(project, medium, user, attributes)
+        DocGenerationFromMediaJob.perform_now(project, medium, user, attributes, 'moondream')
 
         task = MediaTranscriptionTask.find_by(medium: medium)
         media_transcript = MediaTranscript.find_by(medium: medium)
@@ -32,20 +32,26 @@ RSpec.describe DocGenerationFromMediaJob, type: :job do
       end
 
       it 'delegates doc creation to MediaDocCreationService with the created transcript' do
-        DocGenerationFromMediaJob.perform_now(project, medium, user, attributes)
+        DocGenerationFromMediaJob.perform_now(project, medium, user, attributes, 'moondream')
 
         task = MediaTranscriptionTask.find_by(medium: medium)
         media_transcript = MediaTranscript.find_by(medium: medium)
-        expect(MediaTextGenerationService).to have_received(:new).with(medium)
+        expect(MediaTextGenerationService).to have_received(:new).with(medium, 'moondream')
         expect(MediaDocCreationService).to have_received(:call).with(project, medium, user, attributes, media_transcript)
       end
 
       it 'creates a MediaTranscriptionTask and marks it succeeded' do
-        DocGenerationFromMediaJob.perform_now(project, medium, user, attributes)
+        DocGenerationFromMediaJob.perform_now(project, medium, user, attributes, 'moondream')
 
         task = MediaTranscriptionTask.find_by(medium: medium)
         expect(task).to be_present
         expect(task).to be_succeeded
+      end
+
+      it 'passes a given caption_model through to MediaTextGenerationService' do
+        DocGenerationFromMediaJob.perform_now(project, medium, user, attributes, 'medgemma:4b')
+
+        expect(MediaTextGenerationService).to have_received(:new).with(medium, 'medgemma:4b')
       end
     end
 
@@ -53,7 +59,7 @@ RSpec.describe DocGenerationFromMediaJob, type: :job do
       let(:medium) { create(:medium, user: user, media_type: :audio, content_type: 'audio/mpeg') }
 
       it 'creates a MediaTranscriptionTask and marks it succeeded' do
-        DocGenerationFromMediaJob.perform_now(project, medium, user, attributes)
+        DocGenerationFromMediaJob.perform_now(project, medium, user, attributes, 'moondream')
 
         task = MediaTranscriptionTask.find_by(medium: medium)
         expect(task).to be_present
@@ -61,7 +67,7 @@ RSpec.describe DocGenerationFromMediaJob, type: :job do
       end
 
       it 'persists the transcript returned by MediaTextGenerationService, linked to the task' do
-        DocGenerationFromMediaJob.perform_now(project, medium, user, attributes)
+        DocGenerationFromMediaJob.perform_now(project, medium, user, attributes, 'moondream')
 
         task = MediaTranscriptionTask.find_by(medium: medium)
         media_transcript = MediaTranscript.find_by(medium: medium)
@@ -71,7 +77,7 @@ RSpec.describe DocGenerationFromMediaJob, type: :job do
       end
 
       it 'delegates doc creation to MediaDocCreationService with the created transcript' do
-        DocGenerationFromMediaJob.perform_now(project, medium, user, attributes)
+        DocGenerationFromMediaJob.perform_now(project, medium, user, attributes, 'moondream')
 
         task = MediaTranscriptionTask.find_by(medium: medium)
         media_transcript = MediaTranscript.find_by(medium: medium)
@@ -85,7 +91,7 @@ RSpec.describe DocGenerationFromMediaJob, type: :job do
 
         it 'marks the task failed and re-raises' do
           expect {
-            DocGenerationFromMediaJob.perform_now(project, medium, user, attributes)
+            DocGenerationFromMediaJob.perform_now(project, medium, user, attributes, 'moondream')
           }.to raise_error(StandardError, 'transcription blew up')
 
           task = MediaTranscriptionTask.find_by(medium: medium)
@@ -100,7 +106,7 @@ RSpec.describe DocGenerationFromMediaJob, type: :job do
 
         it 'leaves the task succeeded and re-raises' do
           expect {
-            DocGenerationFromMediaJob.perform_now(project, medium, user, attributes)
+            DocGenerationFromMediaJob.perform_now(project, medium, user, attributes, 'moondream')
           }.to raise_error(StandardError, 'doc save blew up')
 
           task = MediaTranscriptionTask.find_by(medium: medium)
@@ -112,7 +118,7 @@ RSpec.describe DocGenerationFromMediaJob, type: :job do
         let(:generated_media_transcript) { MediaTranscript.new(medium:, text: '', segments: []) }
 
         it 'marks the task succeeded, persists the transcript, but does not create a doc' do
-          DocGenerationFromMediaJob.perform_now(project, medium, user, attributes)
+          DocGenerationFromMediaJob.perform_now(project, medium, user, attributes, 'moondream')
 
           task = MediaTranscriptionTask.find_by(medium: medium)
           media_transcript = MediaTranscript.find_by(medium: medium)
@@ -127,7 +133,7 @@ RSpec.describe DocGenerationFromMediaJob, type: :job do
       let(:medium) { create(:medium, user: user, media_type: :video, content_type: 'video/mp4') }
 
       it 'creates a MediaTranscriptionTask and marks it succeeded' do
-        DocGenerationFromMediaJob.perform_now(project, medium, user, attributes)
+        DocGenerationFromMediaJob.perform_now(project, medium, user, attributes, 'moondream')
 
         task = MediaTranscriptionTask.find_by(medium: medium)
         expect(task).to be_present

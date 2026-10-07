@@ -1,13 +1,19 @@
 class ImageCaptionService
   PROMPT = 'Describe the content of this image concisely.'
 
-  def initialize(image_path)
+  # The models users can choose on the doc generation page; the first is the default. None unless
+  # OLLAMA_CAPTION_MODELS is set, in which case docs can't be generated from images.
+  def self.available_models
+    ENV.fetch('OLLAMA_CAPTION_MODELS', '').split(',')
+  end
+
+  def initialize(image_path, model)
     @image_path = image_path
+    @model = model
   end
 
   def call
-    host  = ENV.fetch('OLLAMA_HOST', 'localhost')
-    model = ENV.fetch('OLLAMA_CAPTION_MODEL', 'moondream')
+    host = ENV.fetch('OLLAMA_HOST', 'localhost')
     image_data = Base64.strict_encode64(File.binread(@image_path))
     uri      = URI("http://#{host}:11434/api/chat")
     # Single-message format (content+images together) makes moondream return
@@ -19,7 +25,7 @@ class ImageCaptionService
     ]
     # Explicit because the response-parsing below assumes newline-delimited
     # JSON chunks (Ollama's streaming format), not a single JSON object.
-    body     = {model: model, messages: messages, stream: true}.to_json
+    body     = {model: @model, messages: messages, stream: true}.to_json
 
     caption = +''
     Net::HTTP.start(uri.host, uri.port) do |http|

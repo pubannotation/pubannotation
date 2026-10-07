@@ -32,6 +32,16 @@ RSpec.describe 'DocGenerationsController', type: :request do
         get new_project_doc_generation_path(project.name)
         expect(response).to have_http_status(:ok)
       end
+
+      it 'offers OLLAMA_CAPTION_MODELS in order, so the form preselects the first as the default' do
+        with_env('OLLAMA_CAPTION_MODELS' => 'medgemma:4b,moondream') do
+          get new_project_doc_generation_path(project.name)
+        end
+
+        expect(response.body).to match(
+          %r{<option value="medgemma:4b">medgemma:4b</option>\s*<option value="moondream">moondream</option>}
+        )
+      end
     end
 
     context 'when not logged in' do
@@ -67,18 +77,68 @@ RSpec.describe 'DocGenerationsController', type: :request do
     context 'when logged in' do
       before { sign_in user }
 
+      around { |example| with_env('OLLAMA_CAPTION_MODELS' => 'moondream,medgemma:4b') { example.run } }
+
       it 'enqueues a job to generate the doc instead of creating it synchronously' do
         expect {
           post project_doc_generations_path(project.name),
-               params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, sourcedb: 'Example', sourceid: '001' }
+               params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, sourcedb: 'Example', sourceid: '001', caption_model: 'moondream' }
         }.to have_enqueued_job(DocGenerationFromMediaJob).and change(Doc, :count).by(0)
 
         expect(response).to redirect_to(project_docs_path(project.name))
       end
 
+      it 'passes an available caption model to the job' do
+        expect {
+          post project_doc_generations_path(project.name),
+               params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, caption_model: 'medgemma:4b' }
+        }.to have_enqueued_job(DocGenerationFromMediaJob).with(project, image_medium, user, anything, 'medgemma:4b')
+      end
+
+      it 'returns an error without enqueuing a job for a caption model that is not available' do
+        expect {
+          post project_doc_generations_path(project.name),
+               params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, caption_model: 'llava:34b' }
+        }.not_to have_enqueued_job(DocGenerationFromMediaJob)
+
+        expect(response).to redirect_to(new_project_doc_generation_path(project.name))
+        expect(flash[:notice]).to eq('Specified caption model is not available.')
+      end
+
+      it 'returns an error without enqueuing a job when no caption model is given' do
+        expect {
+          post project_doc_generations_path(project.name),
+               params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid } }
+        }.not_to have_enqueued_job(DocGenerationFromMediaJob)
+
+        expect(response).to redirect_to(new_project_doc_generation_path(project.name))
+      end
+
+      context 'when OLLAMA_CAPTION_MODELS is not set' do
+        around { |example| with_env('OLLAMA_CAPTION_MODELS' => nil) { example.run } }
+
+        it 'still enqueues a job for audio, which needs no caption model' do
+          audio_medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
+
+          expect {
+            post project_doc_generations_path(project.name),
+                 params: { media: { sourcedb: audio_medium.sourcedb, sourceid: audio_medium.sourceid } }
+          }.to have_enqueued_job(DocGenerationFromMediaJob).with(project, audio_medium, user, anything, nil)
+        end
+
+        it 'returns an error for an image, since no caption model is available' do
+          expect {
+            post project_doc_generations_path(project.name),
+                 params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, caption_model: 'moondream' }
+          }.not_to have_enqueued_job(DocGenerationFromMediaJob)
+
+          expect(flash[:notice]).to eq('Specified caption model is not available.')
+        end
+      end
+
       it 'returns the job location for JSON requests' do
         post project_doc_generations_path(project.name, format: :json),
-             params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, sourcedb: 'Example', sourceid: '001' }
+             params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, sourcedb: 'Example', sourceid: '001', caption_model: 'moondream' }
 
         expect(response).to have_http_status(:accepted)
 
@@ -93,7 +153,7 @@ RSpec.describe 'DocGenerationsController', type: :request do
 
         perform_enqueued_jobs do
           post project_doc_generations_path(project.name),
-               params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, sourcedb: 'Example', sourceid: '001' }
+               params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, sourcedb: 'Example', sourceid: '001', caption_model: 'moondream' }
         end
 
         doc = Doc.last
@@ -170,7 +230,7 @@ RSpec.describe 'DocGenerationsController', type: :request do
         expect {
           perform_enqueued_jobs do
             post project_doc_generations_path(project.name),
-                 params: { media: { sourcedb: medium_without_file.sourcedb, sourceid: medium_without_file.sourceid } }
+                 params: { media: { sourcedb: medium_without_file.sourcedb, sourceid: medium_without_file.sourceid }, caption_model: 'moondream' }
           end
         }.not_to change(Doc, :count)
 

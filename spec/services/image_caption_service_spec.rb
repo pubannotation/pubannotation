@@ -5,6 +5,22 @@ require 'rails_helper'
 RSpec.describe ImageCaptionService do
   let(:image_path) { Rails.root.join('spec', 'fixtures', 'files', 'test_image.png').to_s }
 
+  describe '.available_models' do
+    it 'splits OLLAMA_CAPTION_MODELS on commas' do
+      with_env('OLLAMA_CAPTION_MODELS' => 'moondream,medgemma:4b') do
+        expect(described_class.available_models).to eq(['moondream', 'medgemma:4b'])
+      end
+    end
+
+    it 'is empty when unset or blank' do
+      [nil, ''].each do |value|
+        with_env('OLLAMA_CAPTION_MODELS' => value) do
+          expect(described_class.available_models).to eq([])
+        end
+      end
+    end
+  end
+
   describe '#call' do
     let(:mock_http)     { instance_double(Net::HTTP) }
     let(:mock_request)  { instance_double(Net::HTTP::Post) }
@@ -26,8 +42,14 @@ RSpec.describe ImageCaptionService do
       end
 
       it 'returns the generated caption' do
-        result = described_class.new(image_path).call
+        result = described_class.new(image_path, 'moondream').call
         expect(result).to eq('A chest X-ray image.')
+      end
+
+      it 'requests a caption from the given model' do
+        described_class.new(image_path, 'medgemma:4b').call
+
+        expect(mock_request).to have_received(:body=).with(a_string_including('"model":"medgemma:4b"'))
       end
     end
 
@@ -44,7 +66,7 @@ RSpec.describe ImageCaptionService do
       end
 
       it 'buffers the partial chunks and parses the complete line' do
-        result = described_class.new(image_path).call
+        result = described_class.new(image_path, 'moondream').call
         expect(result).to eq('A chest X-ray image.')
       end
     end
@@ -57,7 +79,7 @@ RSpec.describe ImageCaptionService do
 
       it 'raises an error' do
         expect {
-          described_class.new(image_path).call
+          described_class.new(image_path, 'moondream').call
         }.to raise_error('Ollama request failed (status 500)')
       end
     end
@@ -69,7 +91,7 @@ RSpec.describe ImageCaptionService do
 
       it 'raises an error' do
         expect {
-          described_class.new(image_path).call
+          described_class.new(image_path, 'moondream').call
         }.to raise_error(StandardError, 'Connection refused')
       end
     end

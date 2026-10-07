@@ -27,12 +27,14 @@ Start Ollama:
 $ ollama serve
 ```
 
-Pull the moondream model:
+Pull the moondream model and list it in `OLLAMA_CAPTION_MODELS` (e.g. `OLLAMA_CAPTION_MODELS=moondream`);
+docs can't be generated from images unless it lists at least one model:
 ```
 $ ollama pull moondream
 ```
 
-For medical images, pull a medically-tuned model instead and set `OLLAMA_CAPTION_MODEL` accordingly:
+For medical images, also pull a medically-tuned model and add it to `OLLAMA_CAPTION_MODELS`
+(comma-separated; the first is the default):
 ```
 $ ollama pull medgemma:4b
 ```
@@ -122,19 +124,21 @@ are set by Compose. No image-processing gems are added; the existing Active
 Storage image-variant warning may still appear.
 
 Ollama runs on CPU by default, without requiring a host installation or GPU.
-On first startup, `ollama-setup` downloads the `moondream` image-captioning model;
-web and worker wait until the download succeeds. This requires additional disk
-space and download time. The model is kept in the `ollama_data` volume and reused
-on subsequent starts. Rails and worker connect to `ollama:11434` internally;
-the Ollama port is not published on the host.
+On first startup, `ollama-setup` downloads every image-captioning model in
+`OLLAMA_CAPTION_MODELS` (the ones users can choose on the doc generation
+page, the first being the default; `moondream` unless set in `.env`); web and worker
+wait until the downloads succeed. This requires additional disk space and download time (`medgemma:4b`, for
+instance, is several GB). The models are kept in the `ollama_data` volume and reused
+on subsequent starts. Rails and worker connect to `ollama:11434` internally; the
+Ollama port is not published on the host.
 
-Set `OLLAMA_CAPTION_MODEL` in `.env` to use another vision-capable model, then run
-`docker compose up -d` to download it and update web and worker together.
-To inspect the installed models or explicitly update the current model:
+Set `OLLAMA_CAPTION_MODELS` in `.env` to use other vision-capable models,
+then run `docker compose up -d` to download any missing ones and update web and worker
+together. To inspect the installed models or explicitly update one:
 
 ```sh
 docker compose exec ollama ollama list
-docker compose run --rm --entrypoint /bin/sh ollama-setup -c 'ollama pull "$OLLAMA_CAPTION_MODEL"'
+docker compose exec ollama ollama pull moondream
 ```
 
 whisper.cpp and its model, the embedding service, and Stardog are not included.
