@@ -77,6 +77,8 @@ RSpec.describe 'DocGenerationsController', type: :request do
     context 'when logged in' do
       before { sign_in user }
 
+      around { |example| with_env('OLLAMA_CAPTION_MODELS' => 'moondream,medgemma:4b') { example.run } }
+
       it 'enqueues a job to generate the doc instead of creating it synchronously' do
         expect {
           post project_doc_generations_path(project.name),
@@ -87,21 +89,17 @@ RSpec.describe 'DocGenerationsController', type: :request do
       end
 
       it 'passes an available caption model to the job' do
-        with_env('OLLAMA_CAPTION_MODELS' => 'moondream,medgemma:4b') do
-          expect {
-            post project_doc_generations_path(project.name),
-                 params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, caption_model: 'medgemma:4b' }
-          }.to have_enqueued_job(DocGenerationFromMediaJob).with(project, image_medium, user, anything, 'medgemma:4b')
-        end
+        expect {
+          post project_doc_generations_path(project.name),
+               params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, caption_model: 'medgemma:4b' }
+        }.to have_enqueued_job(DocGenerationFromMediaJob).with(project, image_medium, user, anything, 'medgemma:4b')
       end
 
       it 'returns an error without enqueuing a job for a caption model that is not available' do
-        with_env('OLLAMA_CAPTION_MODELS' => 'moondream,medgemma:4b') do
-          expect {
-            post project_doc_generations_path(project.name),
-                 params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, caption_model: 'llava:34b' }
-          }.not_to have_enqueued_job(DocGenerationFromMediaJob)
-        end
+        expect {
+          post project_doc_generations_path(project.name),
+               params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, caption_model: 'llava:34b' }
+        }.not_to have_enqueued_job(DocGenerationFromMediaJob)
 
         expect(response).to redirect_to(new_project_doc_generation_path(project.name))
         expect(flash[:notice]).to eq('Specified caption model is not available.')
@@ -114,6 +112,28 @@ RSpec.describe 'DocGenerationsController', type: :request do
         }.not_to have_enqueued_job(DocGenerationFromMediaJob)
 
         expect(response).to redirect_to(new_project_doc_generation_path(project.name))
+      end
+
+      context 'when OLLAMA_CAPTION_MODELS is not set' do
+        around { |example| with_env('OLLAMA_CAPTION_MODELS' => nil) { example.run } }
+
+        it 'still enqueues a job for audio, which needs no caption model' do
+          audio_medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
+
+          expect {
+            post project_doc_generations_path(project.name),
+                 params: { media: { sourcedb: audio_medium.sourcedb, sourceid: audio_medium.sourceid } }
+          }.to have_enqueued_job(DocGenerationFromMediaJob).with(project, audio_medium, user, anything, nil)
+        end
+
+        it 'returns an error for an image, since no caption model is available' do
+          expect {
+            post project_doc_generations_path(project.name),
+                 params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, caption_model: 'moondream' }
+          }.not_to have_enqueued_job(DocGenerationFromMediaJob)
+
+          expect(flash[:notice]).to eq('Specified caption model is not available.')
+        end
       end
 
       it 'returns the job location for JSON requests' do
@@ -194,7 +214,7 @@ RSpec.describe 'DocGenerationsController', type: :request do
 
         perform_enqueued_jobs do
           post project_doc_generations_path(project.name),
-               params: { media: { sourcedb: video_medium.sourcedb, sourceid: video_medium.sourceid }, sourcedb: 'Example', sourceid: '004', caption_model: 'moondream' }
+               params: { media: { sourcedb: video_medium.sourcedb, sourceid: video_medium.sourceid }, sourcedb: 'Example', sourceid: '004' }
         end
 
         doc = Doc.last

@@ -14,7 +14,7 @@ class DocGenerationsController < ApplicationController
     raise ArgumentError, "Specified media does not exist." unless medium
     raise Exceptions::TooManyBackgroundJobsError, "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless @project.jobs.count < 10
 
-    active_job = DocGenerationFromMediaJob.perform_later(@project, medium, current_user, doc_attributes, caption_model)
+    active_job = DocGenerationFromMediaJob.perform_later(@project, medium, current_user, doc_attributes, caption_model(medium))
     job = Job.find_by(active_job_id: active_job.job_id)
     notice = t('controllers.docs.text_generation_started', job_name: active_job.job_name)
 
@@ -36,10 +36,10 @@ class DocGenerationsController < ApplicationController
     params.permit(:source, :sourcedb, :sourceid).to_h.symbolize_keys
   end
 
-  # Only used if the specified medium turns out to be an image; ignored otherwise (audio/video
-  # always use Whisper). Restricted to a fixed, configured list rather than accepting any Ollama
-  # model name from the request.
-  def caption_model
+  # Only checked and used for an image (audio/video always use Whisper). Restricted to a fixed,
+  # configured list rather than accepting any Ollama model name from the request.
+  def caption_model(medium)
+    return unless medium.image?
     return params[:caption_model] if ImageCaptionService.available_models.include?(params[:caption_model])
 
     raise ArgumentError, "Specified caption model is not available."

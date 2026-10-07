@@ -27,7 +27,8 @@ Start Ollama:
 $ ollama serve
 ```
 
-Pull the moondream model:
+Pull the moondream model and list it in `OLLAMA_CAPTION_MODELS` (e.g. `OLLAMA_CAPTION_MODELS=moondream`);
+docs can't be generated from images unless it lists at least one model:
 ```
 $ ollama pull moondream
 ```

@@ -12,10 +12,10 @@ RSpec.describe ImageCaptionService do
       end
     end
 
-    it 'defaults to moondream when unset or blank' do
+    it 'is empty when unset or blank' do
       [nil, ''].each do |value|
         with_env('OLLAMA_CAPTION_MODELS' => value) do
-          expect(described_class.available_models).to eq(['moondream'])
+          expect(described_class.available_models).to eq([])
         end
       end
     end

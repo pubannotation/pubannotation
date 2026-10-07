@@ -1,9 +1,10 @@
 class ImageCaptionService
   PROMPT = 'Describe the content of this image concisely.'
 
-  # The models users can choose on the doc generation page; the first is the default.
+  # The models users can choose on the doc generation page; the first is the default. None unless
+  # OLLAMA_CAPTION_MODELS is set, in which case docs can't be generated from images.
   def self.available_models
-    (ENV['OLLAMA_CAPTION_MODELS'].presence || 'moondream').split(',')
+    ENV.fetch('OLLAMA_CAPTION_MODELS', '').split(',')
   end
 
   def initialize(image_path, model)
