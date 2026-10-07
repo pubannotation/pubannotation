@@ -41,35 +41,47 @@ RSpec.describe Doc, type: :model do
     end
   end
 
-  describe 'body immutability with audio or video' do
-    { audio: 'audio/mpeg', video: 'video/mp4' }.each do |media_type, content_type|
-      it "cannot change the body with an #{media_type} medium" do
-        doc = create(:doc, medium: create(:medium, media_type:, content_type:))
-        doc.body = 'Changed body'
+  describe 'body immutability with a media transcript' do
+    let(:medium) { create(:medium, media_type: :audio, content_type: 'audio/mpeg') }
+    let(:doc) { create(:doc, body: 'Hello world', medium:) }
+    let(:one_segment) { [{ 'text' => 'Hello world', 'start_ms' => 0, 'end_ms' => 1000 }] }
 
-        expect(doc).not_to be_valid
-        expect(doc.errors[:base]).to include('Body cannot be changed for a document with audio or video')
-      end
-    end
-
-    it 'can still change other attributes with an audio medium' do
-      doc = create(:doc, medium: create(:medium, media_type: :audio, content_type: 'audio/mpeg'))
-      doc.source = 'https://example.com/changed'
-
-      expect(doc).to be_valid
-    end
-
-    it 'can change the body with an image medium, even with a media transcript' do
-      medium = create(:medium, media_type: :image, content_type: 'image/png')
-      doc = create(:doc, medium:)
-      MediaTranscript.create!(medium:, doc:, text: doc.body)
+    it 'cannot change the body of a doc transcribed by Whisper' do
+      MediaTranscript.create!(medium:, doc:, generation_model: 'whisper:ggml-base.en', segments: one_segment)
       doc.reload.body = 'Changed body'
 
+      expect(doc).not_to be_valid
+      expect(doc.errors[:base]).to include('Body cannot be changed for a document transcribed by Whisper')
+    end
+
+    it 'can still change other attributes of a doc transcribed by Whisper' do
+      MediaTranscript.create!(medium:, doc:, generation_model: 'whisper:ggml-base.en', segments: one_segment)
+      doc.reload.source = 'https://example.com/changed'
+
       expect(doc).to be_valid
     end
 
-    it 'can change the body without a medium' do
-      doc = create(:doc)
+    it 'carries a body change over to a single-segment transcript not from Whisper' do
+      media_transcript = MediaTranscript.create!(medium:, doc:, segments: one_segment)
+
+      doc.reload.update!(body: 'Changed body')
+
+      media_transcript.reload
+      expect(media_transcript.segments).to eq([{ 'text' => 'Changed body', 'start_ms' => 0, 'end_ms' => 1000 }])
+      expect(media_transcript.text).to eq('Changed body')
+    end
+
+    it 'can change the body of a doc with an image transcript, leaving the caption as it was' do
+      image = create(:medium, media_type: :image, content_type: 'image/png')
+      image_doc = create(:doc, body: 'A caption.', medium: image)
+      media_transcript = MediaTranscript.create!(medium: image, doc: image_doc, text: 'A caption.', generation_model: 'moondream')
+
+      image_doc.reload.update!(body: 'Changed body')
+
+      expect(media_transcript.reload.text).to eq('A caption.')
+    end
+
+    it 'can change the body of a doc with no media transcript' do
       doc.body = 'Changed body'
 
       expect(doc).to be_valid

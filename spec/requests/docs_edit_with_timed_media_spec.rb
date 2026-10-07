@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'Editing a doc with audio or video', type: :request do
+RSpec.describe 'Editing a doc with a media transcript', type: :request do
   include Devise::Test::IntegrationHelpers
 
   before do
@@ -17,9 +17,10 @@ RSpec.describe 'Editing a doc with audio or video', type: :request do
 
   before { sign_in root_user }
 
-  context 'when the doc has an audio medium' do
+  context 'when the doc was transcribed by Whisper' do
     before do
-      MediaTranscript.create!(medium:, doc:, segments: [{ 'text' => 'Hello world', 'start_ms' => 0, 'end_ms' => 1000 }])
+      MediaTranscript.create!(medium:, doc:, generation_model: 'whisper:ggml-base.en',
+                              segments: [{ 'text' => 'Hello world', 'start_ms' => 0, 'end_ms' => 1000 }])
     end
 
     it 'shows the edit page with the text read-only' do
@@ -27,7 +28,7 @@ RSpec.describe 'Editing a doc with audio or video', type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to match(/<textarea[^>]*name="doc\[text\]"[^>]*readonly="readonly"/)
-      expect(response.body).to include('The text cannot be changed, since it is tied to the audio or video.')
+      expect(response.body).to include('The text cannot be changed, since it was transcribed by Whisper.')
     end
 
     it 'still accepts changes to the other fields, submitted with the unchanged text' do
@@ -53,7 +54,7 @@ RSpec.describe 'Editing a doc with audio or video', type: :request do
       patch doc_path(doc), params: { doc: { text: 'Changed body' } }
 
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include('Body cannot be changed for a document with audio or video')
+      expect(response.body).to include('Body cannot be changed for a document transcribed by Whisper')
       expect(response.body).to match(/<textarea[^>]*readonly="readonly"[^>]*>\n?Hello world<\/textarea>/)
       expect(doc.reload.body).to eq('Hello world')
     end
@@ -63,6 +64,29 @@ RSpec.describe 'Editing a doc with audio or video', type: :request do
 
       expect(response).to have_http_status(:unprocessable_content)
       expect(doc.reload.body).to eq('Hello world')
+    end
+  end
+
+  context 'when the doc has a single-segment media transcript not from Whisper, e.g. registered manually' do
+    let!(:media_transcript) do
+      MediaTranscript.create!(medium:, doc:, segments: [{ 'text' => 'Hello world', 'start_ms' => 0, 'end_ms' => 1000 }])
+    end
+
+    it 'shows the edit page with the text editable' do
+      get edit_doc_path(doc)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).not_to match(/<textarea[^>]*readonly/)
+    end
+
+    it 'accepts a body change, carrying it over to the segment and text' do
+      put doc_path(doc, format: :json), params: { doc: { text: 'Changed body' } }
+
+      expect(response).to have_http_status(:no_content)
+      expect(doc.reload.body).to eq('Changed body')
+      media_transcript.reload
+      expect(media_transcript.segments).to eq([{ 'text' => 'Changed body', 'start_ms' => 0, 'end_ms' => 1000 }])
+      expect(media_transcript.text).to eq('Changed body')
     end
   end
 

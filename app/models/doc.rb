@@ -72,7 +72,8 @@ class Doc < ActiveRecord::Base
 	has_one :media_transcript, dependent: :destroy
 
 	validate :media_reference_immutable, on: :update
-	validate :body_immutable_with_timed_media, on: :update
+	validate :body_immutable_when_transcribed_by_whisper, on: :update
+	after_update :sync_single_segment_media_transcript, if: :saved_change_to_body?
 
 	validates :body,     presence: true
 	validates :sourcedb, presence: true
@@ -1063,10 +1064,10 @@ class Doc < ActiveRecord::Base
 
 	def update_all_references_in_sentences = sentences.each { _1.update_references denotations }
 
-	# Whether the body is tied to its audio/video medium: its transcript's segments are timed against
-	# the body as it was transcribed, so changing the body would leave them out of step with it.
-	def body_tied_to_medium?
-		medium.present? && (medium.audio? || medium.video?)
+	# Whether the body was transcribed by Whisper, so can't be changed: the transcript's segments are
+	# timed against the media. Otherwise a single segment follows the body (see #sync_single_segment_media_transcript).
+	def transcribed_by_whisper?
+		media_transcript&.generation_model.to_s.start_with?('whisper:')
 	end
 
 	private
@@ -1135,9 +1136,17 @@ class Doc < ActiveRecord::Base
 		end
 	end
 
-	def body_immutable_with_timed_media
-		if body_changed? && body_tied_to_medium?
-			errors.add(:base, 'Body cannot be changed for a document with audio or video')
+	def body_immutable_when_transcribed_by_whisper
+		if body_changed? && transcribed_by_whisper?
+			errors.add(:base, 'Body cannot be changed for a document transcribed by Whisper')
 		end
+	end
+
+	# Keeps a single-segment media_transcript (e.g. a manually registered doc's) in step with the body.
+	def sync_single_segment_media_transcript
+		return unless media_transcript&.segments&.size == 1
+
+		segment = media_transcript.segments.first.merge('text' => body)
+		media_transcript.update!(text: body, segments: [segment])
 	end
 end

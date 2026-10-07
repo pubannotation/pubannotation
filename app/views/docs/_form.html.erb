@@ -5,10 +5,10 @@
 		<tr>
 			<th style="width:5em">Text</th>
 			<td>
-				<% if @doc.persisted? && @doc.body_tied_to_medium? %>
+				<% if @doc.persisted? && @doc.transcribed_by_whisper? %>
 					<%# readonly (not disabled) so it's still submitted; the stored body, not a rejected edit %>
 					<%= text_area_tag 'doc[text]', @doc.body_in_database, size: "60x10", readonly: true %>
-					<p>The text cannot be changed, since it is tied to the audio or video.</p>
+					<p>The text cannot be changed, since it was transcribed by Whisper.</p>
 				<% else %>
 					<%= text_area_tag 'doc[text]', @doc.body, size: "60x10" %>
 				<% end %>
