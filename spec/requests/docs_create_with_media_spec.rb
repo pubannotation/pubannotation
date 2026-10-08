@@ -76,17 +76,16 @@ RSpec.describe 'POST /docs.json', type: :request do
       expect(media_transcript.segments).to eq([{ 'text' => 'doctor findings', 'start_ms' => 0, 'end_ms' => 4_980 }])
     end
 
-    it "responds with an error, leaving the doc without a media_transcript, when the media's duration cannot be read" do
+    it "does not create the doc when the media's duration cannot be read" do
       analyzer = instance_double(AudioAnalyzer)
       allow(analyzer).to receive(:duration).and_raise(AudioAnalyzer::DurationDetectionError, 'ffprobe failed')
       allow(AudioAnalyzer).to receive(:new).and_return(analyzer)
 
       expect {
         post '/docs.json', params: params.merge(media_params), headers: headers
-      }.to change(Doc, :count).by(1)
+      }.not_to change(Doc, :count)
 
       expect(response).to have_http_status(:unprocessable_content)
-      expect(Doc.last.media_transcript).to be_nil
     end
   end
 

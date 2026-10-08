@@ -339,10 +339,13 @@ class DocsController < ApplicationController
 			end
 
 			hdoc = Doc.hdoc_normalize!(hdoc, current_user, current_user.root?)
-			@doc = Doc.store_hdoc!(hdoc)
-			@project.add_doc!(@doc)
-			if medium&.transcribable?
-				ManualDocTranscriptService.call(medium, hdoc[:body]).update!(doc: @doc)
+			# isolation matches store_hdoc!'s own transaction, which raises if joined with a different one.
+			ActiveRecord::Base.transaction(isolation: :read_committed) do
+				@doc = Doc.store_hdoc!(hdoc)
+				@project.add_doc!(@doc)
+				if medium&.transcribable?
+					ManualDocTranscriptService.call(medium, hdoc[:body]).update!(doc: @doc)
+				end
 			end
 
 			respond_to do |format|
