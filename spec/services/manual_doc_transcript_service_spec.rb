@@ -35,6 +35,12 @@ RSpec.describe ManualDocTranscriptService do
       end
     end
 
+    it 'keeps a body that looks like a non-speech label as the text' do
+      medium = medium_with_file(:audio, 'audio/mpeg', 'test_audio.mp3')
+
+      expect(described_class.call(medium, '(music)').text).to eq('(music)')
+    end
+
     it 'raises for an image medium' do
       medium = medium_with_file(:image, 'image/png', 'test_image.png')
 
