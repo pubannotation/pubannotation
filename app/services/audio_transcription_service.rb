@@ -1,6 +1,5 @@
 class AudioTranscriptionService
   class TranscriptionError < StandardError; end
-  class DurationDetectionError < StandardError; end
 
   # Each line of whisper-cli's `-np` output looks like:
   #   [00:00:00.000 --> 00:00:03.500]   Ask not what your country
@@ -38,26 +37,9 @@ class AudioTranscriptionService
     stdout
   end
 
-  # Whisper pads the last segment of a chunk out to its 30s processing window rather than
-  # the audio's actual end, so offsets are clamped against ffprobe's duration. `Float()` is
-  # used instead of `String#to_f` because `to_f` silently accepts garbage like "N/A" or
-  # "5abc" as 0.0/5.0 instead of raising, and 0 is truthy in Ruby so a lenient parse wouldn't
-  # even be caught by a nil check; `finite?` additionally guards against a numeric string large
-  # enough to overflow to Infinity when parsed (e.g. "1e400"), which would otherwise raise
-  # FloatDomainError when rounded.
+  # Whisper pads the last segment to its processing window; clamp it to the actual duration.
   def audio_duration_ms
-    stdout, stderr, status = Open3.capture3(
-      'ffprobe', '-v', 'error', '-show_entries', 'format=duration',
-      '-of', 'default=noprint_wrappers=1:nokey=1', @audio_path
-    )
-    raise DurationDetectionError, "Failed to determine audio duration via ffprobe (status #{status.exitstatus}): #{stderr.strip}" unless status.success?
-
-    duration_seconds = Float(stdout.strip)
-    raise DurationDetectionError, "ffprobe reported an invalid audio duration: #{stdout.strip.inspect}" unless duration_seconds.finite? && duration_seconds.positive?
-
-    (duration_seconds * 1000).round
-  rescue ArgumentError => e
-    raise DurationDetectionError, e.message
+    (AudioAnalyzer.new(@audio_path).duration * 1000).round
   end
 
   def parse_segments(stdout, duration_ms)

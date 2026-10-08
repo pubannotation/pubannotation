@@ -23,20 +23,20 @@ RSpec.describe AudioSilenceDetector do
       expect(described_class.new(audio_path).silent?).to be false
     end
 
-    it 'raises DetectionError when max_volume cannot be parsed from ffmpeg output' do
+    it 'raises VolumeDetectionError when max_volume cannot be parsed from ffmpeg output' do
       stub_ffmpeg_stderr('some unrelated ffmpeg error output')
 
       expect {
         described_class.new(audio_path).silent?
-      }.to raise_error(AudioSilenceDetector::DetectionError, /Could not determine max_volume/)
+      }.to raise_error(AudioAnalyzer::VolumeDetectionError, /Could not determine max_volume/)
     end
 
-    it 'raises DetectionError when ffmpeg fails, even if stderr contains a volume-like reading' do
+    it 'raises VolumeDetectionError when ffmpeg fails, even if stderr contains a volume-like reading' do
       stub_ffmpeg_stderr('[Parsed_volumedetect_0] max_volume: -91.0 dB', success: false)
 
       expect {
         described_class.new(audio_path).silent?
-      }.to raise_error(AudioSilenceDetector::DetectionError, /Failed to analyze audio with ffmpeg/)
+      }.to raise_error(AudioAnalyzer::VolumeDetectionError, /Failed to analyze audio with ffmpeg/)
     end
   end
 end
