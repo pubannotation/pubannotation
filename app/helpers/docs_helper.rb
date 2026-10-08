@@ -153,6 +153,18 @@ module DocsHelper
 		safe_join(wrapped + [body[cursor..]])
 	end
 
+	# `body`, with `span` ({begin:, end:}) wrapped in a .highlight <span> and the text on either
+	# side of it in .context ones.
+	def body_with_highlighted_span(body, span)
+		begin_pos = span[:begin].to_i
+		end_pos = span[:end].to_i
+		safe_join([
+			content_tag(:span, body[0...begin_pos], class: 'context'),
+			content_tag(:span, body[begin_pos...end_pos], class: 'highlight'),
+			content_tag(:span, body[end_pos..], class: 'context')
+		])
+	end
+
 	private
 
 	def speech_segment_span_tag(body, span)

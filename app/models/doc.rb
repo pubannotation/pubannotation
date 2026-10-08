@@ -511,15 +511,6 @@ class Doc < ActiveRecord::Base
 		end
 	end  
 
-	def highlight_span(span)
-		begin_pos = span[:begin].to_i
-		end_pos = span[:end].to_i
-		prev_text = self.body[0...begin_pos]
-		focus_text = self.body[begin_pos...end_pos]
-		next_text = self.body[end_pos..self.body.length]
-		"<span class='context'>#{prev_text}</span><span class='highlight'>#{focus_text}</span><span class='context'>#{next_text}</span>"
-	end
-
 	def get_project_count(span = nil)
 		return self.projects.count if span.nil?
 
