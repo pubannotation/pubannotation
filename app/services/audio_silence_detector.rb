@@ -1,5 +1,4 @@
 class AudioSilenceDetector
-  DetectionError = AudioAnalyzer::VolumeDetectionError
 
   THRESHOLD_DB = -50.0
 

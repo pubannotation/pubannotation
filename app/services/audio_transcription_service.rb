@@ -1,6 +1,5 @@
 class AudioTranscriptionService
   class TranscriptionError < StandardError; end
-  DurationDetectionError = AudioAnalyzer::DurationDetectionError
 
   # Each line of whisper-cli's `-np` output looks like:
   #   [00:00:00.000 --> 00:00:03.500]   Ask not what your country

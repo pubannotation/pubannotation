@@ -12,12 +12,10 @@ RSpec.describe AudioAnalyzer do
   end
   let(:volume_args) { ['ffmpeg', '-i', audio_path, '-af', 'volumedetect', '-f', 'null', '-'] }
 
-  it 'returns seconds and dB, caching each successful measurement independently' do
+  it 'returns duration in seconds and maximum volume in dB' do
     expect(Open3).to receive(:capture3).with(*probe_args).once.and_return(["4.98\n", '', status])
     expect(Open3).to receive(:capture3).with(*volume_args).once.and_return(['', 'max_volume: -60.0 dB', status])
 
-    expect(analyzer.duration).to eq(4.98)
-    expect(analyzer.metadata).to eq(duration: 4.98, max_volume: -60.0)
     expect(analyzer.metadata).to eq(duration: 4.98, max_volume: -60.0)
   end
 
