@@ -339,14 +339,11 @@ class DocsController < ApplicationController
 			end
 
 			hdoc = Doc.hdoc_normalize!(hdoc, current_user, current_user.root?)
-			# Built before the Doc is stored, so a medium whose duration can't be read fails the creation
-			# instead of leaving a Doc without its transcript.
-			media_transcript = if ManualDocTranscriptService.applicable?(medium)
-				ManualDocTranscriptService.call(medium, hdoc[:body])
-			end
 			@doc = Doc.store_hdoc!(hdoc)
 			@project.add_doc!(@doc)
-			media_transcript&.update!(doc: @doc)
+			if ManualDocTranscriptService.applicable?(medium)
+				ManualDocTranscriptService.call(medium, hdoc[:body]).update!(doc: @doc)
+			end
 
 			respond_to do |format|
 				format.html { redirect_to show_project_sourcedb_sourceid_docs_path(@project.name, hdoc[:sourcedb], hdoc[:sourceid]), notice: t('controllers.shared.successfully_created', :model => t('activerecord.models.doc')) }
