@@ -107,6 +107,8 @@ Pubann::Application.routes.draw do
 
 			get :autocomplete_doc_sourcedb
 		end
+
+		resources :segments, only: %i[index update], param: :index
 	end
 
 	# routings for /docs/sourcedb....

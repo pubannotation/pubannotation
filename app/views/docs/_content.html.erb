@@ -16,6 +16,7 @@
 </table>
 
 <%= link_to t('views.shared.edit_model', :model => t('activerecord.models.doc')), edit_doc_path(@doc), :class => 'button'  if @doc.updatable_for?(current_user) -%>
+<%= link_to 'Edit segment text', doc_segments_path(@doc), class: 'button' if segments_editable?(@doc) -%>
 
 <% content_for :javascript do -%>
 	<%= javascript_include_tag 'docs', defer: true -%>
