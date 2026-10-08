@@ -7,11 +7,6 @@ class AudioAnalyzer
     @audio_path = audio_path
   end
 
-  # Duration in seconds and maximum volume in dB.
-  def metadata
-    { duration: duration, max_volume: max_volume }
-  end
-
   # Use container duration, which is also available when stream duration is missing.
   def duration
     stdout, stderr, status = Open3.capture3(

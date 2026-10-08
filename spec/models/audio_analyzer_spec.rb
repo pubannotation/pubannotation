@@ -16,7 +16,8 @@ RSpec.describe AudioAnalyzer do
     expect(Open3).to receive(:capture3).with(*probe_args).once.and_return(["4.98\n", '', status])
     expect(Open3).to receive(:capture3).with(*volume_args).once.and_return(['', 'max_volume: -60.0 dB', status])
 
-    expect(analyzer.metadata).to eq(duration: 4.98, max_volume: -60.0)
+    expect(analyzer.duration).to eq(4.98)
+    expect(analyzer.max_volume).to eq(-60.0)
   end
 
   it 'does not measure volume when only duration is requested' do
