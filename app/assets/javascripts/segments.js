@@ -2,6 +2,7 @@
 (() => {
 	const dialog = document.getElementById('segment-dialog');
 	const form = dialog.querySelector('form');
+	const error = document.getElementById('segment-dialog-error');
 	const time = document.getElementById('segment-dialog-time');
 	const textArea = form.querySelector('textarea');
 
@@ -9,6 +10,7 @@
 	for (const button of document.querySelectorAll('.edit-segment')) {
 		button.addEventListener('click', () => {
 			form.action = button.dataset.url;
+			error.textContent = '';
 			time.textContent = button.dataset.time;
 			textArea.value = button.dataset.text;
 			dialog.showModal();

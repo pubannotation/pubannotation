@@ -19,8 +19,8 @@ class SegmentsController < ApplicationController
 
     redirect_to doc_segments_path(@doc), notice: 'Segment text was successfully updated.'
   rescue ArgumentError, ActiveRecord::RecordInvalid => e
-    # Reopens the dialog with the entered text, for it to be fixed and saved again.
-    flash.now[:notice] = e.message
+    # Reopens the dialog with the entered text and the error, for it to be fixed and saved again.
+    @error = e.message
     @media_transcript.reload
     render :index, status: :unprocessable_content
   end

@@ -39,6 +39,7 @@
 	<div class="segment-dialog-content">
 		<h2>Edit segment text</h2>
 		<%= form_with scope: :segment, url: (doc_segment_path(@doc, @index) if @segment), method: :patch do |f| %>
+			<p id="segment-dialog-error" class="error"><%= @error %></p>
 			<p id="segment-dialog-time"><%= "#{segment_time(@segment['start_ms'])} - #{segment_time(@segment['end_ms'])}" if @segment %></p>
 			<%= f.text_area :text, value: @text, size: '60x4' %>
 			<div class="actions">
