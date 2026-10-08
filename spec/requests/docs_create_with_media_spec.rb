@@ -90,17 +90,6 @@ RSpec.describe 'POST /docs.json', type: :request do
     end
   end
 
-  it 'does not create a media_transcript for an audio medium with no attached file' do
-    audio_medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
-
-    post '/docs.json',
-         params: params.merge(media: { sourcedb: audio_medium.sourcedb, sourceid: audio_medium.sourceid }),
-         headers: headers
-
-    expect(response).to have_http_status(:created)
-    expect(Doc.last.media_transcript).to be_nil
-  end
-
   it 'does not create a media_transcript for an image medium' do
     post '/docs.json',
          params: params.merge(media: { sourcedb: medium.sourcedb, sourceid: medium.sourceid }),

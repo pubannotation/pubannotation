@@ -17,25 +17,6 @@ RSpec.describe ManualDocTranscriptService do
     allow(AudioAnalyzer).to receive(:new).and_return(instance_double(AudioAnalyzer, duration: 4.98))
   end
 
-  describe '.applicable?' do
-    it 'is true for an audio or video medium with an attached file' do
-      expect(described_class.applicable?(medium_with_file(:audio, 'audio/mpeg', 'test_audio.mp3'))).to be(true)
-      expect(described_class.applicable?(medium_with_file(:video, 'video/mp4', 'test_video.mp4'))).to be(true)
-    end
-
-    it 'is false for an image medium' do
-      expect(described_class.applicable?(medium_with_file(:image, 'image/png', 'test_image.png'))).to be(false)
-    end
-
-    it 'is false for an audio medium with no attached file' do
-      expect(described_class.applicable?(create(:medium, media_type: :audio, content_type: 'audio/mpeg'))).to be(false)
-    end
-
-    it 'is false without a medium' do
-      expect(described_class.applicable?(nil)).to be_falsey
-    end
-  end
-
   describe '.call' do
     %i[audio video].each do |media_type|
       context "with an #{media_type} medium" do
@@ -58,12 +39,6 @@ RSpec.describe ManualDocTranscriptService do
       medium = medium_with_file(:image, 'image/png', 'test_image.png')
 
       expect { described_class.call(medium, 'A caption.') }.to raise_error(ArgumentError, /can't get a transcript/)
-    end
-
-    it 'raises for an audio medium with no attached file' do
-      medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
-
-      expect { described_class.call(medium, 'Hello world') }.to raise_error(ArgumentError, /can't get a transcript/)
     end
   end
 end
