@@ -26,6 +26,11 @@ class MediaTranscript < ApplicationRecord
     self.text ||= speech_text if new_record? && segments.present?
   end
 
+  # Once created, changed segments (e.g. a segment's text edited) rebuild text, unless it's set along
+  # with them, and the doc's body follows it.
+  before_update :rebuild_text, if: -> { will_save_change_to_segments? && !will_save_change_to_text? }
+  after_update :sync_doc_body, if: -> { saved_change_to_segments? || saved_change_to_text? }
+
   # Segments that are actual speech, excluding Whisper's non-speech labels (e.g. "(music)").
   # Kept rather than discarded in `segments`, since the raw transcript may still be useful.
   def speech_segments
@@ -57,7 +62,28 @@ class MediaTranscript < ApplicationRecord
     generation_model.to_s.start_with?('whisper:')
   end
 
+  # Replaces the text of the segment at `index` in `segments`, leaving start_ms/end_ms as they are. On
+  # save, text and the doc's body are rebuilt to follow (see #rebuild_text and #sync_doc_body).
+  def set_segment_text(index, new_text)
+    raise ArgumentError, "No segment at index #{index}." unless (0...segments.size).cover?(index)
+    raise ArgumentError, "Text is missing." if new_text.blank?
+
+    edited_segments = segments.dup
+    edited_segments[index] = edited_segments[index].merge('text' => new_text.strip)
+    self.segments = edited_segments
+  end
+
   private
+
+  def rebuild_text
+    self.text = speech_text
+  end
+
+  # Inside the save's transaction, so a doc failing to save rolls the transcript back too. Its
+  # denotations are left as they are, even those after an edited segment.
+  def sync_doc_body
+    doc.update!(body: text) if doc && doc.body != text
+  end
 
   def doc_has_matching_medium
     errors.add(:doc, 'must have the same medium as this transcript') if doc && doc.medium != medium

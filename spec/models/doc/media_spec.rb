@@ -51,13 +51,21 @@ RSpec.describe Doc, type: :model do
       doc.reload.body = 'Changed body'
 
       expect(doc).not_to be_valid
-      expect(doc.errors[:base]).to include('Body cannot be changed for a document transcribed by Whisper')
+      expect(doc.errors[:base]).to include('Body cannot be changed directly for a document transcribed by Whisper; edit its segments instead')
     end
 
     it 'can change only the line endings of the body of a doc transcribed by Whisper' do
       MediaTranscript.create!(medium:, doc:, generation_model: 'whisper:ggml-base.en', segments: one_segment)
       doc.update_column(:body, "Hello\r\nworld")
       doc.reload.body = "Hello\nworld"
+
+      expect(doc).to be_valid
+    end
+
+    it 'can change the body of a doc transcribed by Whisper to follow its transcript' do
+      media_transcript = MediaTranscript.create!(medium:, doc:, generation_model: 'whisper:ggml-base.en', segments: one_segment)
+      media_transcript.update_column(:text, 'Goodbye world')
+      doc.reload.body = 'Goodbye world'
 
       expect(doc).to be_valid
     end
@@ -101,6 +109,18 @@ RSpec.describe Doc, type: :model do
       doc.update_column(:body, "Hello\r\nworld")
 
       doc.reload.update!(body: "Hello\nworld")
+
+      expect(media_transcript.reload.segments).to eq(segments)
+    end
+
+    it 'leaves the segments alone when the body changes to follow the transcript' do
+      segments = [
+        { 'text' => 'Goodbye', 'start_ms' => 0, 'end_ms' => 400 },
+        { 'text' => 'world', 'start_ms' => 500, 'end_ms' => 1000 }
+      ]
+      media_transcript = MediaTranscript.create!(medium:, doc:, text: 'Goodbye world', segments:)
+
+      doc.reload.update!(body: 'Goodbye world')
 
       expect(media_transcript.reload.segments).to eq(segments)
     end
