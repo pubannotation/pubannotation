@@ -51,7 +51,7 @@ RSpec.describe Doc, type: :model do
       doc.reload.body = 'Changed body'
 
       expect(doc).not_to be_valid
-      expect(doc.errors[:base]).to include('Body cannot be changed for a document transcribed by Whisper')
+      expect(doc.errors[:base]).to include('Body cannot be changed directly for a document transcribed by Whisper; edit its segments instead')
     end
 
     it 'can change only the line endings of the body of a doc transcribed by Whisper' do

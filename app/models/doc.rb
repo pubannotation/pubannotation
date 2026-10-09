@@ -1135,7 +1135,7 @@ class Doc < ActiveRecord::Base
 	def body_immutable_when_transcribed_by_whisper
 		if changed_beyond_line_endings?(body_change_to_be_saved) && media_transcript&.transcribed_by_whisper? &&
 				body != media_transcript.text
-			errors.add(:base, 'Body cannot be changed for a document transcribed by Whisper')
+			errors.add(:base, 'Body cannot be changed directly for a document transcribed by Whisper; edit its segments instead')
 		end
 	end
 
