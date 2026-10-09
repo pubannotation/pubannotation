@@ -1,6 +1,6 @@
-# プロジェクト固有のコーディングルール
+# Project-Specific Coding Rules
 
-- デメテルの法則を守る。他のオブジェクトの内部構造をたどって、その先のオブジェクトを操作しない。必要な操作は、直接やり取りするオブジェクトのメソッドとして提供する。メソッドチェーンの有無だけで違反を判断しない。
-- Tell, Don't Ask の原則を守る。オブジェクトの状態を取得して呼び出し側で判断・操作するより、その状態に基づく判断と操作を当該オブジェクトの振る舞いとして実装する。表示やデータの受け渡しに必要な状態の取得まで禁止するものではない。
-- 名前付き引数（Ruby のキーワード引数）より順序引数（位置引数）を優先する。新規メソッドやシグネチャを変更する際は、位置引数を基本とする。既存の API やフレームワークがキーワード引数を要求する場合は、その仕様に従う。
-- 状態を持たないサービスクラスのメソッドは、クラスメソッドで実装する。
+- Follow the Law of Demeter. Do not traverse another object's internal structure to operate on objects reached through it. Expose the required operations as methods on the object you interact with directly. Do not judge violations solely by the presence or absence of method chaining.
+- Follow the Tell, Don't Ask principle. Instead of retrieving an object's state and making decisions or performing operations in the caller, implement those decisions and operations as behavior of the object that owns the state. This does not prohibit retrieving state for display or data transfer.
+- Prefer positional arguments over named arguments (keyword arguments in Ruby). Use positional arguments by default when adding methods or changing method signatures. Follow existing API or framework requirements when they require keyword arguments.
+- Implement methods of stateless service classes as class methods.
