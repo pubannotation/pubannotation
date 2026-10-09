@@ -1064,12 +1064,6 @@ class Doc < ActiveRecord::Base
 
 	def update_all_references_in_sentences = sentences.each { _1.update_references denotations }
 
-	# Whether the body was transcribed by Whisper, so can't be changed: the transcript's segments are
-	# timed against the media. Otherwise the segments follow the body (see #sync_media_transcript_with_body).
-	def transcribed_by_whisper?
-		media_transcript&.generation_model.to_s.start_with?('whisper:')
-	end
-
 	private
 
 	# default sort order
@@ -1136,8 +1130,9 @@ class Doc < ActiveRecord::Base
 		end
 	end
 
+	# A transcript not from Whisper follows the body instead (see #sync_media_transcript_with_body).
 	def body_immutable_when_transcribed_by_whisper
-		if body_changed? && transcribed_by_whisper?
+		if body_changed? && media_transcript&.transcribed_by_whisper?
 			errors.add(:base, 'Body cannot be changed for a document transcribed by Whisper')
 		end
 	end
