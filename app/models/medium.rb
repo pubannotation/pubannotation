@@ -23,6 +23,10 @@ class Medium < ApplicationRecord
   validates :media_type, presence: true
   validates :content_type, presence: true, inclusion: { in: ALLOWED_CONTENT_TYPES }
 
+  def transcribable?
+    audio? || video?
+  end
+
   private
 
   def set_media_type_from_content_type
