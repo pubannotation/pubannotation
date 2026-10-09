@@ -339,4 +339,108 @@ RSpec.describe MediaTranscript, type: :model do
       expect(build(:media_transcript, segments: segments)).to be_valid
     end
   end
+
+  describe '#set_segment_text' do
+    let(:medium) { create(:medium, media_type: :audio, content_type: 'audio/mpeg') }
+    let(:doc) { create(:doc, body: 'Hello world', medium:) }
+    let!(:media_transcript) { create(:media_transcript, medium:, doc:, text: 'Hello world') }
+
+    it "replaces the segment's text, keeping its timing, once saved" do
+      media_transcript.set_segment_text(0, 'Goodbye')
+      media_transcript.save!
+
+      expect(media_transcript.reload.segments).to eq([
+        { 'text' => 'Goodbye', 'start_ms' => 0, 'end_ms' => 300 },
+        { 'text' => 'world', 'start_ms' => 300, 'end_ms' => 600 }
+      ])
+    end
+
+    it 'strips surrounding whitespace from the text' do
+      media_transcript.set_segment_text(0, "  Goodbye\n")
+
+      expect(media_transcript.segments.first['text']).to eq('Goodbye')
+    end
+
+    it 'raises for an index with no segment' do
+      expect { media_transcript.set_segment_text(2, 'Goodbye') }.to raise_error(ArgumentError, /No segment at index 2/)
+    end
+
+    it 'raises for blank text' do
+      expect { media_transcript.set_segment_text(0, ' ') }.to raise_error(ArgumentError, /Text is missing/)
+    end
+  end
+
+  describe 'following changed segments' do
+    let(:medium) { create(:medium, media_type: :audio, content_type: 'audio/mpeg') }
+    let(:doc) { create(:doc, body: 'Hello world', medium:) }
+    let!(:media_transcript) { create(:media_transcript, medium:, doc:, text: 'Hello world') }
+
+    it "rebuilds the text and the doc's body from the segments" do
+      media_transcript.set_segment_text(1, 'there')
+      media_transcript.save!
+
+      expect(media_transcript.reload.text).to eq('Hello there')
+      expect(doc.reload.body).to eq('Hello there')
+    end
+
+    it 'keeps a text set along with the segments, and the body follows it' do
+      media_transcript.update!(text: '(music)', segments: [{ 'text' => '(music)', 'start_ms' => 0, 'end_ms' => 600 }])
+
+      expect(media_transcript.reload.text).to eq('(music)')
+      expect(doc.reload.body).to eq('(music)')
+    end
+
+    context 'with a non-speech segment' do
+      let(:doc) { create(:doc, body: 'Welcome.', medium:) }
+      let!(:media_transcript) do
+        create(:media_transcript, medium:, doc:, text: 'Welcome.', segments: [
+          { 'text' => '(music)', 'start_ms' => 0, 'end_ms' => 3000 },
+          { 'text' => 'Welcome.', 'start_ms' => 3000, 'end_ms' => 6000 }
+        ])
+      end
+
+      it 'adds its text to the body once it is edited into speech' do
+        media_transcript.set_segment_text(0, 'Hi.')
+        media_transcript.save!
+
+        expect(doc.reload.body).to eq('Hi. Welcome.')
+      end
+    end
+
+    context 'transcribed by Whisper' do
+      let!(:media_transcript) do
+        create(:media_transcript, medium:, doc:, text: 'Hello world', generation_model: 'whisper:ggml-base.en')
+      end
+
+      it "still rebuilds the doc's body, which is locked against other edits, keeping the segments apart" do
+        media_transcript.set_segment_text(1, 'there')
+        media_transcript.save!
+
+        expect(doc.reload.body).to eq('Hello there')
+        expect(media_transcript.reload.segments.map { _1['text'] }).to eq(%w[Hello there])
+      end
+    end
+
+    it 'leaves a transcript with no doc to itself' do
+      orphan = create(:media_transcript, medium:)
+      orphan.set_segment_text(0, 'Goodbye')
+
+      expect { orphan.save! }.not_to raise_error
+      expect(orphan.reload.text).to eq('Goodbye world')
+    end
+
+    it 'rolls back the transcript when the doc fails to save' do
+      allow(media_transcript.doc).to receive(:update!).and_raise(ActiveRecord::RecordInvalid)
+      media_transcript.set_segment_text(0, 'Goodbye')
+
+      expect { media_transcript.save! }.to raise_error(ActiveRecord::RecordInvalid)
+      expect(media_transcript.reload.segments.first['text']).to eq('Hello')
+      expect(media_transcript.text).to eq('Hello world')
+      expect(doc.reload.body).to eq('Hello world')
+    end
+
+    it 'leaves the doc alone when the segments are unchanged' do
+      expect { media_transcript.update!(updated_at: 1.minute.from_now) }.not_to(change { doc.reload.updated_at })
+    end
+  end
 end

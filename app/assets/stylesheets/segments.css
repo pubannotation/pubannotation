@@ -1,0 +1,12 @@
+#segment-dialog {
+	/* Padding goes on the content instead, so a click on the dialog itself is one on its backdrop */
+	padding: 0;
+
+	.segment-dialog-content {
+		padding: 1em;
+	}
+
+	.error {
+		color: red;
+	}
+}

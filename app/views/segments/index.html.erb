@@ -1,0 +1,55 @@
+<%= render 'path' %>
+
+<h1>Segments</h1>
+
+<p>Editing a segment's text rebuilds the document's text from the segments. The annotations after it are not moved.</p>
+
+<table>
+	<tr>
+		<th>#</th>
+		<th>Start</th>
+		<th>End</th>
+		<th>Text</th>
+		<th></th>
+	</tr>
+	<% @media_transcript.segments.each_with_index do |segment, index| -%>
+		<tr>
+			<td><%= index %></td>
+			<td><%= segment_time(segment['start_ms']) %></td>
+			<td><%= segment_time(segment['end_ms']) %></td>
+			<td>
+				<%= segment['text'] %>
+				<% if NonSpeechTextMatcher.match?(segment['text']) -%>
+					<i>(not in the text)</i>
+				<% end -%>
+			</td>
+			<td>
+				<%= button_tag 'Edit', type: 'button', class: 'button edit-segment',
+					data: { url: doc_segment_path(@doc, index), text: segment['text'],
+					        time: "#{segment_time(segment['start_ms'])} - #{segment_time(segment['end_ms'])}" } %>
+			</td>
+		</tr>
+	<% end -%>
+</table>
+
+<%= link_to t('views.shared.back'), doc_sourcedb_sourceid_show_path(@doc.sourcedb, @doc.sourceid) %>
+
+<%# Filled in from the clicked Edit button; rendered open with the entered text after a failed save. %>
+<dialog id="segment-dialog" data-open-on-load="<%= @segment.present? %>">
+	<div class="segment-dialog-content">
+		<h2>Edit segment text</h2>
+		<%= form_with scope: :segment, url: (doc_segment_path(@doc, @index) if @segment), method: :patch do |f| %>
+			<p id="segment-dialog-error" class="error"><%= @error %></p>
+			<p id="segment-dialog-time"><%= "#{segment_time(@segment['start_ms'])} - #{segment_time(@segment['end_ms'])}" if @segment %></p>
+			<%= f.text_area :text, value: @text, size: '60x4' %>
+			<div class="actions">
+				<%= f.submit 'Save' %>
+				<%= button_tag 'Cancel', type: 'button', id: 'segment-dialog-cancel' %>
+			</div>
+		<% end %>
+	</div>
+</dialog>
+
+<% content_for :javascript do -%>
+	<%= javascript_include_tag 'segments', defer: true -%>
+<% end -%>

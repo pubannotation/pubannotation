@@ -1130,10 +1130,12 @@ class Doc < ActiveRecord::Base
 		end
 	end
 
-	# A transcript not from Whisper follows the body instead (see #sync_media_transcript_with_body).
+	# A transcript not from Whisper follows the body instead (see #sync_media_transcript_with_body). The
+	# body can still follow the transcript, once its segments are changed (see MediaTranscript#sync_doc_body).
 	def body_immutable_when_transcribed_by_whisper
-		if changed_beyond_line_endings?(body_change_to_be_saved) && media_transcript&.transcribed_by_whisper?
-			errors.add(:base, 'Body cannot be changed for a document transcribed by Whisper')
+		if changed_beyond_line_endings?(body_change_to_be_saved) && media_transcript&.transcribed_by_whisper? &&
+				body != media_transcript.text
+			errors.add(:base, 'Body cannot be changed directly for a document transcribed by Whisper; edit its segments instead')
 		end
 	end
 
@@ -1149,7 +1151,8 @@ class Doc < ActiveRecord::Base
 	# Keeps media_transcript's text in step with the body. Its segments, if any (an image caption's has
 	# none), are merged into one spanning them all, since which part of the body each one was is lost.
 	def sync_media_transcript_with_body
-		return unless media_transcript
+		# Already in step when the body followed the transcript, e.g. after its segments changed.
+		return if media_transcript.nil? || media_transcript.text == body
 
 		segments = media_transcript.segments
 		if segments.blank?
