@@ -1137,13 +1137,17 @@ class Doc < ActiveRecord::Base
 		end
 	end
 
-	# Keeps media_transcript (e.g. a manually registered doc's) in step with the body. Its segments, if
-	# several, are merged into one spanning them all, since which part of the body each one was is lost.
+	# Keeps media_transcript's text in step with the body. Its segments, if any (an image caption's has
+	# none), are merged into one spanning them all, since which part of the body each one was is lost.
 	def sync_media_transcript_with_body
-		segments = media_transcript&.segments
-		return if segments.blank?
+		return unless media_transcript
 
-		segment = { 'text' => body, 'start_ms' => segments.first['start_ms'], 'end_ms' => segments.last['end_ms'] }
-		media_transcript.update!(text: body, segments: [segment])
+		segments = media_transcript.segments
+		if segments.blank?
+			media_transcript.update!(text: body)
+		else
+			segment = { 'text' => body, 'start_ms' => segments.first['start_ms'], 'end_ms' => segments.last['end_ms'] }
+			media_transcript.update!(text: body, segments: [segment])
+		end
 	end
 end

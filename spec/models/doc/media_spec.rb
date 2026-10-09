@@ -84,14 +84,14 @@ RSpec.describe Doc, type: :model do
       expect(media_transcript.text).to eq('Changed body')
     end
 
-    it 'can change the body of a doc with an image transcript, leaving the caption as it was' do
+    it 'can change the body of a doc with an image transcript, carrying it over to the caption' do
       image = create(:medium, media_type: :image, content_type: 'image/png')
       image_doc = create(:doc, body: 'A caption.', medium: image)
       media_transcript = MediaTranscript.create!(medium: image, doc: image_doc, text: 'A caption.', generation_model: 'moondream')
 
       image_doc.reload.update!(body: 'Changed body')
 
-      expect(media_transcript.reload.text).to eq('A caption.')
+      expect(media_transcript.reload.text).to eq('Changed body')
     end
 
     it 'can change the body of a doc with no media transcript' do
