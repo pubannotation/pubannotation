@@ -54,6 +54,14 @@ RSpec.describe Doc, type: :model do
       expect(doc.errors[:base]).to include('Body cannot be changed for a document transcribed by Whisper')
     end
 
+    it 'can change only the line endings of the body of a doc transcribed by Whisper' do
+      MediaTranscript.create!(medium:, doc:, generation_model: 'whisper:ggml-base.en', segments: one_segment)
+      doc.update_column(:body, "Hello\r\nworld")
+      doc.reload.body = "Hello\nworld"
+
+      expect(doc).to be_valid
+    end
+
     it 'can still change other attributes of a doc transcribed by Whisper' do
       MediaTranscript.create!(medium:, doc:, generation_model: 'whisper:ggml-base.en', segments: one_segment)
       doc.reload.source = 'https://example.com/changed'
@@ -82,6 +90,19 @@ RSpec.describe Doc, type: :model do
       media_transcript.reload
       expect(media_transcript.segments).to eq([{ 'text' => 'Changed body', 'start_ms' => 0, 'end_ms' => 1000 }])
       expect(media_transcript.text).to eq('Changed body')
+    end
+
+    it 'leaves the segments alone when only the line endings of the body change' do
+      segments = [
+        { 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 400 },
+        { 'text' => 'world', 'start_ms' => 500, 'end_ms' => 1000 }
+      ]
+      media_transcript = MediaTranscript.create!(medium:, doc:, segments:)
+      doc.update_column(:body, "Hello\r\nworld")
+
+      doc.reload.update!(body: "Hello\nworld")
+
+      expect(media_transcript.reload.segments).to eq(segments)
     end
 
     it 'can change the body of a doc with an image transcript, carrying it over to the caption' do

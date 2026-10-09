@@ -73,7 +73,7 @@ class Doc < ActiveRecord::Base
 
 	validate :media_reference_immutable, on: :update
 	validate :body_immutable_when_transcribed_by_whisper, on: :update
-	after_update :sync_media_transcript_with_body, if: :saved_change_to_body?
+	after_update :sync_media_transcript_with_body, if: -> { changed_beyond_line_endings?(saved_change_to_body) }
 
 	validates :body,     presence: true
 	validates :sourcedb, presence: true
@@ -1132,9 +1132,18 @@ class Doc < ActiveRecord::Base
 
 	# A transcript not from Whisper follows the body instead (see #sync_media_transcript_with_body).
 	def body_immutable_when_transcribed_by_whisper
-		if body_changed? && media_transcript&.transcribed_by_whisper?
+		if changed_beyond_line_endings?(body_change_to_be_saved) && media_transcript&.transcribed_by_whisper?
 			errors.add(:base, 'Body cannot be changed for a document transcribed by Whisper')
 		end
+	end
+
+	# Whether a [before, after] change is more than its line endings, which a browser submits as CRLF
+	# whether or not the text was edited (docs#update normalizes them to LF).
+	def changed_beyond_line_endings?(change)
+		return false if change.blank?
+
+		before, after = change.map { |text| text.to_s.gsub(/\r\n/, "\n") }
+		before != after
 	end
 
 	# Keeps media_transcript's text in step with the body. Its segments, if any (an image caption's has
