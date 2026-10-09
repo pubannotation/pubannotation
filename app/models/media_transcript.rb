@@ -52,6 +52,11 @@ class MediaTranscript < ApplicationRecord
     end
   end
 
+  # generation_model as AudioTranscriptionService.generation_model records it, e.g. "whisper:ggml-base.en".
+  def transcribed_by_whisper?
+    generation_model.to_s.start_with?('whisper:')
+  end
+
   private
 
   def doc_has_matching_medium

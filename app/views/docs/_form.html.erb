@@ -4,7 +4,18 @@
 	<table style="width:610px">
 		<tr>
 			<th style="width:5em">Text</th>
-			<td><%= text_area_tag 'doc[text]', @doc.body, size: "60x10" %></td>
+			<td>
+				<% if @doc.persisted? && @doc.media_transcript&.transcribed_by_whisper? %>
+					<%# readonly (not disabled) so it's still submitted; the stored body, not a rejected edit %>
+					<%= text_area_tag 'doc[text]', @doc.body_in_database, size: "60x10", readonly: true %>
+					<p>The text cannot be changed, since it was transcribed by Whisper.</p>
+				<% else %>
+					<%= text_area_tag 'doc[text]', @doc.body, size: "60x10" %>
+					<% if @doc.persisted? && @doc.media_transcript&.segments.to_a.size > 1 %>
+						<p>Changing the text merges the <%= @doc.media_transcript.segments.size %> segments of the media transcript into one.</p>
+					<% end %>
+				<% end %>
+			</td>
 		</tr>
 		<tr>
 			<th>Meta-data</th>

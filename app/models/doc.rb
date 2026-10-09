@@ -72,6 +72,8 @@ class Doc < ActiveRecord::Base
 	has_one :media_transcript, dependent: :destroy
 
 	validate :media_reference_immutable, on: :update
+	validate :body_immutable_when_transcribed_by_whisper, on: :update
+	after_update :sync_media_transcript_with_body, if: -> { changed_beyond_line_endings?(saved_change_to_body) }
 
 	validates :body,     presence: true
 	validates :sourcedb, presence: true
@@ -1125,6 +1127,36 @@ class Doc < ActiveRecord::Base
 	def media_reference_immutable
 		if medium_id_changed?
 			errors.add(:base, 'Media reference cannot be changed after creation')
+		end
+	end
+
+	# A transcript not from Whisper follows the body instead (see #sync_media_transcript_with_body).
+	def body_immutable_when_transcribed_by_whisper
+		if changed_beyond_line_endings?(body_change_to_be_saved) && media_transcript&.transcribed_by_whisper?
+			errors.add(:base, 'Body cannot be changed for a document transcribed by Whisper')
+		end
+	end
+
+	# Whether a [before, after] change is more than its line endings, which a browser submits as CRLF
+	# whether or not the text was edited (docs#update normalizes them to LF).
+	def changed_beyond_line_endings?(change)
+		return false if change.blank?
+
+		before, after = change.map { |text| text.to_s.gsub(/\r\n/, "\n") }
+		before != after
+	end
+
+	# Keeps media_transcript's text in step with the body. Its segments, if any (an image caption's has
+	# none), are merged into one spanning them all, since which part of the body each one was is lost.
+	def sync_media_transcript_with_body
+		return unless media_transcript
+
+		segments = media_transcript.segments
+		if segments.blank?
+			media_transcript.update!(text: body)
+		else
+			segment = { 'text' => body, 'start_ms' => segments.first['start_ms'], 'end_ms' => segments.last['end_ms'] }
+			media_transcript.update!(text: body, segments: [segment])
 		end
 	end
 end

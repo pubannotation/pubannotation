@@ -225,6 +225,20 @@ RSpec.describe MediaTranscript, type: :model do
     end
   end
 
+  describe '#transcribed_by_whisper?' do
+    it 'is true for a Whisper model' do
+      expect(build(:media_transcript, generation_model: 'whisper:ggml-base.en').transcribed_by_whisper?).to be(true)
+    end
+
+    it 'is false for another model, e.g. an image caption one' do
+      expect(build(:media_transcript, generation_model: 'moondream').transcribed_by_whisper?).to be(false)
+    end
+
+    it 'is false with no model recorded' do
+      expect(build(:media_transcript, generation_model: nil).transcribed_by_whisper?).to be(false)
+    end
+  end
+
   describe 'text' do
     it 'defaults to nil' do
       medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
