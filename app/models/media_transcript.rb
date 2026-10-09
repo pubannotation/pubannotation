@@ -57,6 +57,26 @@ class MediaTranscript < ApplicationRecord
     generation_model.to_s.start_with?('whisper:')
   end
 
+  # Replaces the text of the segment at `index` in `segments`, and rebuilds `text` and the doc's body
+  # from the segments so all three stay in step. start_ms/end_ms are left as they are, and so are the
+  # doc's denotations, even those after the edited segment.
+  def update_segment_text!(index, new_text)
+    raise ArgumentError, "Media transcript has no doc." unless doc
+    raise ArgumentError, "No segment at index #{index}." unless (0...segments.size).cover?(index)
+    raise ArgumentError, "Text is missing." if new_text.blank?
+    # Rebuilding the body from the segments would otherwise discard an edit made to it directly.
+    raise ArgumentError, "The doc's body no longer matches its media transcript." unless doc.body == speech_text
+
+    edited_segments = segments.dup
+    edited_segments[index] = edited_segments[index].merge('text' => new_text.strip)
+    self.segments = edited_segments
+
+    transaction do
+      update!(text: speech_text)
+      doc.update!(body: text)
+    end
+  end
+
   private
 
   def doc_has_matching_medium
