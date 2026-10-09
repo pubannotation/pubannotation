@@ -54,7 +54,7 @@ module DocsHelper
 			link_to doc.sourcedb, doc_sourcedb_index_path(doc.sourcedb)
 		end
 	end
-	
+
 	def source_db_index_docs_count_helper(docs, doc)
 		count = docs.same_sourcedb_sourceid(doc.sourcedb, doc.sourceid).count
 		if count.class == Fixnum
@@ -139,18 +139,36 @@ module DocsHelper
 		end
 	end
 
-	# `body`, with each of `spans` (each a {begin:, end:, start_ms:} hash) wrapped in a <span>
-	# carrying its playback start time, for JS to highlight as media plays.
-	def body_with_speech_segments(body, spans)
-		return body if spans.blank?
+	# The Doc's body as the #body <div>: wrapped in speech segments when there are any, with the
+	# selected span highlighted when there is one.
+	def doc_body_tag(doc, speech_segment_spans: nil, selected_span: nil)
+		body =
+			if speech_segment_spans.present?
+				body_with_speech_segments(doc.body, speech_segment_spans, selected_span:)
+			elsif selected_span
+				body_with_highlighted_span(doc.body, selected_span)
+			else
+				doc.body
+			end
+
+		content_tag(:div, body, id: 'body', class: ('with_hilight' if selected_span))
+	end
+
+	# `body` with each of `speech_segment_spans` (fit to it, as Doc#speech_segment_spans returns them)
+	# wrapped in a .speech-segment <span>, and the text in `selected_span` wrapped in .highlight.
+	# Segment <span>s stay whole, since JS treats each as one unit, so the highlight is split at their
+	# boundaries.
+	def body_with_speech_segments(body, speech_segment_spans, selected_span: nil)
+		return body if speech_segment_spans.blank?
 
 		cursor = 0
-		wrapped = spans.flat_map do |span|
-			text_before = body[cursor...span[:begin]]
+		wrapped = speech_segment_spans.flat_map do |span|
+			text_before = highlighted_text(body, cursor, span[:begin], selected_span)
+			segment_text = highlighted_text(body, span[:begin], span[:end], selected_span)
 			cursor = span[:end]
-			[text_before, speech_segment_span_tag(body, span)]
+			[text_before, speech_segment_span_tag(segment_text, span[:start_ms])]
 		end
-		safe_join(wrapped + [body[cursor..]])
+		safe_join(wrapped + [highlighted_text(body, cursor, body.length, selected_span)])
 	end
 
 	# `body`, with `span` ({begin:, end:}) wrapped in a .highlight <span> and the text on either
@@ -167,8 +185,25 @@ module DocsHelper
 
 	private
 
-	def speech_segment_span_tag(body, span)
-		content_tag(:span, body[span[:begin]...span[:end]], class: 'speech-segment', data: { start_ms: span[:start_ms] })
+	def speech_segment_span_tag(text, start_ms)
+		content_tag(:span, text, class: 'speech-segment', data: { start_ms: })
+	end
+
+	# body[from...to], with just the part that overlaps `selected_span` wrapped in a .highlight <span>.
+	# Returned as-is when they don't overlap, so no empty .highlight is left for JS to scroll to.
+	def highlighted_text(body, from, to, selected_span)
+		text = body[from...to]
+		return text if selected_span.nil?
+
+		selected_begin = selected_span[:begin].clamp(from, to)
+		selected_end = selected_span[:end].clamp(from, to)
+		return text if selected_begin >= selected_end
+
+		safe_join([
+			body[from...selected_begin],
+			content_tag(:span, body[selected_begin...selected_end], class: 'highlight'),
+			body[selected_end...to]
+		])
 	end
 
 end

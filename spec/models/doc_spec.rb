@@ -317,4 +317,38 @@ RSpec.describe Doc, type: :model do
       expect(queries.first).to match(/JOIN.*denotations/i)
     end
   end
+
+  describe '#speech_segment_spans' do
+    let(:medium) { create(:medium, media_type: :audio, content_type: 'audio/mpeg') }
+    let(:doc) { create(:doc, body: 'Hello big world', medium:) }
+
+    before do
+      MediaTranscript.create!(medium:, doc:, segments: [
+        { 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 300 },
+        { 'text' => 'big', 'start_ms' => 300, 'end_ms' => 600 },
+        { 'text' => 'world', 'start_ms' => 600, 'end_ms' => 900 }
+      ])
+    end
+
+    it "returns media_transcript's spans as-is when they fit the body" do
+      expect(doc.speech_segment_spans).to eq([
+        { begin: 0, end: 5, start_ms: 0 },
+        { begin: 6, end: 9, start_ms: 300 },
+        { begin: 10, end: 15, start_ms: 600 }
+      ])
+    end
+
+    it 'drops spans past a body shortened after transcription and cuts the one running past its end' do
+      doc.update_column(:body, 'Hello bi')
+
+      expect(doc.speech_segment_spans).to eq([
+        { begin: 0, end: 5, start_ms: 0 },
+        { begin: 6, end: 8, start_ms: 300 }
+      ])
+    end
+
+    it 'is empty without a media_transcript' do
+      expect(create(:doc).speech_segment_spans).to eq([])
+    end
+  end
 end
