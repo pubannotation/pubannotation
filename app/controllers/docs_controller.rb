@@ -344,7 +344,9 @@ class DocsController < ApplicationController
 				@doc = Doc.store_hdoc!(hdoc)
 				@project.add_doc!(@doc)
 				if medium&.transcribable?
-					ManualDocTranscriptService.call(medium, hdoc[:body]).update!(doc: @doc)
+					media_transcript = ManualDocTranscriptService.call(medium, hdoc[:body])
+					media_transcript.update!(doc: @doc)
+					AudioSegmentDenotationService.call(@project, @doc, media_transcript)
 				end
 			end
 
