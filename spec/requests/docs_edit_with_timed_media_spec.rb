@@ -77,6 +77,7 @@ RSpec.describe 'Editing a doc with a media transcript', type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(response.body).not_to match(/<textarea[^>]*readonly/)
+      expect(response.body).not_to include('segments of the media transcript into one')
     end
 
     it 'accepts a body change, carrying it over to the segment and text' do
@@ -87,6 +88,23 @@ RSpec.describe 'Editing a doc with a media transcript', type: :request do
       media_transcript.reload
       expect(media_transcript.segments).to eq([{ 'text' => 'Changed body', 'start_ms' => 0, 'end_ms' => 1000 }])
       expect(media_transcript.text).to eq('Changed body')
+    end
+  end
+
+  context 'when the doc has several segments in a media transcript not from Whisper' do
+    before do
+      MediaTranscript.create!(medium:, doc:, segments: [
+        { 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 400 },
+        { 'text' => 'world', 'start_ms' => 500, 'end_ms' => 1000 }
+      ])
+    end
+
+    it 'warns on the edit page that changing the text merges the segments into one' do
+      get edit_doc_path(doc)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).not_to match(/<textarea[^>]*readonly/)
+      expect(response.body).to include('Changing the text merges the 2 segments of the media transcript into one.')
     end
   end
 
