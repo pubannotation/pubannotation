@@ -73,7 +73,7 @@ class Doc < ActiveRecord::Base
 
 	validate :media_reference_immutable, on: :update
 	validate :body_immutable_when_transcribed_by_whisper, on: :update
-	after_update :sync_single_segment_media_transcript, if: :saved_change_to_body?
+	after_update :sync_media_transcript_with_body, if: :saved_change_to_body?
 
 	validates :body,     presence: true
 	validates :sourcedb, presence: true
@@ -1065,7 +1065,7 @@ class Doc < ActiveRecord::Base
 	def update_all_references_in_sentences = sentences.each { _1.update_references denotations }
 
 	# Whether the body was transcribed by Whisper, so can't be changed: the transcript's segments are
-	# timed against the media. Otherwise a single segment follows the body (see #sync_single_segment_media_transcript).
+	# timed against the media. Otherwise the segments follow the body (see #sync_media_transcript_with_body).
 	def transcribed_by_whisper?
 		media_transcript&.generation_model.to_s.start_with?('whisper:')
 	end
@@ -1142,11 +1142,13 @@ class Doc < ActiveRecord::Base
 		end
 	end
 
-	# Keeps a single-segment media_transcript (e.g. a manually registered doc's) in step with the body.
-	def sync_single_segment_media_transcript
-		return unless media_transcript&.segments&.size == 1
+	# Keeps media_transcript (e.g. a manually registered doc's) in step with the body. Its segments, if
+	# several, are merged into one spanning them all, since which part of the body each one was is lost.
+	def sync_media_transcript_with_body
+		segments = media_transcript&.segments
+		return if segments.blank?
 
-		segment = media_transcript.segments.first.merge('text' => body)
+		segment = { 'text' => body, 'start_ms' => segments.first['start_ms'], 'end_ms' => segments.last['end_ms'] }
 		media_transcript.update!(text: body, segments: [segment])
 	end
 end

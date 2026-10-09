@@ -71,6 +71,19 @@ RSpec.describe Doc, type: :model do
       expect(media_transcript.text).to eq('Changed body')
     end
 
+    it 'merges the segments of a transcript not from Whisper into one when the body changes' do
+      media_transcript = MediaTranscript.create!(medium:, doc:, segments: [
+        { 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 400 },
+        { 'text' => 'world', 'start_ms' => 500, 'end_ms' => 1000 }
+      ])
+
+      doc.reload.update!(body: 'Changed body')
+
+      media_transcript.reload
+      expect(media_transcript.segments).to eq([{ 'text' => 'Changed body', 'start_ms' => 0, 'end_ms' => 1000 }])
+      expect(media_transcript.text).to eq('Changed body')
+    end
+
     it 'can change the body of a doc with an image transcript, leaving the caption as it was' do
       image = create(:medium, media_type: :image, content_type: 'image/png')
       image_doc = create(:doc, body: 'A caption.', medium: image)
