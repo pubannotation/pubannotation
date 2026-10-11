@@ -193,7 +193,7 @@ class DocsController < ApplicationController
 		if params[:encoding] == 'ascii'
 			@doc.set_ascii_body
 		elsif current_user&.can_access_media?
-			@speech_segment_spans = @doc.media_transcript&.speech_segment_spans
+			@speech_segment_spans = @doc.speech_segment_spans
 		end
 
 		get_docs_projects
@@ -246,7 +246,7 @@ class DocsController < ApplicationController
 			if params[:encoding] == 'ascii'
 				@doc.set_ascii_body
 			elsif current_user&.can_access_media?
-				@speech_segment_spans = @doc.media_transcript&.speech_segment_spans
+				@speech_segment_spans = @doc.speech_segment_spans
 			end
 
 			respond_to do |format|
