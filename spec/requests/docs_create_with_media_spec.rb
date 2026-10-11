@@ -2,6 +2,8 @@
 
 require 'rails_helper'
 
+RSpec::Matchers.define_negated_matcher :not_change, :change
+
 RSpec.describe 'POST /docs.json', type: :request do
   before do
     allow(Elasticsearch::IndexQueue).to receive(:index_doc)
@@ -74,6 +76,39 @@ RSpec.describe 'POST /docs.json', type: :request do
       expect(media_transcript.medium).to eq(medium)
       expect(media_transcript.text).to eq('doctor findings')
       expect(media_transcript.segments).to eq([{ 'text' => 'doctor findings', 'start_ms' => 0, 'end_ms' => 4_980 }])
+    end
+
+    it 'adds the doc to the project with an AudioSegment denotation spanning the body' do
+      allow(AudioAnalyzer).to receive(:new).and_return(instance_double(AudioAnalyzer, duration: 4.98))
+
+      post '/docs.json', params: params.merge(media_params), headers: headers
+
+      doc = Doc.last
+      expect(project.docs).to include(doc)
+      expect(doc.denotations.pluck(:project_id, :hid, :begin, :end, :obj))
+        .to eq([[project.id, 'T1', 0, 'doctor findings'.length, AudioSegmentDenotationService::DENOTATION_OBJ]])
+      expect(project.reload.denotations_num).to eq(1)
+    end
+
+    it 'keeps a body that is only a non-speech label, creating no denotation for it' do
+      allow(AudioAnalyzer).to receive(:new).and_return(instance_double(AudioAnalyzer, duration: 4.98))
+
+      post '/docs.json', params: params.deep_merge(doc: { text: '(music)' }).merge(media_params), headers: headers
+
+      expect(response).to have_http_status(:created)
+      expect(Doc.last.body).to eq('(music)')
+      expect(Doc.last.denotations).to be_empty
+    end
+
+    it 'creates none of the doc, transcript or denotation when one of them fails' do
+      allow(AudioAnalyzer).to receive(:new).and_return(instance_double(AudioAnalyzer, duration: 4.98))
+      allow(Denotation).to receive(:insert_all).and_raise(ActiveRecord::StatementInvalid, 'insert failed')
+
+      expect {
+        post '/docs.json', params: params.merge(media_params), headers: headers
+      }.to not_change(Doc, :count).and not_change(MediaTranscript, :count).and not_change(Denotation, :count)
+
+      expect(response).to have_http_status(:unprocessable_content)
     end
 
     it "does not create the doc when the media's duration cannot be read" do
