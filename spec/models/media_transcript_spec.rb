@@ -442,5 +442,23 @@ RSpec.describe MediaTranscript, type: :model do
     it 'leaves the doc alone when the segments are unchanged' do
       expect { media_transcript.update!(updated_at: 1.minute.from_now) }.not_to(change { doc.reload.updated_at })
     end
+
+    it "leaves the doc's body alone when only the text of a transcript with segments changes" do
+      media_transcript.update!(text: 'Changed text')
+
+      expect(doc.reload.body).to eq('Hello world')
+    end
+
+    context 'with an image caption, which has no segments' do
+      let(:medium) { create(:medium, media_type: :image, content_type: 'image/png') }
+      let(:doc) { create(:doc, body: 'A caption.', medium:) }
+      let!(:media_transcript) { create(:media_transcript, medium:, doc:, text: 'A caption.', segments: []) }
+
+      it "carries a changed text over to the doc's body" do
+        media_transcript.update!(text: 'Another caption.')
+
+        expect(doc.reload.body).to eq('Another caption.')
+      end
+    end
   end
 end
