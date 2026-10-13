@@ -98,12 +98,12 @@ class Doc < ActiveRecord::Base
 		joins([:projects]).
 		where('projects.accessibility = 1 OR projects.user_id = ?', current_user_id)
 	}
-	
+
 	scope :sql, lambda{|ids|
 		where('docs.id IN(?)', ids).
 		order('docs.id ASC')
 	}
-	
+
 	# scope :source_db_id, lambda{|order_key_method|
 	#   # source id should cast as integer
 	#   order_key_method ||= 'sourcedb ASC, sourceid_int ASC'
@@ -111,18 +111,18 @@ class Doc < ActiveRecord::Base
 	#   .select('*, COUNT(sourcedb) AS sourcedb_count, COUNT(sourceid) AS sourceid_count, CAST(sourceid AS INT) AS sourceid_int')
 	#   .group(:sourcedb).group(:sourceid).order(order_key_method)
 	# }
-		
+
 	scope :source_db_id, lambda{|order_key_method|
 		order_key_method ||= 'sourcedb ASC, sourceid_int ASC'
 		where(['sourcedb IS NOT ? AND sourceid IS NOT ?', nil, nil])
 		.select('*, CAST(sourceid AS INT) AS sourceid_int')
 		.group(:id).group(:sourcedb).group(:sourceid).order(order_key_method)
 	}
-	
+
 	scope :same_sourcedb_sourceid, lambda{|sourcedb, sourceid|
 		where(['sourcedb = ? AND sourceid = ?', sourcedb, sourceid])
 	}
-	
+
 	scope :sourcedbs, -> { where(['sourcedb IS NOT ?', nil]) }
 
 	scope :user_source_db, lambda{|username|
@@ -458,7 +458,7 @@ class Doc < ActiveRecord::Base
 	def project_relations_num(project_id)
 		ActiveRecord::Base.connection.select_value "SELECT relations_num FROM project_docs WHERE project_id=#{project_id} AND doc_id=#{id}"
 	end
-	
+
 	def same_sourceid_denotations_num
 		#denotation_doc_ids = Doc.where(:sourceid => self.sourceid).collect{|doc| doc.id}
 		#Denotation.select('doc_id').where('doc_id IN (?)', denotation_doc_ids).size
@@ -468,7 +468,7 @@ class Doc < ActiveRecord::Base
 	def same_sourceid_relations_num
 		Doc.where(:sourceid => self.sourceid).sum('relations_num')
 	end
-	
+
 	def span(params)
 		span = {:begin => params[:begin].to_i, :end => params[:end].to_i}
 		body = self.body
@@ -490,7 +490,7 @@ class Doc < ActiveRecord::Base
 
 	def text(params)
 		prev_text, span, next_text = self.span(params)
-		[prev_text, span, next_text].compact.join('') 
+		[prev_text, span, next_text].compact.join('')
 	end
 
 	def set_ascii_body
@@ -499,7 +499,7 @@ class Doc < ActiveRecord::Base
 	end
 
 	def to_csv(params)
-		focus, left, right = self.span(params) 
+		focus, left, right = self.span(params)
 		CSV.generate(col_sep: "\t") do |csv|
 			if params[:context_size].present?
 				headers = %w(left focus right)
@@ -509,9 +509,9 @@ class Doc < ActiveRecord::Base
 				values = [focus]
 			end
 			csv << headers
-			csv << values 
+			csv << values
 		end
-	end  
+	end
 
 	def get_project_count(span = nil)
 		return self.projects.count if span.nil?
@@ -550,7 +550,7 @@ class Doc < ActiveRecord::Base
 
 	def copy_annotations(source_project, destin_project, options = {})
 		if options[:mode] == 'replace'
-			
+
 		end
 	end
 
@@ -786,7 +786,7 @@ class Doc < ActiveRecord::Base
 			end
 		end
 	end
-	
+
 	def updatable_for?(current_user)
 		if current_user.present?
 			(current_user.root? || created_by?(current_user))
@@ -1132,10 +1132,12 @@ class Doc < ActiveRecord::Base
 
 	# A transcript not from Whisper follows the body instead (see #sync_media_transcript_with_body).
 	def body_immutable_when_transcribed_by_whisper
-		return unless media_transcript&.transcribed_by_whisper?
 		return unless changed_beyond_line_endings?(body_change_to_be_saved)
+
+		return unless media_transcript
+		return unless media_transcript.transcribed_by_whisper?
 		# The body following the transcript, once its segments changed (see MediaTranscript#sync_doc_body).
-		return if body == media_transcript.text
+		return if media_transcript.text == body
 
 		errors.add(:base, 'Body cannot be changed directly for a document transcribed by Whisper; edit its segments instead')
 	end
