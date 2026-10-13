@@ -1130,13 +1130,14 @@ class Doc < ActiveRecord::Base
 		end
 	end
 
-	# A transcript not from Whisper follows the body instead (see #sync_media_transcript_with_body). The
-	# body can still follow the transcript, once its segments are changed (see MediaTranscript#sync_doc_body).
+	# A transcript not from Whisper follows the body instead (see #sync_media_transcript_with_body).
 	def body_immutable_when_transcribed_by_whisper
-		if changed_beyond_line_endings?(body_change_to_be_saved) && media_transcript&.transcribed_by_whisper? &&
-				body != media_transcript.text
-			errors.add(:base, 'Body cannot be changed directly for a document transcribed by Whisper; edit its segments instead')
-		end
+		return unless media_transcript&.transcribed_by_whisper?
+		return unless changed_beyond_line_endings?(body_change_to_be_saved)
+		# The body following the transcript, once its segments changed (see MediaTranscript#sync_doc_body).
+		return if body == media_transcript.text
+
+		errors.add(:base, 'Body cannot be changed directly for a document transcribed by Whisper; edit its segments instead')
 	end
 
 	# Whether a [before, after] change is more than its line endings, which a browser submits as CRLF
