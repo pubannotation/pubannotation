@@ -67,10 +67,13 @@ class MediaTranscript < ApplicationRecord
   # save, text and the doc's body are rebuilt to follow (see #rebuild_text and #sync_doc_body).
   def set_segment_text(index, new_text)
     raise ArgumentError, "No segment at index #{index}." unless (0...segments.size).cover?(index)
-    raise ArgumentError, "Text is missing." if new_text.blank?
+
+    # Checked once stripped, since strip also removes chars blank? doesn't count as blank, e.g. "\0".
+    stripped_text = new_text&.strip
+    raise ArgumentError, "Text is missing." if stripped_text.blank?
 
     edited_segments = segments.dup
-    edited_segments[index] = edited_segments[index].merge('text' => new_text.strip)
+    edited_segments[index] = edited_segments[index].merge('text' => stripped_text)
     self.segments = edited_segments
   end
 

@@ -368,6 +368,14 @@ RSpec.describe MediaTranscript, type: :model do
     it 'raises for blank text' do
       expect { media_transcript.set_segment_text(0, ' ') }.to raise_error(ArgumentError, /Text is missing/)
     end
+
+    it 'raises for text that is empty once stripped, e.g. a null char' do
+      expect { media_transcript.set_segment_text(0, "\0") }.to raise_error(ArgumentError, /Text is missing/)
+    end
+
+    it 'raises for no text' do
+      expect { media_transcript.set_segment_text(0, nil) }.to raise_error(ArgumentError, /Text is missing/)
+    end
   end
 
   describe 'following changed segments' do
