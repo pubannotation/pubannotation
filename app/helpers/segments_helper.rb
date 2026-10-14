@@ -1,8 +1,7 @@
 module SegmentsHelper
-  # Whether the current user can open SegmentsController for `doc`: one whose MediaTranscript has
-  # segments, which the user can both access the media of and update.
+  # Whether to link to SegmentsController for `doc`, by the same decision it opens the page with.
   def segments_editable?(doc)
-    current_user&.can_access_media? && doc.updatable_for?(current_user) && doc.media_transcript&.segmented?
+    doc.segments_listable_by?(current_user)
   end
 
   # A segment's playback time in ms as "m:ss.mmm", e.g. 61_234 as "1:01.234".
