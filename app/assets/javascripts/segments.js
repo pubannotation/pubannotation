@@ -8,6 +8,7 @@ class SegmentDialog {
     this.piecesTable = document.getElementById('segment-dialog-pieces');
     this.textArea = document.getElementById('segment-dialog-text');
     this.saveButton = document.getElementById('segment-dialog-save');
+    this.noSpeechButton = document.getElementById('segment-dialog-no-speech');
 
     for (const button of document.querySelectorAll('.edit-segment')) {
       button.addEventListener('click', () => this.openFor(button));
@@ -18,6 +19,7 @@ class SegmentDialog {
       checkbox.addEventListener('change', () => checkbox.form.requestSubmit());
     }
 
+    this.noSpeechButton.addEventListener('click', () => this.markNoSpeech());
     document.getElementById('segment-dialog-cancel').addEventListener('click', () => this.dialog.close());
 
     // A click outside the dialog lands on the dialog itself (its backdrop), since its content fills it.
@@ -50,6 +52,7 @@ class SegmentDialog {
       this.showPieces(pieces, false);
     } else {
       this.piecesTable.hidden = true;
+      this.noSpeechButton.hidden = false;
       this.showTextField(button.dataset.text);
     }
     this.dialog.showModal();
@@ -60,6 +63,8 @@ class SegmentDialog {
   showPieces(pieces, editing) {
     this.piecesTable.tBodies[0].replaceChildren(...pieces.map((piece) => this.pieceRow(piece)));
     this.piecesTable.hidden = false;
+    // A segment with denotations on it can't be taken out of the text, as they'd have nothing to follow.
+    this.noSpeechButton.hidden = true;
     this.textArea.hidden = !editing;
     this.saveButton.hidden = !editing;
   }
@@ -91,6 +96,13 @@ class SegmentDialog {
       field.value = values[index];
       field.disabled = !piece;
     });
+  }
+
+  // Saves the segment with its whole text replaced by the label marking it as not speech.
+  markNoSpeech() {
+    this.setPieceFields(null);
+    this.textField.value = this.noSpeechButton.dataset.text;
+    this.form.requestSubmit();
   }
 
   showTextField(text) {

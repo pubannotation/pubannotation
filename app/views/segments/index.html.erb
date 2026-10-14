@@ -88,6 +88,8 @@
         </div>
         <div class="actions">
           <%= f.submit 'Save', id: 'segment-dialog-save' %>
+          <%# Hidden for a segment with denotations on it, which can't be taken out of the text. %>
+          <%= button_tag 'No speech', type: 'button', id: 'segment-dialog-no-speech', data: { text: NonSpeechTextMatcher::NO_SPEECH } %>
           <%= button_tag 'Cancel', type: 'button', id: 'segment-dialog-cancel' %>
         </div>
       <% end %>
