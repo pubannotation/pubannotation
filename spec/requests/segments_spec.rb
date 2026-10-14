@@ -43,6 +43,31 @@ RSpec.describe 'The segments page', type: :request do
       end
     end
 
+    describe 'marking a segment as no speech' do
+      it 'gives the dialog a No speech button carrying the label to save' do
+        get "/docs/#{doc.id}/segments"
+
+        expect(response.body).to include('id="segment-dialog-no-speech"', 'data-text="(no speech)"')
+      end
+
+      it 'takes the segment out of the text' do
+        patch "/docs/#{doc.id}/segments/0", params: { segment: { text: NonSpeechTextMatcher::NO_SPEECH } }
+
+        expect(response).to redirect_to("/docs/#{doc.id}/segments")
+        expect(media_transcript.reload.segments.first['text']).to eq('(no speech)')
+        expect(doc.reload.body).to eq('world')
+      end
+
+      it 'refuses to mark the last speech segment, showing why in the dialog' do
+        patch "/docs/#{doc.id}/segments/0", params: { segment: { text: NonSpeechTextMatcher::NO_SPEECH } }
+        patch "/docs/#{doc.id}/segments/1", params: { segment: { text: NonSpeechTextMatcher::NO_SPEECH } }
+
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.body).to include('Segments must have speech', 'data-open-on-load="true"')
+        expect(doc.reload.body).to eq('world')
+      end
+    end
+
     describe 'PATCH /docs/:doc_id/segments/:index' do
       it "updates the segment's text and the doc's body, then goes back to the list" do
         patch "/docs/#{doc.id}/segments/1", params: { segment: { text: 'there' } }

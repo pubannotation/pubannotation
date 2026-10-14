@@ -44,6 +44,7 @@
 			<%= f.text_area :text, value: @text, size: '60x4' %>
 			<div class="actions">
 				<%= f.submit 'Save' %>
+				<%= button_tag 'No speech', type: 'button', id: 'segment-dialog-no-speech', data: { text: NonSpeechTextMatcher::NO_SPEECH } %>
 				<%= button_tag 'Cancel', type: 'button', id: 'segment-dialog-cancel' %>
 			</div>
 		<% end %>
