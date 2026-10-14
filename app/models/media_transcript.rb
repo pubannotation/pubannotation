@@ -72,9 +72,8 @@ class MediaTranscript < ApplicationRecord
     stripped_text = new_text&.strip
     raise ArgumentError, "Text is missing." if stripped_text.blank?
 
-    edited_segments = segments.dup
-    edited_segments[index] = edited_segments[index].merge('text' => stripped_text)
-    self.segments = edited_segments
+    segments_will_change!
+    segments[index]['text'] = stripped_text
   end
 
   # Replaces the whole text, merging the segments, if any, into one spanning them all.
