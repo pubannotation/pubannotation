@@ -19,12 +19,19 @@ class MediaTranscript < ApplicationRecord
   validates :doc_id, uniqueness: true, allow_nil: true
   validate :doc_has_matching_medium
   validate :segments_are_valid
+  validate :segments_unchanged_without_doc, on: :update
+  validate :segments_have_speech, on: :update, if: :doc
 
   # Derives `text` from segments for a new record, unless already set explicitly (e.g. an
   # image's caption). Skipped for records loaded from the database.
   after_initialize do
     self.text ||= speech_text if new_record? && segments.present?
   end
+
+  # Once created, changed segments (e.g. a segment's text edited) rebuild text, and the doc's body
+  # follows it.
+  before_update :rebuild_text, if: :will_save_change_to_segments?
+  after_update :sync_doc_body, if: :saved_change_to_segments?
 
   # Segments that are actual speech, excluding Whisper's non-speech labels (e.g. "(music)").
   # Kept rather than discarded in `segments`, since the raw transcript may still be useful.
@@ -57,10 +64,54 @@ class MediaTranscript < ApplicationRecord
     generation_model.to_s.start_with?('whisper:')
   end
 
+  # Replaces the text of the segment at `index` in `segments`, leaving start_ms/end_ms as they are. On
+  # save, text and the doc's body are rebuilt to follow (see #rebuild_text and #sync_doc_body).
+  def set_segment_text(index, new_text)
+    raise ArgumentError, "No segment at index #{index}." unless (0...segments.size).cover?(index)
+
+    # Checked once stripped, since strip also removes chars blank? doesn't count as blank, e.g. "\0".
+    stripped_text = new_text&.strip
+    raise ArgumentError, "Text is missing." if stripped_text.blank?
+
+    segments_will_change!
+    segments[index]['text'] = stripped_text
+  end
+
+  # Replaces the whole text, merging the segments, if any, into one spanning them all.
+  def replace_text!(new_text)
+    if segments.blank?
+      update!(text: new_text)
+    else
+      update!(segments: [{ 'text' => new_text, 'start_ms' => segments.first['start_ms'], 'end_ms' => segments.last['end_ms'] }])
+    end
+  end
+
   private
+
+  def rebuild_text
+    self.text = speech_text
+  end
+
+  # Inside the save's transaction, so a doc failing to save rolls the transcript back too. Its
+  # denotations are left as they are, even those after an edited segment.
+  def sync_doc_body
+    doc.update!(body: text) if doc.body != text
+  end
 
   def doc_has_matching_medium
     errors.add(:doc, 'must have the same medium as this transcript') if doc && doc.medium != medium
+  end
+
+  # One with no doc is a record of what was transcribed (e.g. a transcription that found no speech), so
+  # its segments aren't edited.
+  def segments_unchanged_without_doc
+    errors.add(:segments, "can't be changed for a transcript with no document") if doc.nil? && will_save_change_to_segments?
+  end
+
+  # A doc's transcript can't be left with no speech, since the doc's body follows its speech. One with
+  # no doc may (e.g. a transcription that found none, kept as a record).
+  def segments_have_speech
+    errors.add(:segments, 'must have speech for the transcript of a document') if will_save_change_to_segments? && speech_segments.empty?
   end
 
   def segments_are_valid

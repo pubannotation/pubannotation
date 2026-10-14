@@ -54,7 +54,7 @@ RSpec.describe 'Editing a doc with a media transcript', type: :request do
       patch doc_path(doc), params: { doc: { text: 'Changed body' } }
 
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include('Body cannot be changed for a document transcribed by Whisper')
+      expect(response.body).to include('Body cannot be changed directly for a document transcribed by Whisper; edit its segments instead')
       expect(response.body).to match(/<textarea[^>]*readonly="readonly"[^>]*>\n?Hello world<\/textarea>/)
       expect(doc.reload.body).to eq('Hello world')
     end

@@ -73,6 +73,7 @@ class Doc < ActiveRecord::Base
 
 	validate :media_reference_immutable, on: :update
 	validate :body_immutable_when_transcribed_by_whisper, on: :update
+	validate :body_has_speech, if: -> { medium&.transcribable? }
 	after_update :sync_media_transcript_with_body, if: -> { changed_beyond_line_endings?(saved_change_to_body) }
 
 	validates :body,     presence: true
@@ -98,12 +99,12 @@ class Doc < ActiveRecord::Base
 		joins([:projects]).
 		where('projects.accessibility = 1 OR projects.user_id = ?', current_user_id)
 	}
-	
+
 	scope :sql, lambda{|ids|
 		where('docs.id IN(?)', ids).
 		order('docs.id ASC')
 	}
-	
+
 	# scope :source_db_id, lambda{|order_key_method|
 	#   # source id should cast as integer
 	#   order_key_method ||= 'sourcedb ASC, sourceid_int ASC'
@@ -111,18 +112,18 @@ class Doc < ActiveRecord::Base
 	#   .select('*, COUNT(sourcedb) AS sourcedb_count, COUNT(sourceid) AS sourceid_count, CAST(sourceid AS INT) AS sourceid_int')
 	#   .group(:sourcedb).group(:sourceid).order(order_key_method)
 	# }
-		
+
 	scope :source_db_id, lambda{|order_key_method|
 		order_key_method ||= 'sourcedb ASC, sourceid_int ASC'
 		where(['sourcedb IS NOT ? AND sourceid IS NOT ?', nil, nil])
 		.select('*, CAST(sourceid AS INT) AS sourceid_int')
 		.group(:id).group(:sourcedb).group(:sourceid).order(order_key_method)
 	}
-	
+
 	scope :same_sourcedb_sourceid, lambda{|sourcedb, sourceid|
 		where(['sourcedb = ? AND sourceid = ?', sourcedb, sourceid])
 	}
-	
+
 	scope :sourcedbs, -> { where(['sourcedb IS NOT ?', nil]) }
 
 	scope :user_source_db, lambda{|username|
@@ -458,7 +459,7 @@ class Doc < ActiveRecord::Base
 	def project_relations_num(project_id)
 		ActiveRecord::Base.connection.select_value "SELECT relations_num FROM project_docs WHERE project_id=#{project_id} AND doc_id=#{id}"
 	end
-	
+
 	def same_sourceid_denotations_num
 		#denotation_doc_ids = Doc.where(:sourceid => self.sourceid).collect{|doc| doc.id}
 		#Denotation.select('doc_id').where('doc_id IN (?)', denotation_doc_ids).size
@@ -468,7 +469,7 @@ class Doc < ActiveRecord::Base
 	def same_sourceid_relations_num
 		Doc.where(:sourceid => self.sourceid).sum('relations_num')
 	end
-	
+
 	def span(params)
 		span = {:begin => params[:begin].to_i, :end => params[:end].to_i}
 		body = self.body
@@ -490,7 +491,7 @@ class Doc < ActiveRecord::Base
 
 	def text(params)
 		prev_text, span, next_text = self.span(params)
-		[prev_text, span, next_text].compact.join('') 
+		[prev_text, span, next_text].compact.join('')
 	end
 
 	def set_ascii_body
@@ -499,7 +500,7 @@ class Doc < ActiveRecord::Base
 	end
 
 	def to_csv(params)
-		focus, left, right = self.span(params) 
+		focus, left, right = self.span(params)
 		CSV.generate(col_sep: "\t") do |csv|
 			if params[:context_size].present?
 				headers = %w(left focus right)
@@ -509,9 +510,9 @@ class Doc < ActiveRecord::Base
 				values = [focus]
 			end
 			csv << headers
-			csv << values 
+			csv << values
 		end
-	end  
+	end
 
 	def get_project_count(span = nil)
 		return self.projects.count if span.nil?
@@ -550,7 +551,7 @@ class Doc < ActiveRecord::Base
 
 	def copy_annotations(source_project, destin_project, options = {})
 		if options[:mode] == 'replace'
-			
+
 		end
 	end
 
@@ -786,7 +787,7 @@ class Doc < ActiveRecord::Base
 			end
 		end
 	end
-	
+
 	def updatable_for?(current_user)
 		if current_user.present?
 			(current_user.root? || created_by?(current_user))
@@ -1132,9 +1133,20 @@ class Doc < ActiveRecord::Base
 
 	# A transcript not from Whisper follows the body instead (see #sync_media_transcript_with_body).
 	def body_immutable_when_transcribed_by_whisper
-		if changed_beyond_line_endings?(body_change_to_be_saved) && media_transcript&.transcribed_by_whisper?
-			errors.add(:base, 'Body cannot be changed for a document transcribed by Whisper')
-		end
+		return unless changed_beyond_line_endings?(body_change_to_be_saved)
+
+		return unless media_transcript
+		return unless media_transcript.transcribed_by_whisper?
+		# The body following the transcript, once its segments changed (see MediaTranscript#sync_doc_body).
+		return if media_transcript.text == body
+
+		errors.add(:base, 'Body cannot be changed directly for a document transcribed by Whisper; edit its segments instead')
+	end
+
+	# An audio/video doc's body is what was said, to be highlighted as it's played, so it can't be only a
+	# non-speech label such as "(music)" (or empty, as its segments would make it with no speech left).
+	def body_has_speech
+		errors.add(:body, 'must have speech for a document with audio or video') if NonSpeechTextMatcher.match?(body)
 	end
 
 	# Whether a [before, after] change is more than its line endings, which a browser submits as CRLF
@@ -1146,17 +1158,10 @@ class Doc < ActiveRecord::Base
 		before != after
 	end
 
-	# Keeps media_transcript's text in step with the body. Its segments, if any (an image caption's has
-	# none), are merged into one spanning them all, since which part of the body each one was is lost.
 	def sync_media_transcript_with_body
-		return unless media_transcript
+		# Already in step when the body followed the transcript, e.g. after its segments changed.
+		return if media_transcript.nil? || media_transcript.text == body
 
-		segments = media_transcript.segments
-		if segments.blank?
-			media_transcript.update!(text: body)
-		else
-			segment = { 'text' => body, 'start_ms' => segments.first['start_ms'], 'end_ms' => segments.last['end_ms'] }
-			media_transcript.update!(text: body, segments: [segment])
-		end
+		media_transcript.replace_text!(body)
 	end
 end
