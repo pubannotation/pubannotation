@@ -179,6 +179,22 @@ RSpec.describe MediaTranscript, type: :model do
     end
   end
 
+  describe '#speech_segment?' do
+    let(:media_transcript) { build(:media_transcript) }
+
+    it 'is true for a segment of speech' do
+      expect(media_transcript.speech_segment?({ 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 300 })).to be(true)
+    end
+
+    it 'is false for a non-speech label' do
+      expect(media_transcript.speech_segment?({ 'text' => '(music)', 'start_ms' => 0, 'end_ms' => 300 })).to be(false)
+    end
+
+    it 'is false for a malformed segment' do
+      expect(media_transcript.speech_segment?({ 'text' => 'Hello' })).to be(false)
+    end
+  end
+
   describe '#speech_text' do
     it 'joins the text of only the speech segments' do
       media_transcript = build(:media_transcript, segments: [

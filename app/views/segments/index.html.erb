@@ -1,0 +1,27 @@
+<%= render 'path' %>
+
+<h1>Segments</h1>
+
+<table>
+	<tr>
+		<th>#</th>
+		<th>Start</th>
+		<th>End</th>
+		<th>Text</th>
+	</tr>
+	<% @media_transcript.segments.each_with_index do |segment, index| -%>
+		<tr>
+			<td><%= index %></td>
+			<td><%= segment_time(segment['start_ms']) %></td>
+			<td><%= segment_time(segment['end_ms']) %></td>
+			<td>
+				<%= segment['text'] %>
+				<% unless @media_transcript.speech_segment?(segment) -%>
+					<i>(not in the text)</i>
+				<% end -%>
+			</td>
+		</tr>
+	<% end -%>
+</table>
+
+<%= link_to t('views.shared.back'), doc_sourcedb_sourceid_show_path(@doc.sourcedb, @doc.sourceid) %>
