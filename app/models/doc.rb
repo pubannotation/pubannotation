@@ -1162,7 +1162,7 @@ class Doc < ActiveRecord::Base
 			media_transcript.update!(text: body)
 		else
 			segment = { 'text' => body, 'start_ms' => segments.first['start_ms'], 'end_ms' => segments.last['end_ms'] }
-			media_transcript.update!(text: body, segments: [segment])
+			media_transcript.update!(segments: [segment])
 		end
 	end
 end

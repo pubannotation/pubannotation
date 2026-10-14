@@ -26,9 +26,9 @@ class MediaTranscript < ApplicationRecord
     self.text ||= speech_text if new_record? && segments.present?
   end
 
-  # Once created, changed segments (e.g. a segment's text edited) rebuild text, unless it's set along
-  # with them, and the doc's body follows it.
-  before_update :rebuild_text, if: -> { will_save_change_to_segments? && !will_save_change_to_text? }
+  # Once created, changed segments (e.g. a segment's text edited) rebuild text, and the doc's body
+  # follows it.
+  before_update :rebuild_text, if: :will_save_change_to_segments?
   after_update :sync_doc_body, if: :saved_change_to_segments?
 
   # Segments that are actual speech, excluding Whisper's non-speech labels (e.g. "(music)").

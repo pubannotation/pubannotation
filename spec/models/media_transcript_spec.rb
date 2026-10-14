@@ -391,13 +391,6 @@ RSpec.describe MediaTranscript, type: :model do
       expect(doc.reload.body).to eq('Hello there')
     end
 
-    it 'keeps a text set along with the segments, and the body follows it' do
-      media_transcript.update!(text: '(music)', segments: [{ 'text' => '(music)', 'start_ms' => 0, 'end_ms' => 600 }])
-
-      expect(media_transcript.reload.text).to eq('(music)')
-      expect(doc.reload.body).to eq('(music)')
-    end
-
     context 'transcribed by Whisper' do
       let!(:media_transcript) do
         create(:media_transcript, medium:, doc:, text: 'Hello world', generation_model: 'whisper:ggml-base.en')
