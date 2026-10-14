@@ -95,7 +95,7 @@ class MediaTranscript < ApplicationRecord
   # Inside the save's transaction, so a doc failing to save rolls the transcript back too. Its
   # denotations are left as they are, even those after an edited segment.
   def sync_doc_body
-    doc.update!(body: text) if doc && doc.body != text
+    doc.update!(body: text) if doc.body != text
   end
 
   def doc_has_matching_medium
