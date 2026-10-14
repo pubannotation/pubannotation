@@ -19,6 +19,7 @@ class MediaTranscript < ApplicationRecord
   validates :doc_id, uniqueness: true, allow_nil: true
   validate :doc_has_matching_medium
   validate :segments_are_valid
+  validate :segments_have_speech, on: :update, if: :doc
 
   # Derives `text` from segments for a new record, unless already set explicitly (e.g. an
   # image's caption). Skipped for records loaded from the database.
@@ -90,6 +91,12 @@ class MediaTranscript < ApplicationRecord
 
   def doc_has_matching_medium
     errors.add(:doc, 'must have the same medium as this transcript') if doc && doc.medium != medium
+  end
+
+  # A doc's transcript can't be left with no speech, since the doc's body follows its speech. One with
+  # no doc may (e.g. a transcription that found none, kept as a record).
+  def segments_have_speech
+    errors.add(:segments, 'must have speech for the transcript of a document') if will_save_change_to_segments? && speech_segments.empty?
   end
 
   def segments_are_valid

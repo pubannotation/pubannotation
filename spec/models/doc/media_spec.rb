@@ -113,6 +113,14 @@ RSpec.describe Doc, type: :model do
       expect(media_transcript.reload.segments).to eq(segments)
     end
 
+    it 'cannot change the body of a doc with audio or video to only a non-speech label' do
+      MediaTranscript.create!(medium:, doc:, segments: one_segment)
+      doc.reload.body = '(music)'
+
+      expect(doc).not_to be_valid
+      expect(doc.errors[:body]).to include('must have speech for a document with audio or video')
+    end
+
     it 'leaves the segments alone when the body changes to follow the transcript' do
       segments = [
         { 'text' => 'Goodbye', 'start_ms' => 0, 'end_ms' => 400 },

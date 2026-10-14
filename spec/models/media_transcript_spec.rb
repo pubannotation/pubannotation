@@ -405,6 +405,24 @@ RSpec.describe MediaTranscript, type: :model do
       end
     end
 
+    it 'refuses segments left with no speech, as the body would be left with none' do
+      media_transcript.set_segment_text(0, '(music)')
+      media_transcript.set_segment_text(1, '(applause)')
+
+      expect { media_transcript.save! }
+        .to raise_error(ActiveRecord::RecordInvalid, /Segments must have speech for the transcript of a document/)
+      expect(media_transcript.reload.segments.map { _1['text'] }).to eq(%w[Hello world])
+      expect(doc.reload.body).to eq('Hello world')
+    end
+
+    it 'still accepts segments with no speech for a transcript with no doc' do
+      orphan = create(:media_transcript, medium:)
+      orphan.set_segment_text(0, '(music)')
+      orphan.set_segment_text(1, '(applause)')
+
+      expect(orphan).to be_valid
+    end
+
     it 'rolls back the transcript when the doc fails to save' do
       allow(media_transcript.doc).to receive(:update!).and_raise(ActiveRecord::RecordInvalid)
       media_transcript.set_segment_text(0, 'Goodbye')

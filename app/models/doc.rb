@@ -73,6 +73,7 @@ class Doc < ActiveRecord::Base
 
 	validate :media_reference_immutable, on: :update
 	validate :body_immutable_when_transcribed_by_whisper, on: :update
+	validate :body_has_speech, if: -> { medium&.transcribable? }
 	after_update :sync_media_transcript_with_body, if: -> { changed_beyond_line_endings?(saved_change_to_body) }
 
 	validates :body,     presence: true
@@ -1140,6 +1141,12 @@ class Doc < ActiveRecord::Base
 		return if media_transcript.text == body
 
 		errors.add(:base, 'Body cannot be changed directly for a document transcribed by Whisper; edit its segments instead')
+	end
+
+	# An audio/video doc's body is what was said, to be highlighted as it's played, so it can't be only a
+	# non-speech label such as "(music)" (or empty, as its segments would make it with no speech left).
+	def body_has_speech
+		errors.add(:body, 'must have speech for a document with audio or video') if NonSpeechTextMatcher.match?(body)
 	end
 
 	# Whether a [before, after] change is more than its line endings, which a browser submits as CRLF
