@@ -378,6 +378,30 @@ RSpec.describe MediaTranscript, type: :model do
     end
   end
 
+  describe '#replace_text!' do
+    it 'merges the segments into one spanning them all' do
+      media_transcript = create(:media_transcript, segments: [
+        { 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 400 },
+        { 'text' => 'world', 'start_ms' => 500, 'end_ms' => 1000 }
+      ])
+
+      media_transcript.replace_text!('Goodbye world')
+
+      expect(media_transcript.reload.segments).to eq([{ 'text' => 'Goodbye world', 'start_ms' => 0, 'end_ms' => 1000 }])
+      expect(media_transcript.text).to eq('Goodbye world')
+    end
+
+    it 'replaces just the text with no segments, e.g. an image caption' do
+      medium = create(:medium, media_type: :image, content_type: 'image/png')
+      media_transcript = create(:media_transcript, medium:, text: 'A caption.', segments: [])
+
+      media_transcript.replace_text!('Another caption.')
+
+      expect(media_transcript.reload.text).to eq('Another caption.')
+      expect(media_transcript.segments).to eq([])
+    end
+  end
+
   describe 'following changed segments' do
     let(:medium) { create(:medium, media_type: :audio, content_type: 'audio/mpeg') }
     let(:doc) { create(:doc, body: 'Hello world', medium:) }

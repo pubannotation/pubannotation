@@ -1158,18 +1158,10 @@ class Doc < ActiveRecord::Base
 		before != after
 	end
 
-	# Keeps media_transcript's text in step with the body. Its segments, if any (an image caption's has
-	# none), are merged into one spanning them all, since which part of the body each one was is lost.
 	def sync_media_transcript_with_body
 		# Already in step when the body followed the transcript, e.g. after its segments changed.
 		return if media_transcript.nil? || media_transcript.text == body
 
-		segments = media_transcript.segments
-		if segments.blank?
-			media_transcript.update!(text: body)
-		else
-			segment = { 'text' => body, 'start_ms' => segments.first['start_ms'], 'end_ms' => segments.last['end_ms'] }
-			media_transcript.update!(segments: [segment])
-		end
+		media_transcript.replace_text!(body)
 	end
 end

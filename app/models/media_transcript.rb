@@ -77,6 +77,15 @@ class MediaTranscript < ApplicationRecord
     self.segments = edited_segments
   end
 
+  # Replaces the whole text, merging the segments, if any, into one spanning them all.
+  def replace_text!(new_text)
+    if segments.blank?
+      update!(text: new_text)
+    else
+      update!(segments: [{ 'text' => new_text, 'start_ms' => segments.first['start_ms'], 'end_ms' => segments.last['end_ms'] }])
+    end
+  end
+
   private
 
   def rebuild_text
