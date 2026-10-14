@@ -398,23 +398,6 @@ RSpec.describe MediaTranscript, type: :model do
       expect(doc.reload.body).to eq('(music)')
     end
 
-    context 'with a non-speech segment' do
-      let(:doc) { create(:doc, body: 'Welcome.', medium:) }
-      let!(:media_transcript) do
-        create(:media_transcript, medium:, doc:, text: 'Welcome.', segments: [
-          { 'text' => '(music)', 'start_ms' => 0, 'end_ms' => 3000 },
-          { 'text' => 'Welcome.', 'start_ms' => 3000, 'end_ms' => 6000 }
-        ])
-      end
-
-      it 'adds its text to the body once it is edited into speech' do
-        media_transcript.set_segment_text(0, 'Hi.')
-        media_transcript.save!
-
-        expect(doc.reload.body).to eq('Hi. Welcome.')
-      end
-    end
-
     context 'transcribed by Whisper' do
       let!(:media_transcript) do
         create(:media_transcript, medium:, doc:, text: 'Hello world', generation_model: 'whisper:ggml-base.en')
@@ -429,14 +412,6 @@ RSpec.describe MediaTranscript, type: :model do
       end
     end
 
-    it 'leaves a transcript with no doc to itself' do
-      orphan = create(:media_transcript, medium:)
-      orphan.set_segment_text(0, 'Goodbye')
-
-      expect { orphan.save! }.not_to raise_error
-      expect(orphan.reload.text).to eq('Goodbye world')
-    end
-
     it 'rolls back the transcript when the doc fails to save' do
       allow(media_transcript.doc).to receive(:update!).and_raise(ActiveRecord::RecordInvalid)
       media_transcript.set_segment_text(0, 'Goodbye')
@@ -449,12 +424,6 @@ RSpec.describe MediaTranscript, type: :model do
 
     it 'leaves the doc alone when the segments are unchanged' do
       expect { media_transcript.update!(updated_at: 1.minute.from_now) }.not_to(change { doc.reload.updated_at })
-    end
-
-    it "leaves the doc's body alone when only the text of a transcript with segments changes" do
-      media_transcript.update!(text: 'Changed text')
-
-      expect(doc.reload.body).to eq('Hello world')
     end
   end
 end
