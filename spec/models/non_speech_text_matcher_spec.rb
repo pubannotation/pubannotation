@@ -20,6 +20,10 @@ RSpec.describe NonSpeechTextMatcher do
       expect(described_class.match?('(Applause)')).to be true
     end
 
+    it 'matches the label the segment editor marks a segment as not speech with' do
+      expect(described_class.match?(described_class::NO_SPEECH)).to be true
+    end
+
     it 'matches a bare musical note' do
       expect(described_class.match?('♪')).to be true
     end
