@@ -44,6 +44,11 @@ class MediaTranscript < ApplicationRecord
     valid_segment?(segment) && !NonSpeechTextMatcher.match?(segment['text'])
   end
 
+  # Whether it has segments, which an image caption's doesn't.
+  def segmented?
+    segments.present?
+  end
+
   def speech_text
     speech_segments.pluck('text').join(' ')
   end

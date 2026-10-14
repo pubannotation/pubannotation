@@ -16,7 +16,7 @@ class SegmentsController < ApplicationController
     @doc = Doc.find(params[:doc_id])
     return render_status_error(:forbidden) unless @doc.updatable_for?(current_user)
 
-    @media_transcript = @doc.media_transcript if @doc.media_transcript&.segments.present?
+    @media_transcript = @doc.media_transcript if @doc.media_transcript&.segmented?
     render_status_error(:not_found) unless @media_transcript
   end
 end

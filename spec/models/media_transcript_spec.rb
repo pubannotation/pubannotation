@@ -179,6 +179,16 @@ RSpec.describe MediaTranscript, type: :model do
     end
   end
 
+  describe '#segmented?' do
+    it 'is true with segments' do
+      expect(build(:media_transcript).segmented?).to be(true)
+    end
+
+    it 'is false with no segments, e.g. an image caption' do
+      expect(build(:media_transcript, segments: []).segmented?).to be(false)
+    end
+  end
+
   describe '#speech_segment?' do
     let(:media_transcript) { build(:media_transcript) }
 
