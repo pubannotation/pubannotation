@@ -19,6 +19,7 @@ class MediaTranscript < ApplicationRecord
   validates :doc_id, uniqueness: true, allow_nil: true
   validate :doc_has_matching_medium
   validate :segments_are_valid
+  validate :segments_unchanged_without_doc, on: :update
   validate :segments_have_speech, on: :update, if: :doc
 
   # Derives `text` from segments for a new record, unless already set explicitly (e.g. an
@@ -99,6 +100,12 @@ class MediaTranscript < ApplicationRecord
 
   def doc_has_matching_medium
     errors.add(:doc, 'must have the same medium as this transcript') if doc && doc.medium != medium
+  end
+
+  # One with no doc is a record of what was transcribed (e.g. a transcription that found no speech), so
+  # its segments aren't edited.
+  def segments_unchanged_without_doc
+    errors.add(:segments, "can't be changed for a transcript with no document") if doc.nil? && will_save_change_to_segments?
   end
 
   # A doc's transcript can't be left with no speech, since the doc's body follows its speech. One with

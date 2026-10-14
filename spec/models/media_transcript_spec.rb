@@ -380,7 +380,9 @@ RSpec.describe MediaTranscript, type: :model do
 
   describe '#replace_text!' do
     it 'merges the segments into one spanning them all' do
-      media_transcript = create(:media_transcript, segments: [
+      medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
+      doc = create(:doc, body: 'Hello world', medium:)
+      media_transcript = create(:media_transcript, medium:, doc:, text: 'Hello world', segments: [
         { 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 400 },
         { 'text' => 'world', 'start_ms' => 500, 'end_ms' => 1000 }
       ])
@@ -439,12 +441,12 @@ RSpec.describe MediaTranscript, type: :model do
       expect(doc.reload.body).to eq('Hello world')
     end
 
-    it 'still accepts segments with no speech for a transcript with no doc' do
+    it 'refuses changed segments for a transcript with no doc' do
       orphan = create(:media_transcript, medium:)
-      orphan.set_segment_text(0, '(music)')
-      orphan.set_segment_text(1, '(applause)')
+      orphan.set_segment_text(0, 'Goodbye')
 
-      expect(orphan).to be_valid
+      expect { orphan.save! }.to raise_error(ActiveRecord::RecordInvalid, /can't be changed for a transcript with no document/)
+      expect(orphan.reload.segments.first['text']).to eq('Hello')
     end
 
     it 'rolls back the transcript when the doc fails to save' do
