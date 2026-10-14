@@ -27,10 +27,10 @@ class MediaTranscript < ApplicationRecord
   end
 
   # Once created, changed segments (e.g. a segment's text edited) rebuild text, unless it's set along
-  # with them, and the doc's body follows it. A text changed alone moves the body only with no segments
-  # (e.g. an image caption's), since the segments are what playback offsets index into.
+  # with them, and the doc's body follows it. A text changed alone leaves the body as it is, since the
+  # segments are what playback offsets index into.
   before_update :rebuild_text, if: -> { will_save_change_to_segments? && !will_save_change_to_text? }
-  after_update :sync_doc_body, if: -> { saved_change_to_segments? || (segments.blank? && saved_change_to_text?) }
+  after_update :sync_doc_body, if: :saved_change_to_segments?
 
   # Segments that are actual speech, excluding Whisper's non-speech labels (e.g. "(music)").
   # Kept rather than discarded in `segments`, since the raw transcript may still be useful.
