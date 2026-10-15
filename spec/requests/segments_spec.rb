@@ -53,6 +53,12 @@ RSpec.describe 'The segments page', type: :request do
       end
     end
 
+    it 'responds with not found for a doc that does not exist' do
+      get '/docs/0/segments'
+
+      expect(response).to have_http_status(:not_found)
+    end
+
     it 'responds with not found for a doc with an image' do
       image_doc = create(:doc, medium: create(:medium, media_type: :image, content_type: 'image/png'))
 
