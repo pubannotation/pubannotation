@@ -8,18 +8,15 @@
 		<th>Start</th>
 		<th>End</th>
 		<th>Text</th>
+		<th>Speech</th>
 	</tr>
 	<% @media_transcript.segments.each_with_index do |segment, index| -%>
 		<tr>
 			<td><%= index %></td>
 			<td><%= segment_time(segment['start_ms']) %></td>
 			<td><%= segment_time(segment['end_ms']) %></td>
-			<td>
-				<%= segment['text'] %>
-				<% unless @media_transcript.speech_segment?(segment) -%>
-					<i>(not in the text)</i>
-				<% end -%>
-			</td>
+			<td><%= segment['text'] %></td>
+			<td class="speech"><%= '✓' if @media_transcript.speech_segment?(segment) %></td>
 		</tr>
 	<% end -%>
 </table>

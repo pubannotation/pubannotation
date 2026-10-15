@@ -26,13 +26,14 @@ RSpec.describe 'The segments page', type: :request do
         expect(response.body).to include('0:00.300', 'Hello', 'world')
       end
 
-      it 'notes a non-speech segment as not in the text' do
+      it 'checks the Speech column of the speech segments only' do
         media_transcript.update_column(:segments, [{ 'text' => '(music)', 'start_ms' => 0, 'end_ms' => 300 },
                                                    { 'text' => 'Hello world', 'start_ms' => 300, 'end_ms' => 600 }])
 
         get "/docs/#{doc.id}/segments"
 
-        expect(response.body.scan('(not in the text)').size).to eq(1)
+        expect(response.body.scan('<td class="speech">✓</td>').size).to eq(1)
+        expect(response.body.scan('<td class="speech"></td>').size).to eq(1)
       end
     end
 
