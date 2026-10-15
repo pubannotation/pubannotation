@@ -14,11 +14,8 @@ class SegmentsController < ApplicationController
 
   def set_media_transcript
     @doc = Doc.find(params[:doc_id])
-    if @doc.segments_listable_by?(current_user)
-      @media_transcript = @doc.media_transcript
-    else
-      # Refused as not allowed, or as having no segments to list.
-      render_status_error(@doc.updatable_for?(current_user) ? :not_found : :forbidden)
-    end
+    return render_status_error(:not_found) unless @doc.segment_listable_by?(current_user)
+
+    @media_transcript = @doc.media_transcript
   end
 end

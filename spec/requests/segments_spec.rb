@@ -62,19 +62,20 @@ RSpec.describe 'The segments page', type: :request do
     end
   end
 
-  context 'as a user who cannot update the doc' do
+  context 'as a user who can access media but cannot update the doc' do
     before { sign_in create(:user).tap(&:confirm) }
 
-    it 'forbids the segment list' do
+    it 'lists the segments all the same' do
       get "/docs/#{doc.id}/segments"
 
-      expect(response).to have_http_status(:forbidden)
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include('Hello', 'world')
     end
 
-    it 'has no link on the doc detail page' do
+    it 'links to the segment list on the doc detail page' do
       get "/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}"
 
-      expect(response.body).not_to include("/docs/#{doc.id}/segments")
+      expect(response.body).to include("href=\"/docs/#{doc.id}/segments\"")
     end
   end
 
@@ -88,6 +89,12 @@ RSpec.describe 'The segments page', type: :request do
       get "/docs/#{doc.id}/segments"
 
       expect(response).to have_http_status(:forbidden)
+    end
+
+    it 'has no link on the doc detail page' do
+      get "/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}"
+
+      expect(response.body).not_to include("/docs/#{doc.id}/segments")
     end
   end
 

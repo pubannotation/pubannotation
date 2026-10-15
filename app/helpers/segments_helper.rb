@@ -1,7 +1,7 @@
 module SegmentsHelper
-  # Whether to link to SegmentsController for `doc`, by the same decision it opens the page with.
-  def segments_editable?(doc)
-    doc.segments_listable_by?(current_user)
+  # Whether to link to SegmentsController for `doc`, by the same decisions it opens the page with.
+  def segments_listable?(doc)
+    current_user&.can_access_media? && doc.segment_listable_by?(current_user)
   end
 
   # A segment's playback time in ms as "m:ss.mmm", e.g. 61_234 as "1:01.234".
