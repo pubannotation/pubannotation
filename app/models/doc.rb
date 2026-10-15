@@ -801,8 +801,7 @@ class Doc < ActiveRecord::Base
 		segment_listable_by?(current_user) && updatable_for?(current_user)
 	end
 
-	# Whether `current_user` can list the segments of this doc's media transcript, which anyone can with
-	# segments to list. Access to media while it's being tried out is checked by the controller, not here.
+	# Anyone can, given segments; access to media, while it's being tried out, is checked by the controller.
 	def segment_listable_by?(current_user)
 		media_transcript&.segmented?
 	end
