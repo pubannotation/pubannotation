@@ -36,8 +36,17 @@ class MediaTranscript < ApplicationRecord
   # Segments that are actual speech, excluding Whisper's non-speech labels (e.g. "(music)").
   # Kept rather than discarded in `segments`, since the raw transcript may still be useful.
   def speech_segments
-    segments.select { |segment| valid_segment?(segment) }
-            .reject { |segment| NonSpeechTextMatcher.match?(segment['text']) }
+    segments.select { |segment| speech_segment?(segment) }
+  end
+
+  # Whether the segment is actual speech, so in the doc's body.
+  def speech_segment?(segment)
+    valid_segment?(segment) && !NonSpeechTextMatcher.match?(segment['text'])
+  end
+
+  # Whether it has segments, which an image caption's doesn't.
+  def segmented?
+    segments.present?
   end
 
   def speech_text

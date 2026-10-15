@@ -149,4 +149,49 @@ RSpec.describe Doc, type: :model do
       expect(doc).to be_valid
     end
   end
+  describe '#segment_editable_by?' do
+    let(:medium) { create(:medium, media_type: :audio, content_type: 'audio/mpeg') }
+    let(:doc) { create(:doc, body: 'Hello world', medium:) }
+
+    before { create(:media_transcript, medium:, doc:, text: 'Hello world') }
+
+    it 'is true for a user who can update the doc, with segments' do
+      expect(doc.reload.segment_editable_by?(create(:user, root: true))).to be(true)
+    end
+
+    it 'is false for a user who cannot update the doc' do
+      expect(doc.reload.segment_editable_by?(create(:user))).to be(false)
+    end
+
+    it 'is false with no segments, e.g. an image caption' do
+      image = create(:medium, media_type: :image, content_type: 'image/png')
+      image_doc = create(:doc, body: 'A caption.', medium: image)
+      create(:media_transcript, medium: image, doc: image_doc, text: 'A caption.', segments: [])
+
+      expect(image_doc.reload.segment_editable_by?(create(:user, root: true))).to be(false)
+    end
+  end
+
+  describe '#segment_listable_by?' do
+    let(:medium) { create(:medium, media_type: :audio, content_type: 'audio/mpeg') }
+    let(:doc) { create(:doc, body: 'Hello world', medium:) }
+
+    it 'is true with segments, even for a user who cannot update the doc' do
+      create(:media_transcript, medium:, doc:, text: 'Hello world')
+
+      expect(doc.reload.segment_listable_by?(create(:user))).to be(true)
+    end
+
+    it 'is false with no segments, e.g. an image caption' do
+      image = create(:medium, media_type: :image, content_type: 'image/png')
+      image_doc = create(:doc, body: 'A caption.', medium: image)
+      create(:media_transcript, medium: image, doc: image_doc, text: 'A caption.', segments: [])
+
+      expect(image_doc.reload.segment_listable_by?(create(:user))).to be(false)
+    end
+
+    it 'is false with no media transcript' do
+      expect(doc.segment_listable_by?(create(:user))).to be_falsey
+    end
+  end
 end

@@ -796,6 +796,16 @@ class Doc < ActiveRecord::Base
 		end
 	end
 
+	# Whether `current_user` can edit the segments of this doc's media transcript.
+	def segment_editable_by?(current_user)
+		segment_listable_by?(current_user) && updatable_for?(current_user)
+	end
+
+	# Anyone can, given segments; access to media, while it's being tried out, is checked by the controller.
+	def segment_listable_by?(current_user)
+		media_transcript&.segmented?
+	end
+
 	def self.sourcedb_public?(sourcedb)
 		!sourcedb.include?(UserSourcedbSeparator)
 	end
