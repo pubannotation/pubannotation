@@ -109,6 +109,7 @@ Pubann::Application.routes.draw do
 		end
 
 		resources :segments, only: %i[index], param: :index
+		resource :segment_split, only: :edit
 	end
 
 	# routings for /docs/sourcedb....
