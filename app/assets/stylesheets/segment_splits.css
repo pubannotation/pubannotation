@@ -7,6 +7,11 @@
 		cursor: text;
 	}
 
+	/* The segment pointed in, to be split or merged with the next one */
+	.selected {
+		background-color: #eef;
+	}
+
 	/* Where the segment is pointed to be split */
 	.split-mark {
 		border-left: 2px solid red;
