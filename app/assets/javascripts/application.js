@@ -18,6 +18,7 @@
 //= require jquery.facebox
 //= require_tree
 //= stub docs
+//= stub segment_splits
 
 getURLParameter = function(parameterName){
   var sPageURL = window.location.search.substring(1);
