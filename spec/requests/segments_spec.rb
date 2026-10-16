@@ -40,7 +40,14 @@ RSpec.describe 'The segments page', type: :request do
         get "/docs/#{doc.id}/segments"
 
         expect(response.body).to include(%(data-url="/docs/#{doc.id}/segments/1"), 'data-text="world"')
-        expect(response.body).to include('<dialog id="segment-dialog" data-open-on-load="false">')
+        expect(response.body).to include('<dialog id="segment-dialog" aria-labelledby="segment-dialog-title" data-open-on-load="false">')
+      end
+
+      it "names the dialog by its heading and labels the dialog's textarea" do
+        get "/docs/#{doc.id}/segments"
+
+        expect(response.body).to include('<h2 id="segment-dialog-title">Edit segment text</h2>')
+        expect(response.body).to include('<label for="segment_text">Text</label>', 'id="segment_text"')
       end
     end
 
