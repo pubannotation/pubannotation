@@ -11,12 +11,13 @@
 <%= medium_tag(@doc.medium, id: 'media-player') %>
 <p>Playback time: <span id="playback-time">0:00.000 (0 ms)</span></p>
 
-<p id="split-point">Click in a segment's text to point where to split it.</p>
+<p id="split-point">Click in a segment's text to point where to split it, or to select it to merge with the next one.</p>
 <p>
 	<%= button_tag 'Split here', type: 'button', id: 'split-here', class: 'button', disabled: true %>
+	<%= button_tag 'Merge with next', type: 'button', id: 'merge-with-next', class: 'button', disabled: true %>
 	<span id="split-error" class="error"></span>
 </p>
-<p>Splits are shown here only; they aren't saved yet.</p>
+<p>Splits and merges are shown here only; they aren't saved yet.</p>
 
 <%# Rendered by segment_splits.js from the segments, which it splits as Split here is pressed. %>
 <div id="split-segments" data-segments="<%= @media_transcript.segments.to_json %>"></div>

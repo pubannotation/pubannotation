@@ -4,6 +4,7 @@
 	const container = document.getElementById('split-segments');
 	const splitPoint = document.getElementById('split-point');
 	const splitHere = document.getElementById('split-here');
+	const mergeWithNext = document.getElementById('merge-with-next');
 	const splitError = document.getElementById('split-error');
 	const playbackTime = document.getElementById('playback-time');
 
@@ -26,7 +27,11 @@
 		const segment = segments[point.index];
 		const ms = Math.round(mediaPlayer.currentTime * 1000);
 
-		if (point.offset <= 0 || point.offset >= segment.text.length) {
+		// Spaces at the split go, as the segments' boundary stands for them.
+		const before = segment.text.slice(0, point.offset).trimEnd();
+		const after = segment.text.slice(point.offset).trimStart();
+
+		if (before === '' || after === '') {
 			return showError('Point inside the text, not at its start or end.');
 		}
 		if (ms <= segment.start_ms || ms >= segment.end_ms) {
@@ -34,8 +39,20 @@
 		}
 
 		segments.splice(point.index, 1,
-			{ ...segment, text: segment.text.slice(0, point.offset), end_ms: ms },
-			{ ...segment, text: segment.text.slice(point.offset), start_ms: ms });
+			{ ...segment, text: before, end_ms: ms },
+			{ ...segment, text: after, start_ms: ms });
+		point = null;
+		render();
+	});
+
+	// Merges the selected segment with the next one: from its start to the next one's end, their texts
+	// joined with a space, as a doc's body joins its segments.
+	mergeWithNext.addEventListener('click', () => {
+		const segment = segments[point.index];
+		const next = segments[point.index + 1];
+
+		segments.splice(point.index, 2,
+			{ ...segment, text: `${segment.text} ${next.text}`, end_ms: next.end_ms });
 		point = null;
 		render();
 	});
@@ -60,7 +77,8 @@
 		}));
 
 		splitHere.disabled = !point;
-		splitPoint.textContent = "Click in a segment's text to point where to split it.";
+		mergeWithNext.disabled = true;
+		splitPoint.textContent = "Click in a segment's text to point where to split it, or to select it to merge with the next one.";
 		showError('');
 	}
 
@@ -78,6 +96,8 @@
 		render();
 		point = { index, offset };
 		splitHere.disabled = false;
+		mergeWithNext.disabled = index >= segments.length - 1;
+		container.children[index].classList.add('selected');
 		markPoint(container.children[index].querySelector('.split-segment-text'), offset);
 		splitPoint.textContent = `Segment #${index}, before character ${offset}`;
 	}
