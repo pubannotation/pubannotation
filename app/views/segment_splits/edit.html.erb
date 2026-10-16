@@ -10,6 +10,8 @@
 
 <%= medium_tag(@doc.medium, id: 'media-player') %>
 
+<p id="split-point">Click in a segment's text to point where to split it.</p>
+
 <%# Rendered by segment_splits.js from the segments. %>
 <div id="split-segments" data-segments="<%= @media_transcript.segments.to_json %>"></div>
 
