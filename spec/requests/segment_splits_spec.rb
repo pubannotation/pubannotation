@@ -25,7 +25,7 @@ RSpec.describe 'The segment split editor', type: :request do
       get "/docs/#{doc.id}/segment_split/edit"
 
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include('id="media-player"', 'id="split-here"', 'id="save-splits"')
+      expect(response.body).to include('id="media-player"', 'id="split-here"', 'id="merge-with-next"', 'id="save-splits"')
       segments = media_transcript.segments.map do |segment|
         { text: segment.text, start_ms: segment.start_ms, end_ms: segment.end_ms,
           line_break_after: segment.line_break_after }

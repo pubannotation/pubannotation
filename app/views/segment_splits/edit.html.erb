@@ -11,9 +11,10 @@
 <%= medium_tag(@doc.medium, id: 'media-player') %>
 <p>Playback time: <span id="playback-time">0:00.000 (0 ms)</span></p>
 
-<p id="split-point">Click in a segment's text to point where to split it.</p>
+<p id="split-point">Click in a segment's text to point where to split it, or to select it to merge with the next one.</p>
 <p>
   <%= button_tag 'Split here', type: 'button', id: 'split-here', class: 'button', disabled: true %>
+  <%= button_tag 'Merge with next', type: 'button', id: 'merge-with-next', class: 'button', disabled: true %>
   <span id="split-error" class="error"></span>
 </p>
 
