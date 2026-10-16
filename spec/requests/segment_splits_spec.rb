@@ -21,11 +21,11 @@ RSpec.describe 'The segment split editor', type: :request do
   context 'as a user who can edit the segments' do
     before { sign_in create(:user, root: true).tap(&:confirm) }
 
-    it 'shows the media and the segments for the page to render' do
+    it 'shows the media, a Split here button, and the segments for the page to render' do
       get "/docs/#{doc.id}/segment_split/edit"
 
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include('id="media-player"')
+      expect(response.body).to include('id="media-player"', 'id="split-here"')
       expect(response.body).to include(ERB::Util.html_escape(media_transcript.segments.to_json))
     end
 
