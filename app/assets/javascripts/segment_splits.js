@@ -4,6 +4,7 @@
 	const container = document.getElementById('split-segments');
 	const splitPoint = document.getElementById('split-point');
 	const splitHere = document.getElementById('split-here');
+	const mergeWithNext = document.getElementById('merge-with-next');
 	const splitError = document.getElementById('split-error');
 	const playbackTime = document.getElementById('playback-time');
 
@@ -40,6 +41,18 @@
 		render();
 	});
 
+	// Merges the selected segment with the next one: from its start to the next one's end, their texts
+	// joined with a space, as a doc's body joins its segments.
+	mergeWithNext.addEventListener('click', () => {
+		const segment = segments[point.index];
+		const next = segments[point.index + 1];
+
+		segments.splice(point.index, 2,
+			{ ...segment, text: `${segment.text} ${next.text}`, end_ms: next.end_ms });
+		point = null;
+		render();
+	});
+
 	// One row per segment: its times and its text, which can be clicked to point where to split it.
 	function render() {
 		container.replaceChildren(...segments.map((segment, index) => {
@@ -60,7 +73,8 @@
 		}));
 
 		splitHere.disabled = !point;
-		splitPoint.textContent = "Click in a segment's text to point where to split it.";
+		mergeWithNext.disabled = true;
+		splitPoint.textContent = "Click in a segment's text to point where to split it, or to select it to merge with the next one.";
 		showError('');
 	}
 
@@ -78,6 +92,8 @@
 		render();
 		point = { index, offset };
 		splitHere.disabled = false;
+		mergeWithNext.disabled = index >= segments.length - 1;
+		container.children[index].classList.add('selected');
 		markPoint(container.children[index].querySelector('.split-segment-text'), offset);
 		splitPoint.textContent = `Segment #${index}, before character ${offset}`;
 	}

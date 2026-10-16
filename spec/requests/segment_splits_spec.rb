@@ -25,7 +25,7 @@ RSpec.describe 'The segment split editor', type: :request do
       get "/docs/#{doc.id}/segment_split/edit"
 
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include('id="media-player"', 'id="split-here"')
+      expect(response.body).to include('id="media-player"', 'id="split-here"', 'id="merge-with-next"')
       expect(response.body).to include(ERB::Util.html_escape(media_transcript.segments.to_json))
     end
 
