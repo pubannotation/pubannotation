@@ -29,8 +29,11 @@
 	// split, if it can't.
 	function splitSegment(index, offset, ms) {
 		const segment = segments[index];
+		// Spaces at the split go, as the segments' boundary stands for them.
+		const before = segment.text.slice(0, offset).trimEnd();
+		const after = segment.text.slice(offset).trimStart();
 
-		if (offset <= 0 || offset >= segment.text.length) {
+		if (before === '' || after === '') {
 			return 'Point inside the text, not at its start or end.';
 		}
 		if (ms <= segment.start_ms || ms >= segment.end_ms) {
@@ -38,8 +41,8 @@
 		}
 
 		segments.splice(index, 1,
-			{ ...segment, text: segment.text.slice(0, offset), end_ms: ms, line_break_after: false },
-			{ ...segment, text: segment.text.slice(offset), start_ms: ms });
+			{ ...segment, text: before, end_ms: ms, line_break_after: false },
+			{ ...segment, text: after, start_ms: ms });
 	}
 
 	// Merges the pointed segment with the next one.
