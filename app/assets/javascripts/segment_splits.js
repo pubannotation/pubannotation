@@ -5,6 +5,7 @@
 	const splitPoint = document.getElementById('split-point');
 	const splitHere = document.getElementById('split-here');
 	const splitError = document.getElementById('split-error');
+	const playbackTime = document.getElementById('playback-time');
 
 	// The segments as split on this page so far; not saved yet.
 	const segments = JSON.parse(container.dataset.segments);
@@ -12,6 +13,14 @@
 	let point = null;
 
 	render();
+
+	// Shows the playback time Split here would split at, kept up to date while playing and seeking.
+	for (const event of ['timeupdate', 'seeked', 'loadedmetadata']) {
+		mediaPlayer.addEventListener(event, () => {
+			const ms = Math.round(mediaPlayer.currentTime * 1000);
+			playbackTime.textContent = `${formatTime(ms)} (${ms} ms)`;
+		});
+	}
 
 	splitHere.addEventListener('click', () => {
 		const segment = segments[point.index];
