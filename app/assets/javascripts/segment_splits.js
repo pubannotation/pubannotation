@@ -1,13 +1,35 @@
 // Loaded with defer only by segment_splits/edit, so the DOM is already parsed when this runs.
 (() => {
+	const mediaPlayer = document.getElementById('media-player');
 	const container = document.getElementById('split-segments');
 	const splitPoint = document.getElementById('split-point');
+	const splitHere = document.getElementById('split-here');
+	const splitError = document.getElementById('split-error');
 
+	// The segments as split on this page so far; not saved yet.
 	const segments = JSON.parse(container.dataset.segments);
 	// Where to split: the index of the segment and the character offset into its text.
 	let point = null;
 
 	render();
+
+	splitHere.addEventListener('click', () => {
+		const segment = segments[point.index];
+		const ms = Math.round(mediaPlayer.currentTime * 1000);
+
+		if (point.offset <= 0 || point.offset >= segment.text.length) {
+			return showError('Point inside the text, not at its start or end.');
+		}
+		if (ms <= segment.start_ms || ms >= segment.end_ms) {
+			return showError(`Play the media to between ${formatTime(segment.start_ms)} and ${formatTime(segment.end_ms)}.`);
+		}
+
+		segments.splice(point.index, 1,
+			{ ...segment, text: segment.text.slice(0, point.offset), end_ms: ms },
+			{ ...segment, text: segment.text.slice(point.offset), start_ms: ms });
+		point = null;
+		render();
+	});
 
 	// One row per segment: its times and its text, which can be clicked to point where to split it.
 	function render() {
@@ -28,7 +50,9 @@
 			return row;
 		}));
 
+		splitHere.disabled = !point;
 		splitPoint.textContent = "Click in a segment's text to point where to split it.";
+		showError('');
 	}
 
 	// Points where to split a segment: the character clicked in its text.
@@ -44,6 +68,7 @@
 
 		render();
 		point = { index, offset };
+		splitHere.disabled = false;
 		markPoint(container.children[index].querySelector('.split-segment-text'), offset);
 		splitPoint.textContent = `Segment #${index}, before character ${offset}`;
 	}
@@ -54,6 +79,10 @@
 		const mark = document.createElement('span');
 		mark.className = 'split-mark';
 		text.replaceChildren(characters.slice(0, offset), mark, characters.slice(offset));
+	}
+
+	function showError(message) {
+		splitError.textContent = message;
 	}
 
 	// Playback time in ms as "m:ss.mmm", as SegmentsHelper#segment_time formats it.
