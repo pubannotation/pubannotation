@@ -1,0 +1,20 @@
+<% content_for :path do -%>
+	> <%= link_to t('views.paths.home'), home_path -%>
+	> <%= link_to 'docs', docs_path -%>
+	> <%= link_to t('views.shared.a_doc_id', sourcedb: @doc.sourcedb, sourceid: @doc.sourceid), doc_sourcedb_sourceid_show_path(@doc.sourcedb, @doc.sourceid) -%>
+	> <%= link_to 'segments', doc_segments_path(@doc) -%>
+	> split
+<% end -%>
+
+<h1>Split segments</h1>
+
+<%= medium_tag(@doc.medium, id: 'media-player') %>
+
+<%# Rendered by segment_splits.js from the segments. %>
+<div id="split-segments" data-segments="<%= @media_transcript.segments.to_json %>"></div>
+
+<%= link_to t('views.shared.back'), doc_segments_path(@doc) %>
+
+<% content_for :javascript do -%>
+	<%= javascript_include_tag 'segment_splits', defer: true -%>
+<% end -%>
