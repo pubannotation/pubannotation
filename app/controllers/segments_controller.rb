@@ -15,8 +15,11 @@ class SegmentsController < ApplicationController
   # PATCH /docs/:doc_id/segments/:index
   def update
     @text = segment_text_param
-    @media_transcript.set_segment_text(@index, @text)
-    @media_transcript.save!
+    # Reloads and locks the transcript, so a concurrent edit of another segment isn't overwritten.
+    @media_transcript.with_lock do
+      @media_transcript.set_segment_text(@index, @text)
+      @media_transcript.save!
+    end
 
     redirect_to doc_segments_path(@doc), notice: 'Segment text was successfully updated.'
   rescue ArgumentError, ActiveRecord::RecordInvalid => e

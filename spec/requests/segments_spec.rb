@@ -53,6 +53,19 @@ RSpec.describe 'The segments page', type: :request do
         expect(doc.reload.body).to eq('Hello there')
       end
 
+      it 'keeps an edit of another segment saved since the page was loaded' do
+        allow_any_instance_of(MediaTranscript).to receive(:with_lock).and_wrap_original do |original, *args, &block|
+          # Another request saves its edit of segment 0 just before this one locks the transcript.
+          MediaTranscript.find(media_transcript.id).tap { _1.set_segment_text(0, 'Goodbye') }.save!
+          original.call(*args, &block)
+        end
+
+        patch "/docs/#{doc.id}/segments/1", params: { segment: { text: 'there' } }
+
+        expect(media_transcript.reload.segments.map { _1['text'] }).to eq(%w[Goodbye there])
+        expect(doc.reload.body).to eq('Goodbye there')
+      end
+
       it 'shows the error, reopening the dialog with the entered text, when the update is rejected' do
         patch "/docs/#{doc.id}/segments/1", params: { segment: { text: ' ' } }
 
