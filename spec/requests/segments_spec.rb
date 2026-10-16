@@ -66,6 +66,13 @@ RSpec.describe 'The segments page', type: :request do
         expect(doc.reload.body).to eq('Goodbye there')
       end
 
+      it 'saves line breaks submitted as CRLF as LF' do
+        patch "/docs/#{doc.id}/segments/1", params: { segment: { text: "there\r\nagain" } }
+
+        expect(media_transcript.reload.segments.last['text']).to eq("there\nagain")
+        expect(doc.reload.body).to eq("Hello there\nagain")
+      end
+
       it 'shows the error, reopening the dialog with the entered text, when the update is rejected' do
         patch "/docs/#{doc.id}/segments/1", params: { segment: { text: ' ' } }
 
