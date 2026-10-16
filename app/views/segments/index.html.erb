@@ -2,6 +2,10 @@
 
 <h1>Segments</h1>
 
+<% if @doc.segment_editable_by?(current_user) -%>
+	<p><%= link_to 'Split segments', edit_doc_segment_split_path(@doc), class: 'button' %></p>
+<% end -%>
+
 <table>
 	<tr>
 		<th>#</th>

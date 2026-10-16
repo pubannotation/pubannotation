@@ -29,6 +29,12 @@ RSpec.describe 'The segment split editor', type: :request do
       expect(response.body).to include(ERB::Util.html_escape(media_transcript.segments.to_json))
     end
 
+    it 'links to it from the segment list' do
+      get "/docs/#{doc.id}/segments"
+
+      expect(response.body).to include(%(href="/docs/#{doc.id}/segment_split/edit"))
+    end
+
     it 'responds with not found for a doc with no segments' do
       image_doc = create(:doc, medium: create(:medium, media_type: :image, content_type: 'image/png'))
 
@@ -51,6 +57,12 @@ RSpec.describe 'The segment split editor', type: :request do
       get "/docs/#{doc.id}/segment_split/edit"
 
       expect(response).to have_http_status(:forbidden)
+    end
+
+    it 'has no link to it from the segment list' do
+      get "/docs/#{doc.id}/segments"
+
+      expect(response.body).not_to include('/segment_split/edit')
     end
   end
 
