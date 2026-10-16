@@ -27,7 +27,11 @@
 		const segment = segments[point.index];
 		const ms = Math.round(mediaPlayer.currentTime * 1000);
 
-		if (point.offset <= 0 || point.offset >= segment.text.length) {
+		// Spaces at the split go, as the segments' boundary stands for them.
+		const before = segment.text.slice(0, point.offset).trimEnd();
+		const after = segment.text.slice(point.offset).trimStart();
+
+		if (before === '' || after === '') {
 			return showError('Point inside the text, not at its start or end.');
 		}
 		if (ms <= segment.start_ms || ms >= segment.end_ms) {
@@ -35,8 +39,8 @@
 		}
 
 		segments.splice(point.index, 1,
-			{ ...segment, text: segment.text.slice(0, point.offset), end_ms: ms },
-			{ ...segment, text: segment.text.slice(point.offset), start_ms: ms });
+			{ ...segment, text: before, end_ms: ms },
+			{ ...segment, text: after, start_ms: ms });
 		point = null;
 		render();
 	});
