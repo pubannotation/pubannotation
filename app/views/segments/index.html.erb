@@ -27,7 +27,7 @@
 			<% if @editable -%>
 				<td>
 					<%= button_tag 'Edit', type: 'button', class: 'button edit-segment',
-						data: { url: doc_segment_path(@doc, index), text: segment['text'],
+						data: { url: doc_segment_path(@doc, index), index:, text: segment['text'],
 						        time: segment_time_range(segment) } %>
 				</td>
 			<% end -%>
@@ -44,7 +44,10 @@
 			<h2 id="segment-dialog-title">Edit segment text</h2>
 			<%= form_with scope: :segment, url: (doc_segment_path(@doc, @index) if @segment), method: :patch do |f| %>
 				<p id="segment-dialog-error" class="error"><%= @error %></p>
-				<p id="segment-dialog-time"><%= segment_time_range(@segment) if @segment %></p>
+				<p>
+					<span id="segment-dialog-index"><%= "##{@index}" if @segment %></span> /
+					<span id="segment-dialog-time"><%= segment_time_range(@segment) if @segment %></span>
+				</p>
 				<%= f.label :text, 'Text' %>
 				<%= f.text_area :text, value: @text, size: '60x4' %>
 				<div class="actions">

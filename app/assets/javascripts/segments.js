@@ -19,11 +19,13 @@
 	function openDialogFor(button) {
 		const form = dialog.querySelector('form');
 		const error = document.getElementById('segment-dialog-error');
+		const index = document.getElementById('segment-dialog-index');
 		const time = document.getElementById('segment-dialog-time');
 		const textArea = form.elements['segment[text]'];
 
 		form.action = button.dataset.url;
 		error.textContent = '';
+		index.textContent = `#${button.dataset.index}`;
 		time.textContent = button.dataset.time;
 		textArea.value = button.dataset.text;
 		dialog.showModal();
