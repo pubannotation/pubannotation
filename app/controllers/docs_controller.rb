@@ -344,7 +344,7 @@ class DocsController < ApplicationController
 				@doc = Doc.store_hdoc!(hdoc)
 				@project.add_doc!(@doc)
 				if medium&.transcribable?
-					ManualDocTranscriptService.call(medium, hdoc[:body]).update!(doc: @doc)
+					ManualDocTranscriptService.call(medium, @doc.body).update!(doc: @doc)
 				end
 			end
 
@@ -426,7 +426,6 @@ class DocsController < ApplicationController
 
 		params = doc_params
 		text = params.delete(:text)
-		text&.gsub!(/\r\n/, "\n")
 		is_success = @doc.update(params.merge(body: text))
 
 		respond_to do |format|

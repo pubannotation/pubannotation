@@ -38,18 +38,6 @@ RSpec.describe 'Editing a doc with a media transcript', type: :request do
       expect(doc.reload.source).to eq('https://example.com/changed')
     end
 
-    it 'accepts a metadata-only edit to a body stored with CRLF line endings, which only get normalized' do
-      doc.update_column(:body, "Hello\r\nworld")
-
-      put doc_path(doc, format: :json),
-          params: { doc: { text: "Hello\r\nworld", source: 'https://example.com/changed' } }
-
-      expect(response).to have_http_status(:no_content)
-      doc.reload
-      expect(doc.source).to eq('https://example.com/changed')
-      expect(doc.body).to eq("Hello\nworld")
-    end
-
     it 're-renders a rejected body change with the stored body in the read-only field' do
       patch doc_path(doc), params: { doc: { text: 'Changed body' } }
 

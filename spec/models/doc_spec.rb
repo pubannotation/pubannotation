@@ -28,6 +28,22 @@ RSpec.describe Doc, type: :model do
     end
   end
 
+  describe 'line endings' do
+    it 'stores the line breaks of a new body as LF' do
+      doc = create(:doc, body: "Hello\r\nworld")
+
+      expect(doc.reload.body).to eq("Hello\nworld")
+    end
+
+    it 'stores the line breaks of a changed body as LF' do
+      doc = create(:doc, body: 'Hello world')
+
+      doc.update!(body: "Hello\r\nthere")
+
+      expect(doc.reload.body).to eq("Hello\nthere")
+    end
+  end
+
   describe '.bulk_increment_counts_for_batch' do
     let!(:doc1) { create(:doc, sourcedb: 'PMC', sourceid: '123', denotations_num: 100, blocks_num: 50, relations_num: 25) }
     let!(:doc2) { create(:doc, sourcedb: 'PMC', sourceid: '456', denotations_num: 200, blocks_num: 80, relations_num: 40) }
