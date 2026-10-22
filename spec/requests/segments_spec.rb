@@ -43,7 +43,7 @@ RSpec.describe 'The segments page', type: :request do
         expect(response.body).to include('<dialog id="segment-dialog" aria-labelledby="segment-dialog-title" data-open-on-load="false">')
       end
 
-      it "names the dialog by its heading and labels the dialog's textarea" do
+      it "names the dialog by its heading and labels the dialog's text field" do
         get "/docs/#{doc.id}/segments"
 
         expect(response.body).to include('<h2 id="segment-dialog-title">Edit segment text</h2>')
@@ -84,7 +84,7 @@ RSpec.describe 'The segments page', type: :request do
         patch "/docs/#{doc.id}/segments/1", params: { segment: { text: ' ' } }
 
         expect(response).to have_http_status(:unprocessable_content)
-        expect(response.body).to include('Text is missing.', 'data-open-on-load="true"', '<span id="segment-dialog-index">#1</span>', ' </textarea>')
+        expect(response.body).to include('Text is missing.', 'data-open-on-load="true"', '<span id="segment-dialog-index">#1</span>', 'value=" "')
         expect(response.body).to include(%(action="/docs/#{doc.id}/segments/1"))
         expect(media_transcript.reload.segments.last['text']).to eq('world')
       end

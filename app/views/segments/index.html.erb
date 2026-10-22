@@ -49,7 +49,7 @@
 					<span id="segment-dialog-time"><%= segment_time_range(@segment) if @segment %></span>
 				</p>
 				<%= f.label :text, 'Text' %>
-				<%= f.text_area :text, value: @text, size: '60x4' %>
+				<%= f.text_field :text, value: @text, size: 60 %>
 				<div class="actions">
 					<%= f.submit 'Save' %>
 					<%= button_tag 'Cancel', type: 'button', id: 'segment-dialog-cancel' %>
