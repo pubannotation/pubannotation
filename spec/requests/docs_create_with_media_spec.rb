@@ -76,17 +76,17 @@ RSpec.describe 'POST /docs.json', type: :request do
       expect(media_transcript.segments).to match([have_attributes(text: 'doctor findings', start_ms: 0, end_ms: 4_980)])
     end
 
-    it 'stores the line breaks of the body as LF, and its segment on one line' do
+    it 'creates the body and its segment on one line, with line breaks and runs of spaces as one space' do
       allow(AudioAnalyzer).to receive(:new).and_return(instance_double(AudioAnalyzer, duration: 4.98))
-      params[:doc][:text] = "doctor\r\nfindings"
+      params[:doc][:text] = "doctor\r\nfindings  here"
 
       post '/docs.json', params: params.merge(media_params), headers: headers
 
       expect(response).to have_http_status(:created)
       doc = Doc.last
-      expect(doc.body).to eq("doctor\nfindings")
-      expect(doc.media_transcript.text).to eq("doctor\nfindings")
-      expect(doc.media_transcript.segments.first.text).to eq('doctor findings')
+      expect(doc.body).to eq('doctor findings here')
+      expect(doc.media_transcript.text).to eq('doctor findings here')
+      expect(doc.media_transcript.segments.first.text).to eq('doctor findings here')
     end
 
     it "does not create the doc when the media's duration cannot be read" do
