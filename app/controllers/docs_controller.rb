@@ -424,9 +424,8 @@ class DocsController < ApplicationController
 
 		@doc = Doc.find_by(id: params[:id])
 
-		params = doc_params
-		text = params.delete(:text)
-		is_success = @doc.update(params.merge(body: text))
+		attributes = doc_params
+		is_success = @doc.update(attributes.except(:text).merge(body: attributes[:text]))
 
 		respond_to do |format|
 			if is_success
