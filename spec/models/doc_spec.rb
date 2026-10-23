@@ -54,14 +54,17 @@ RSpec.describe Doc, type: :model do
       expect(doc.reload.body).to eq("Hello\nworld")
     end
 
-    it 'aligns the annotations to the new body as it will be stored, with LF line endings' do
+    it 'moves the annotations to where their text is in the new body as stored, with LF line endings' do
       doc = create(:doc, body: 'Hello world')
-      expect(AnnotationUtils).to receive(:align_denotations_and_blocks!)
-        .with(anything, anything, 'Hello world', "Goodbye\nworld").and_return([])
+      denotation = create(:denotation, doc:, begin: 6, end: 11)
 
-      doc.revise({ text: "Goodbye\r\nworld" })
+      doc.revise({ text: "Hello\r\nbig world" })
 
-      expect(doc.reload.body).to eq("Goodbye\nworld")
+      doc.reload
+      denotation.reload
+      expect(doc.body).to eq("Hello\nbig world")
+      expect([denotation.begin, denotation.end]).to eq([10, 15])
+      expect(doc.body[denotation.begin...denotation.end]).to eq('world')
     end
   end
 
