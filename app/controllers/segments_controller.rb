@@ -32,8 +32,7 @@ class SegmentsController < ApplicationController
   private
 
   def segment_text_param
-    # Browsers submit a textarea's line breaks as CRLF, as DocsController#update also normalizes.
-    params.expect(segment: [:text])[:text]&.gsub("\r\n", "\n")
+    params.expect(segment: [:text])[:text]
   end
 
   def set_media_transcript

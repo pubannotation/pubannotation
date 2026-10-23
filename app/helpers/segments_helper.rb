@@ -13,6 +13,6 @@ module SegmentsHelper
 
   # A segment's start and end times as "m:ss.mmm - m:ss.mmm", e.g. "0:00.000 - 0:03.000".
   def segment_time_range(segment)
-    "#{segment_time(segment['start_ms'])} - #{segment_time(segment['end_ms'])}"
+    "#{segment_time(segment.start_ms)} - #{segment_time(segment.end_ms)}"
   end
 end

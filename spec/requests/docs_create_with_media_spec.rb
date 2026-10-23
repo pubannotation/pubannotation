@@ -73,10 +73,10 @@ RSpec.describe 'POST /docs.json', type: :request do
       media_transcript = Doc.last.media_transcript
       expect(media_transcript.medium).to eq(medium)
       expect(media_transcript.text).to eq('doctor findings')
-      expect(media_transcript.segments).to eq([{ 'text' => 'doctor findings', 'start_ms' => 0, 'end_ms' => 4_980 }])
+      expect(media_transcript.segment_values).to eq([{ 'text' => 'doctor findings', 'start_ms' => 0, 'end_ms' => 4_980 }])
     end
 
-    it 'stores the line breaks of the body and its segment as LF' do
+    it 'stores the line breaks of the body as LF, and its segment on one line' do
       allow(AudioAnalyzer).to receive(:new).and_return(instance_double(AudioAnalyzer, duration: 4.98))
       params[:doc][:text] = "doctor\r\nfindings"
 
@@ -86,7 +86,7 @@ RSpec.describe 'POST /docs.json', type: :request do
       doc = Doc.last
       expect(doc.body).to eq("doctor\nfindings")
       expect(doc.media_transcript.text).to eq("doctor\nfindings")
-      expect(doc.media_transcript.segments.first['text']).to eq("doctor\nfindings")
+      expect(doc.media_transcript.segments.first.text).to eq('doctor findings')
     end
 
     it "does not create the doc when the media's duration cannot be read" do

@@ -27,8 +27,7 @@ RSpec.describe 'The segments page', type: :request do
       end
 
       it 'checks the Speech column of the speech segments only' do
-        media_transcript.update_column(:segments, [{ 'text' => '(music)', 'start_ms' => 0, 'end_ms' => 300 },
-                                                   { 'text' => 'Hello world', 'start_ms' => 300, 'end_ms' => 600 }])
+        media_transcript.segments.first.update_column(:text, '(music)')
 
         get "/docs/#{doc.id}/segments"
 
@@ -56,7 +55,7 @@ RSpec.describe 'The segments page', type: :request do
         patch "/docs/#{doc.id}/segments/1", params: { segment: { text: 'there' } }
 
         expect(response).to redirect_to("/docs/#{doc.id}/segments")
-        expect(media_transcript.reload.segments.last['text']).to eq('there')
+        expect(media_transcript.reload.segments.last.text).to eq('there')
         expect(doc.reload.body).to eq('Hello there')
       end
 
@@ -69,15 +68,15 @@ RSpec.describe 'The segments page', type: :request do
 
         patch "/docs/#{doc.id}/segments/1", params: { segment: { text: 'there' } }
 
-        expect(media_transcript.reload.segments.map { _1['text'] }).to eq(%w[Goodbye there])
+        expect(media_transcript.reload.segments.map(&:text)).to eq(%w[Goodbye there])
         expect(doc.reload.body).to eq('Goodbye there')
       end
 
-      it 'saves line breaks submitted as CRLF as LF' do
+      it 'saves line breaks as spaces, keeping the segment on one line' do
         patch "/docs/#{doc.id}/segments/1", params: { segment: { text: "there\r\nagain" } }
 
-        expect(media_transcript.reload.segments.last['text']).to eq("there\nagain")
-        expect(doc.reload.body).to eq("Hello there\nagain")
+        expect(media_transcript.reload.segments.last.text).to eq('there again')
+        expect(doc.reload.body).to eq('Hello there again')
       end
 
       it 'shows the error, reopening the dialog with the entered text, when the update is rejected' do
@@ -86,7 +85,7 @@ RSpec.describe 'The segments page', type: :request do
         expect(response).to have_http_status(:unprocessable_content)
         expect(response.body).to include('Text is missing.', 'data-open-on-load="true"', '<span id="segment-dialog-index">#1</span>', 'value=" "')
         expect(response.body).to include(%(action="/docs/#{doc.id}/segments/1"))
-        expect(media_transcript.reload.segments.last['text']).to eq('world')
+        expect(media_transcript.reload.segments.last.text).to eq('world')
       end
 
       it 'responds with not found for an index with no segment' do
@@ -105,7 +104,7 @@ RSpec.describe 'The segments page', type: :request do
 
       it 'has no link for a doc with an image' do
         image_doc = create(:doc, medium: create(:medium, media_type: :image, content_type: 'image/png'))
-        create(:media_transcript, medium: image_doc.medium, doc: image_doc, text: 'A caption.', segments: [])
+        create(:media_transcript, medium: image_doc.medium, doc: image_doc, text: 'A caption.', segment_values: [])
 
         get "/docs/sourcedb/#{image_doc.sourcedb}/sourceid/#{image_doc.sourceid}"
 
