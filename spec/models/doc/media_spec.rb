@@ -47,7 +47,7 @@ RSpec.describe Doc, type: :model do
     let(:one_segment) { [{ 'text' => 'Hello world', 'start_ms' => 0, 'end_ms' => 1000 }] }
 
     it 'cannot change the body of a doc transcribed by Whisper' do
-      MediaTranscript.create!(medium:, doc:, generation_model: 'whisper:ggml-base.en', segments: one_segment)
+      MediaTranscript.create!(medium:, doc:, generation_model: 'whisper:ggml-base.en', segment_values: one_segment)
       doc.reload.body = 'Changed body'
 
       expect(doc).not_to be_valid
@@ -55,7 +55,7 @@ RSpec.describe Doc, type: :model do
     end
 
     it 'can change the body of a doc transcribed by Whisper to follow its transcript' do
-      media_transcript = MediaTranscript.create!(medium:, doc:, generation_model: 'whisper:ggml-base.en', segments: one_segment)
+      media_transcript = MediaTranscript.create!(medium:, doc:, generation_model: 'whisper:ggml-base.en', segment_values: one_segment)
       media_transcript.update_column(:text, 'Goodbye world')
       doc.reload.body = 'Goodbye world'
 
@@ -63,24 +63,24 @@ RSpec.describe Doc, type: :model do
     end
 
     it 'can still change other attributes of a doc transcribed by Whisper' do
-      MediaTranscript.create!(medium:, doc:, generation_model: 'whisper:ggml-base.en', segments: one_segment)
+      MediaTranscript.create!(medium:, doc:, generation_model: 'whisper:ggml-base.en', segment_values: one_segment)
       doc.reload.source = 'https://example.com/changed'
 
       expect(doc).to be_valid
     end
 
     it 'carries a body change over to a single-segment transcript not from Whisper' do
-      media_transcript = MediaTranscript.create!(medium:, doc:, segments: one_segment)
+      media_transcript = MediaTranscript.create!(medium:, doc:, segment_values: one_segment)
 
       doc.reload.update!(body: 'Changed body')
 
       media_transcript.reload
-      expect(media_transcript.segments).to eq([{ 'text' => 'Changed body', 'start_ms' => 0, 'end_ms' => 1000 }])
+      expect(media_transcript.segment_values).to eq([{ 'text' => 'Changed body', 'start_ms' => 0, 'end_ms' => 1000 }])
       expect(media_transcript.text).to eq('Changed body')
     end
 
     it 'merges the segments of a transcript not from Whisper into one when the body changes' do
-      media_transcript = MediaTranscript.create!(medium:, doc:, segments: [
+      media_transcript = MediaTranscript.create!(medium:, doc:, segment_values: [
         { 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 400 },
         { 'text' => 'world', 'start_ms' => 500, 'end_ms' => 1000 }
       ])
@@ -88,26 +88,26 @@ RSpec.describe Doc, type: :model do
       doc.reload.update!(body: 'Changed body')
 
       media_transcript.reload
-      expect(media_transcript.segments).to eq([{ 'text' => 'Changed body', 'start_ms' => 0, 'end_ms' => 1000 }])
+      expect(media_transcript.segment_values).to eq([{ 'text' => 'Changed body', 'start_ms' => 0, 'end_ms' => 1000 }])
       expect(media_transcript.text).to eq('Changed body')
     end
 
-    it 'carries the line endings of a body stored with CRLF over to its transcript as they get normalized' do
+    it 'puts a body stored with CRLF, and its transcript, on one line as it gets saved again' do
       media_transcript = MediaTranscript.create!(medium:, doc:, text: "Hello\r\nworld",
-                                                 segments: [{ 'text' => "Hello\r\nworld", 'start_ms' => 0, 'end_ms' => 1000 }])
+                                                 segment_values: [{ 'text' => "Hello\r\nworld", 'start_ms' => 0, 'end_ms' => 1000 }])
       # Stored with CRLF as before the body was normalized; SQL, since update_column normalizes it too.
       Doc.where(id: doc.id).update_all(['body = ?', "Hello\r\nworld"])
 
       doc.reload.update!(body: "Hello\r\nworld")
 
       media_transcript.reload
-      expect(doc.reload.body).to eq("Hello\nworld")
-      expect(media_transcript.text).to eq("Hello\nworld")
-      expect(media_transcript.segments).to eq([{ 'text' => "Hello\nworld", 'start_ms' => 0, 'end_ms' => 1000 }])
+      expect(doc.reload.body).to eq('Hello world')
+      expect(media_transcript.text).to eq('Hello world')
+      expect(media_transcript.segment_values).to eq([{ 'text' => 'Hello world', 'start_ms' => 0, 'end_ms' => 1000 }])
     end
 
     it 'cannot change the body of a doc with audio or video to only a non-speech label' do
-      MediaTranscript.create!(medium:, doc:, segments: one_segment)
+      MediaTranscript.create!(medium:, doc:, segment_values: one_segment)
       doc.reload.body = '(music)'
 
       expect(doc).not_to be_valid
@@ -119,11 +119,11 @@ RSpec.describe Doc, type: :model do
         { 'text' => 'Goodbye', 'start_ms' => 0, 'end_ms' => 400 },
         { 'text' => 'world', 'start_ms' => 500, 'end_ms' => 1000 }
       ]
-      media_transcript = MediaTranscript.create!(medium:, doc:, text: 'Goodbye world', segments:)
+      media_transcript = MediaTranscript.create!(medium:, doc:, text: 'Goodbye world', segment_values: segments)
 
       doc.reload.update!(body: 'Goodbye world')
 
-      expect(media_transcript.reload.segments).to eq(segments)
+      expect(media_transcript.reload.segment_values).to eq(segments)
     end
 
     it 'can change the body of a doc with an image transcript, carrying it over to the caption' do
@@ -159,7 +159,7 @@ RSpec.describe Doc, type: :model do
     it 'is false with no segments, e.g. an image caption' do
       image = create(:medium, media_type: :image, content_type: 'image/png')
       image_doc = create(:doc, body: 'A caption.', medium: image)
-      create(:media_transcript, medium: image, doc: image_doc, text: 'A caption.', segments: [])
+      create(:media_transcript, medium: image, doc: image_doc, text: 'A caption.', segment_values: [])
 
       expect(image_doc.reload.segment_editable_by?(create(:user, root: true))).to be(false)
     end
@@ -178,7 +178,7 @@ RSpec.describe Doc, type: :model do
     it 'is false with no segments, e.g. an image caption' do
       image = create(:medium, media_type: :image, content_type: 'image/png')
       image_doc = create(:doc, body: 'A caption.', medium: image)
-      create(:media_transcript, medium: image, doc: image_doc, text: 'A caption.', segments: [])
+      create(:media_transcript, medium: image, doc: image_doc, text: 'A caption.', segment_values: [])
 
       expect(image_doc.reload.segment_listable_by?(create(:user))).to be(false)
     end

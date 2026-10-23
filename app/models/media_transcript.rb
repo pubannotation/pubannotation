@@ -7,50 +7,60 @@ class MediaTranscript < ApplicationRecord
   belongs_to :media_transcription_task, optional: true
   belongs_to :doc, optional: true
 
+  # Timed transcript segments (see Segment), chronological and non-overlapping (enforced below);
+  # images have none. Changed only through this transcript (e.g. #set_segment_text), so that saving it
+  # saves them along with the text and the doc's body rebuilt from them.
+  has_many :segments, -> { order(:sort_order) }, autosave: true, inverse_of: :media_transcript
+
   # `text` is the plain-text Doc body (an image caption, or the resolved speech transcript for
   # audio/video); nullable since populating it is up to the caller/media type. A new record
-  # built with `segments` but no explicit `text` gets one derived below.
-  #
-  # `segments` is an array of timed transcript segments, each a hash with 'text' (String, may
-  # be a non-speech label — see NonSpeechTextMatcher), 'start_ms', and 'end_ms' (non-negative
-  # Integers, start <= end, interval [start_ms, end_ms)). Segments must be chronological and
-  # non-overlapping (enforced below); images leave this at its default empty array.
+  # built with segments but no explicit `text` gets one derived below.
   validates :media_transcription_task_id, uniqueness: true, allow_nil: true
   validates :doc_id, uniqueness: true, allow_nil: true
   validate :doc_has_matching_medium
-  validate :segments_are_valid
+  validate :segments_are_in_order
   validate :segments_unchanged_without_doc, on: :update
   validate :segments_have_speech, on: :update, if: :doc
 
   # Derives `text` from segments for a new record, unless already set explicitly (e.g. an
   # image's caption). Skipped for records loaded from the database.
   after_initialize do
-    self.text ||= speech_text if new_record? && segments.present?
+    self.text ||= speech_text if new_record? && segmented?
   end
 
   # Once created, changed segments (e.g. a segment's text edited) rebuild text, and the doc's body
   # follows it.
-  before_update :rebuild_text, if: :will_save_change_to_segments?
-  after_update :sync_doc_body, if: :saved_change_to_segments?
+  before_update :rebuild_text, if: :segments_changing?
+  after_update :sync_doc_body, if: -> { doc && saved_change_to_text? }
+
+  # The segments as hashes with 'text', 'start_ms' and 'end_ms', in their order, as #segment_values=
+  # takes them.
+  def segment_values
+    current_segments.map { |segment| { 'text' => segment.text, 'start_ms' => segment.start_ms, 'end_ms' => segment.end_ms } }
+  end
+
+  # Replaces the segments with ones made from `values`, each a hash with 'text', 'start_ms' and
+  # 'end_ms' (e.g. as AudioTranscriptionService transcribes them), in their order.
+  def segment_values=(values)
+    segments.each(&:mark_for_destruction)
+    values.each_with_index do |value, index|
+      segments.build(sort_order: index, text: value['text'], start_ms: value['start_ms'], end_ms: value['end_ms'])
+    end
+  end
 
   # Segments that are actual speech, excluding Whisper's non-speech labels (e.g. "(music)").
   # Kept rather than discarded in `segments`, since the raw transcript may still be useful.
   def speech_segments
-    segments.select { |segment| speech_segment?(segment) }
-  end
-
-  # Whether the segment is actual speech, so in the doc's body.
-  def speech_segment?(segment)
-    valid_segment?(segment) && !NonSpeechTextMatcher.match?(segment['text'])
+    current_segments.select(&:speech?)
   end
 
   # Whether it has segments, which an image caption's doesn't.
   def segmented?
-    segments.present?
+    current_segments.any?
   end
 
   def speech_text
-    speech_segments.pluck('text').join(' ')
+    speech_segments.map(&:text).join(' ')
   end
 
   # Each speech segment's char offset ({begin:, end:}) into what #speech_text builds from them (a
@@ -61,10 +71,10 @@ class MediaTranscript < ApplicationRecord
 
     speech_segments.map do |segment|
       char_begin = char_position
-      char_end = char_begin + segment['text'].length
+      char_end = char_begin + segment.text.length
       char_position = char_end + 1
 
-      { begin: char_begin, end: char_end, start_ms: segment['start_ms'] }
+      { begin: char_begin, end: char_end, start_ms: segment.start_ms }
     end
   end
 
@@ -73,29 +83,38 @@ class MediaTranscript < ApplicationRecord
     generation_model.to_s.start_with?('whisper:')
   end
 
-  # Replaces the text of the segment at `index` in `segments`, leaving start_ms/end_ms as they are. On
-  # save, text and the doc's body are rebuilt to follow (see #rebuild_text and #sync_doc_body).
+  # Replaces the text of the segment at `index` (in sort_order), leaving its start_ms/end_ms as they
+  # are. On save, text and the doc's body are rebuilt to follow (see #rebuild_text and #sync_doc_body).
   def set_segment_text(index, new_text)
-    raise ArgumentError, "No segment at index #{index}." unless (0...segments.size).cover?(index)
+    segment = current_segments[index] if index >= 0
+    raise ArgumentError, "No segment at index #{index}." unless segment
 
     # Checked once stripped, since strip also removes chars blank? doesn't count as blank, e.g. "\0".
     stripped_text = new_text&.strip
     raise ArgumentError, "Text is missing." if stripped_text.blank?
 
-    segments_will_change!
-    segments[index]['text'] = stripped_text
+    segment.text = stripped_text
   end
 
   # Replaces the whole text, merging the segments, if any, into one spanning them all.
   def replace_text!(new_text)
-    if segments.blank?
-      update!(text: new_text)
-    else
-      update!(segments: [{ 'text' => new_text, 'start_ms' => segments.first['start_ms'], 'end_ms' => segments.last['end_ms'] }])
-    end
+    return update!(text: new_text) unless segmented?
+
+    first, last = current_segments.values_at(0, -1)
+    self.segment_values = [{ 'text' => new_text, 'start_ms' => first.start_ms, 'end_ms' => last.end_ms }]
+    save!
   end
 
   private
+
+  # The segments as they'll be once saved: without those marked for destruction.
+  def current_segments
+    segments.reject(&:marked_for_destruction?)
+  end
+
+  def segments_changing?
+    segments.any? { |segment| segment.new_record? || segment.changed? || segment.marked_for_destruction? }
+  end
 
   def rebuild_text
     self.text = speech_text
@@ -114,38 +133,22 @@ class MediaTranscript < ApplicationRecord
   # One with no doc is a record of what was transcribed (e.g. a transcription that found no speech), so
   # its segments aren't edited.
   def segments_unchanged_without_doc
-    errors.add(:segments, "can't be changed for a transcript with no document") if doc.nil? && will_save_change_to_segments?
+    errors.add(:segments, "can't be changed for a transcript with no document") if doc.nil? && segments_changing?
   end
 
   # A doc's transcript can't be left with no speech, since the doc's body follows its speech. One with
   # no doc may (e.g. a transcription that found none, kept as a record).
   def segments_have_speech
-    errors.add(:segments, 'must have speech for the transcript of a document') if will_save_change_to_segments? && speech_segments.empty?
+    errors.add(:segments, 'must have speech for the transcript of a document') if segments_changing? && speech_segments.empty?
   end
 
-  def segments_are_valid
-    return errors.add(:segments, 'must be an array') unless segments.is_a?(Array)
-
-    previous_end_ms = nil
-
-    segments.each_with_index do |segment, index|
-      unless valid_segment?(segment)
-        errors.add(:segments, "at index #{index} must be a hash with a 'text' string and non-negative integer " \
-                               "'start_ms'/'end_ms' where start_ms <= end_ms")
-        next
-      end
+  # Each segment's own times are checked by Segment; this checks them against each other.
+  def segments_are_in_order
+    current_segments.each_cons(2).with_index(1) do |(previous, segment), index|
+      next unless previous.end_ms && segment.start_ms
 
       errors.add(:segments, "at index #{index} overlaps the previous segment: start_ms must be >= the previous end_ms") if
-        previous_end_ms && segment['start_ms'] < previous_end_ms
-
-      previous_end_ms = segment['end_ms']
+        segment.start_ms < previous.end_ms
     end
-  end
-
-  def valid_segment?(segment)
-    segment.is_a?(Hash) &&
-      segment['text'].is_a?(String) &&
-      segment['start_ms'].is_a?(Integer) && segment['start_ms'] >= 0 &&
-      segment['end_ms'].is_a?(Integer) && segment['end_ms'] >= segment['start_ms']
   end
 end
