@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_14_082135) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_23_012300) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -457,6 +457,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_082135) do
     t.index ["subj_id"], name: "index_relations_on_subj_id"
   end
 
+  create_table "segments", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "end_ms", null: false
+    t.boolean "line_break_after", default: false, null: false
+    t.bigint "media_transcript_id", null: false
+    t.integer "sort_order", null: false
+    t.integer "start_ms", null: false
+    t.text "text", null: false
+    t.datetime "updated_at", null: false
+    t.index ["media_transcript_id", "sort_order"], name: "index_segments_on_media_transcript_id_and_sort_order"
+    t.check_constraint "start_ms >= 0 AND end_ms >= start_ms", name: "segments_times_in_order"
+  end
+
   create_table "sentence_attrivutes", force: :cascade do |t|
     t.bigint "attrivute_id", null: false
     t.bigint "block_id", null: false
@@ -552,6 +565,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_14_082135) do
   add_foreign_key "paragraph_denotations", "denotations"
   add_foreign_key "paragraph_denotations", "divisions"
   add_foreign_key "relations", "docs"
+  add_foreign_key "segments", "media_transcripts", on_delete: :cascade
   add_foreign_key "sentence_attrivutes", "attrivutes"
   add_foreign_key "sentence_attrivutes", "blocks"
   add_foreign_key "sentence_denotations", "blocks"
