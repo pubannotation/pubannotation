@@ -462,11 +462,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_23_012300) do
     t.integer "end_ms", null: false
     t.boolean "line_break_after", default: false, null: false
     t.bigint "media_transcript_id", null: false
-    t.integer "position", null: false
+    t.integer "sort_order", null: false
     t.integer "start_ms", null: false
     t.text "text", null: false
     t.datetime "updated_at", null: false
-    t.index ["media_transcript_id", "position"], name: "index_segments_on_media_transcript_id_and_position"
+    t.index ["media_transcript_id", "sort_order"], name: "index_segments_on_media_transcript_id_and_sort_order"
     t.check_constraint "start_ms >= 0 AND end_ms >= start_ms", name: "segments_times_in_order"
   end
 

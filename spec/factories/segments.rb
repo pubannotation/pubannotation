@@ -3,7 +3,7 @@
 FactoryBot.define do
   factory :segment do
     association :media_transcript
-    sequence(:position) { |n| n }
+    sequence(:sort_order) { |n| n }
     text { 'Hello' }
     start_ms { 0 }
     end_ms { 300 }

@@ -1,12 +1,12 @@
 # A timed segment of a MediaTranscript: its text, which may be a non-speech label (see
-# NonSpeechTextMatcher), and its interval [start_ms, end_ms), in `position` order within the transcript.
+# NonSpeechTextMatcher), and its interval [start_ms, end_ms), in `sort_order` within the transcript.
 class Segment < ApplicationRecord
   belongs_to :media_transcript
 
   # Line breaks, tabs and runs of spaces as one space, and none around the text.
   normalizes :text, with: ->(text) { text.gsub(/\r\n|[\r\n\t]/, ' ').gsub(/ {2,}/, ' ').strip }
 
-  validates :position, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
+  validates :sort_order, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
   # May be blank, as Whisper can transcribe a segment as nothing (which isn't speech).
   validates :text, exclusion: { in: [nil], message: "can't be nil" }
   validates :start_ms, numericality: { only_integer: true, greater_than_or_equal_to: 0 }

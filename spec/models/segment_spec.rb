@@ -4,7 +4,7 @@ require 'rails_helper'
 
 RSpec.describe Segment, type: :model do
   describe 'validations' do
-    it 'is valid with a position, text and times' do
+    it 'is valid with a sort order, text and times' do
       expect(build(:segment)).to be_valid
     end
 
@@ -19,10 +19,10 @@ RSpec.describe Segment, type: :model do
       expect(segment.errors[:text]).to include("can't be nil")
     end
 
-    it 'requires a non-negative integer position' do
-      expect(build(:segment, position: -1)).not_to be_valid
-      expect(build(:segment, position: 1.5)).not_to be_valid
-      expect(build(:segment, position: nil)).not_to be_valid
+    it 'requires a non-negative integer sort order' do
+      expect(build(:segment, sort_order: -1)).not_to be_valid
+      expect(build(:segment, sort_order: 1.5)).not_to be_valid
+      expect(build(:segment, sort_order: nil)).not_to be_valid
     end
 
     it 'requires non-negative integer times' do
