@@ -77,6 +77,14 @@ RSpec.describe 'Editing a doc with a media transcript', type: :request do
       expect(media_transcript.segment_values).to eq([{ 'text' => 'Changed body', 'start_ms' => 0, 'end_ms' => 1000 }])
       expect(media_transcript.text).to eq('Changed body')
     end
+
+    it 'puts a changed body on one line, carrying that over to the segment' do
+      put doc_path(doc, format: :json), params: { doc: { text: "Changed\r\nbody  here" } }
+
+      expect(response).to have_http_status(:no_content)
+      expect(doc.reload.body).to eq('Changed body here')
+      expect(media_transcript.reload.segments.first.text).to eq('Changed body here')
+    end
   end
 
   context 'when the doc has several segments in a media transcript not from Whisper' do
