@@ -379,7 +379,8 @@ class Doc < ActiveRecord::Base
 
 	def revise(new_hdoc)
 		messages = []
-		new_body = new_hdoc[:text] || new_hdoc[:body]
+		# As it will be stored, so it's compared, and the annotations aligned to it, with LF line endings.
+		new_body = Doc.normalize_value_for(:body, new_hdoc[:text] || new_hdoc[:body])
 
 		if new_body == self.body
 			unless self.divisions == new_hdoc[:divisions]
