@@ -50,12 +50,28 @@ RSpec.describe Doc, type: :model do
       expect(doc.body).to eq('Hello world and so on')
     end
 
+    it 'turns tabs into spaces and leaves nothing around it, as a segment has its text' do
+      doc = create(:doc, body: "\tHello\tworld \n", medium:)
+
+      expect(doc.body).to eq('Hello world')
+    end
+
     it 'does the same as the body changes' do
       doc = create(:doc, body: 'Hello world', medium:)
 
       doc.update!(body: "Goodbye\r\n world")
 
       expect(doc.reload.body).to eq('Goodbye world')
+    end
+
+    it 'leaves a body stored on several lines as it is when only other attributes change' do
+      doc = create(:doc, body: 'Hello world', medium:)
+      # Stored on several lines as before bodies were put on one line; SQL, which normalizes don't reach.
+      Doc.where(id: doc.id).update_all(['body = ?', "Hello\nworld"])
+
+      doc.reload.update!(source: 'https://example.com/changed')
+
+      expect(doc.reload.body).to eq("Hello\nworld")
     end
 
     it 'leaves the body of a doc with no medium as it is' do
