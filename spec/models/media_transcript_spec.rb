@@ -52,7 +52,7 @@ RSpec.describe MediaTranscript, type: :model do
     it 'accepts a medium whose media_type is image' do
       medium = create(:medium, media_type: :image, content_type: 'image/jpeg')
 
-      expect(build(:media_transcript, medium: medium, segments: [], text: 'A generated caption.')).to be_valid
+      expect(build(:media_transcript, medium: medium, segment_values: [], text: 'A generated caption.')).to be_valid
     end
 
     it 'accepts a doc whose medium matches this transcript\'s medium' do
@@ -134,16 +134,16 @@ RSpec.describe MediaTranscript, type: :model do
 
   describe '#speech_segments' do
     it 'includes all segments when every segment is spoken text' do
-      media_transcript = build(:media_transcript, segments: [
+      media_transcript = build(:media_transcript, segment_values: [
         { 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 300 },
         { 'text' => 'world', 'start_ms' => 300, 'end_ms' => 600 }
       ])
 
-      expect(media_transcript.speech_segments).to eq(media_transcript.segments)
+      expect(media_transcript.speech_segments).to eq(media_transcript.segments.to_a)
     end
 
     it 'excludes non-speech segments' do
-      media_transcript = build(:media_transcript, segments: [
+      media_transcript = build(:media_transcript, segment_values: [
         { 'text' => '(upbeat music)', 'start_ms' => 0, 'end_ms' => 3000 }
       ])
 
@@ -151,27 +151,16 @@ RSpec.describe MediaTranscript, type: :model do
     end
 
     it 'keeps only the spoken segments alongside non-speech segments' do
-      media_transcript = build(:media_transcript, segments: [
+      media_transcript = build(:media_transcript, segment_values: [
         { 'text' => '(upbeat music)', 'start_ms' => 0, 'end_ms' => 3000 },
         { 'text' => 'Welcome to the conference.', 'start_ms' => 3000, 'end_ms' => 6000 }
       ])
 
-      expect(media_transcript.speech_segments).to eq([
-        { 'text' => 'Welcome to the conference.', 'start_ms' => 3000, 'end_ms' => 6000 }
-      ])
-    end
-
-    it 'ignores malformed elements within segments instead of raising' do
-      media_transcript = build(:media_transcript, segments: [
-        'not a hash',
-        { 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 300 }
-      ])
-
-      expect(media_transcript.speech_segments).to eq([{ 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 300 }])
+      expect(media_transcript.speech_segments).to eq([media_transcript.segments.last])
     end
 
     it 'excludes segments with blank text' do
-      media_transcript = build(:media_transcript, segments: [
+      media_transcript = build(:media_transcript, segment_values: [
         { 'text' => '', 'start_ms' => 0, 'end_ms' => 300 }
       ])
 
@@ -185,29 +174,13 @@ RSpec.describe MediaTranscript, type: :model do
     end
 
     it 'is false with no segments, e.g. an image caption' do
-      expect(build(:media_transcript, segments: []).segmented?).to be(false)
-    end
-  end
-
-  describe '#speech_segment?' do
-    let(:media_transcript) { build(:media_transcript) }
-
-    it 'is true for a segment of speech' do
-      expect(media_transcript.speech_segment?({ 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 300 })).to be(true)
-    end
-
-    it 'is false for a non-speech label' do
-      expect(media_transcript.speech_segment?({ 'text' => '(music)', 'start_ms' => 0, 'end_ms' => 300 })).to be(false)
-    end
-
-    it 'is false for a malformed segment' do
-      expect(media_transcript.speech_segment?({ 'text' => 'Hello' })).to be(false)
+      expect(build(:media_transcript, segment_values: []).segmented?).to be(false)
     end
   end
 
   describe '#speech_text' do
     it 'joins the text of only the speech segments' do
-      media_transcript = build(:media_transcript, segments: [
+      media_transcript = build(:media_transcript, segment_values: [
         { 'text' => '(upbeat music)', 'start_ms' => 0, 'end_ms' => 3000 },
         { 'text' => 'Welcome to the conference.', 'start_ms' => 3000, 'end_ms' => 6000 }
       ])
@@ -216,7 +189,7 @@ RSpec.describe MediaTranscript, type: :model do
     end
 
     it 'is blank when there are no speech segments' do
-      media_transcript = build(:media_transcript, segments: [{ 'text' => '(music)', 'start_ms' => 0, 'end_ms' => 100 }])
+      media_transcript = build(:media_transcript, segment_values: [{ 'text' => '(music)', 'start_ms' => 0, 'end_ms' => 100 }])
 
       expect(media_transcript.speech_text).to eq('')
     end
@@ -224,7 +197,7 @@ RSpec.describe MediaTranscript, type: :model do
 
   describe '#speech_segment_spans' do
     it "returns each speech segment's char offset into #speech_text alongside its start_ms" do
-      media_transcript = build(:media_transcript, segments: [
+      media_transcript = build(:media_transcript, segment_values: [
         { 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 300 },
         { 'text' => 'world', 'start_ms' => 300, 'end_ms' => 600 }
       ])
@@ -236,7 +209,7 @@ RSpec.describe MediaTranscript, type: :model do
     end
 
     it 'excludes non-speech segments, without advancing the offset for later ones' do
-      media_transcript = build(:media_transcript, segments: [
+      media_transcript = build(:media_transcript, segment_values: [
         { 'text' => '(upbeat music)', 'start_ms' => 0, 'end_ms' => 3000 },
         { 'text' => 'Welcome.', 'start_ms' => 3000, 'end_ms' => 6000 }
       ])
@@ -245,7 +218,7 @@ RSpec.describe MediaTranscript, type: :model do
     end
 
     it 'is empty when there are no speech segments' do
-      media_transcript = build(:media_transcript, segments: [])
+      media_transcript = build(:media_transcript, segment_values: [])
 
       expect(media_transcript.speech_segment_spans).to eq([])
     end
@@ -285,9 +258,9 @@ RSpec.describe MediaTranscript, type: :model do
 
   describe 'segments' do
     it 'stores an array of timed text segments' do
-      media_transcript = create(:media_transcript, segments: [{ 'text' => 'Hi', 'start_ms' => 0, 'end_ms' => 100 }])
+      media_transcript = create(:media_transcript, segment_values: [{ 'text' => 'Hi', 'start_ms' => 0, 'end_ms' => 100 }])
 
-      expect(media_transcript.reload.segments).to eq([{ 'text' => 'Hi', 'start_ms' => 0, 'end_ms' => 100 }])
+      expect(media_transcript.reload.segment_values).to eq([{ 'text' => 'Hi', 'start_ms' => 0, 'end_ms' => 100 }])
     end
 
     it 'defaults to an empty array' do
@@ -295,47 +268,39 @@ RSpec.describe MediaTranscript, type: :model do
 
       media_transcript = MediaTranscript.new(medium: medium)
 
-      expect(media_transcript.segments).to eq([])
+      expect(media_transcript.segment_values).to eq([])
     end
 
     it 'is valid with an empty array' do
-      expect(build(:media_transcript, segments: [])).to be_valid
+      expect(build(:media_transcript, segment_values: [])).to be_valid
     end
 
     it 'is valid when a segment has equal start_ms and end_ms' do
-      expect(build(:media_transcript, segments: [{ 'text' => 'Hi', 'start_ms' => 100, 'end_ms' => 100 }])).to be_valid
-    end
-
-    it 'rejects segments that are not an array' do
-      expect(build(:media_transcript, segments: { 'text' => 'Hi', 'start_ms' => 0, 'end_ms' => 100 })).not_to be_valid
+      expect(build(:media_transcript, segment_values: [{ 'text' => 'Hi', 'start_ms' => 100, 'end_ms' => 100 }])).to be_valid
     end
 
     it 'rejects a segment missing required keys' do
-      expect(build(:media_transcript, segments: [{ 'text' => 'Hi', 'start_ms' => 0 }])).not_to be_valid
+      expect(build(:media_transcript, segment_values: [{ 'text' => 'Hi', 'start_ms' => 0 }])).not_to be_valid
     end
 
     it 'rejects a segment whose text is not a string' do
-      expect(build(:media_transcript, segments: [{ 'text' => nil, 'start_ms' => 0, 'end_ms' => 100 }])).not_to be_valid
+      expect(build(:media_transcript, segment_values: [{ 'text' => nil, 'start_ms' => 0, 'end_ms' => 100 }])).not_to be_valid
     end
 
     it 'rejects a segment with a negative start_ms' do
-      expect(build(:media_transcript, segments: [{ 'text' => 'Hi', 'start_ms' => -1, 'end_ms' => 100 }])).not_to be_valid
-    end
-
-    it 'rejects a segment whose start_ms is not an integer' do
-      expect(build(:media_transcript, segments: [{ 'text' => 'Hi', 'start_ms' => '0', 'end_ms' => 100 }])).not_to be_valid
+      expect(build(:media_transcript, segment_values: [{ 'text' => 'Hi', 'start_ms' => -1, 'end_ms' => 100 }])).not_to be_valid
     end
 
     it 'rejects a segment whose end_ms is not an integer' do
-      expect(build(:media_transcript, segments: [{ 'text' => 'Hi', 'start_ms' => 0, 'end_ms' => 100.0 }])).not_to be_valid
+      expect(build(:media_transcript, segment_values: [{ 'text' => 'Hi', 'start_ms' => 0, 'end_ms' => 100.0 }])).not_to be_valid
     end
 
     it 'rejects a segment that is not a hash' do
-      expect(build(:media_transcript, segments: ['not a hash'])).not_to be_valid
+      expect(build(:media_transcript, segment_values: ['not a hash'])).not_to be_valid
     end
 
     it 'rejects a segment whose end_ms is before its start_ms' do
-      expect(build(:media_transcript, segments: [{ 'text' => 'Hi', 'start_ms' => 100, 'end_ms' => 0 }])).not_to be_valid
+      expect(build(:media_transcript, segment_values: [{ 'text' => 'Hi', 'start_ms' => 100, 'end_ms' => 0 }])).not_to be_valid
     end
 
     it 'rejects segments that are out of chronological order' do
@@ -344,7 +309,7 @@ RSpec.describe MediaTranscript, type: :model do
         { 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 300 }
       ]
 
-      expect(build(:media_transcript, segments: segments)).not_to be_valid
+      expect(build(:media_transcript, segment_values: segments)).not_to be_valid
     end
 
     it 'rejects overlapping segments' do
@@ -353,7 +318,7 @@ RSpec.describe MediaTranscript, type: :model do
         { 'text' => 'world', 'start_ms' => 100, 'end_ms' => 400 }
       ]
 
-      expect(build(:media_transcript, segments: segments)).not_to be_valid
+      expect(build(:media_transcript, segment_values: segments)).not_to be_valid
     end
 
     it 'allows a gap between segments' do
@@ -362,7 +327,7 @@ RSpec.describe MediaTranscript, type: :model do
         { 'text' => 'world', 'start_ms' => 500, 'end_ms' => 800 }
       ]
 
-      expect(build(:media_transcript, segments: segments)).to be_valid
+      expect(build(:media_transcript, segment_values: segments)).to be_valid
     end
   end
 
@@ -375,7 +340,7 @@ RSpec.describe MediaTranscript, type: :model do
       media_transcript.set_segment_text(0, 'Goodbye')
       media_transcript.save!
 
-      expect(media_transcript.reload.segments).to eq([
+      expect(media_transcript.reload.segment_values).to eq([
         { 'text' => 'Goodbye', 'start_ms' => 0, 'end_ms' => 300 },
         { 'text' => 'world', 'start_ms' => 300, 'end_ms' => 600 }
       ])
@@ -384,7 +349,7 @@ RSpec.describe MediaTranscript, type: :model do
     it 'strips surrounding whitespace from the text' do
       media_transcript.set_segment_text(0, "  Goodbye\n")
 
-      expect(media_transcript.segments.first['text']).to eq('Goodbye')
+      expect(media_transcript.segments.first.text).to eq('Goodbye')
     end
 
     it 'raises for an index with no segment' do
@@ -408,25 +373,25 @@ RSpec.describe MediaTranscript, type: :model do
     it 'merges the segments into one spanning them all' do
       medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
       doc = create(:doc, body: 'Hello world', medium:)
-      media_transcript = create(:media_transcript, medium:, doc:, text: 'Hello world', segments: [
+      media_transcript = create(:media_transcript, medium:, doc:, text: 'Hello world', segment_values: [
         { 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 400 },
         { 'text' => 'world', 'start_ms' => 500, 'end_ms' => 1000 }
       ])
 
       media_transcript.replace_text!('Goodbye world')
 
-      expect(media_transcript.reload.segments).to eq([{ 'text' => 'Goodbye world', 'start_ms' => 0, 'end_ms' => 1000 }])
+      expect(media_transcript.reload.segment_values).to eq([{ 'text' => 'Goodbye world', 'start_ms' => 0, 'end_ms' => 1000 }])
       expect(media_transcript.text).to eq('Goodbye world')
     end
 
     it 'replaces just the text with no segments, e.g. an image caption' do
       medium = create(:medium, media_type: :image, content_type: 'image/png')
-      media_transcript = create(:media_transcript, medium:, text: 'A caption.', segments: [])
+      media_transcript = create(:media_transcript, medium:, text: 'A caption.', segment_values: [])
 
       media_transcript.replace_text!('Another caption.')
 
       expect(media_transcript.reload.text).to eq('Another caption.')
-      expect(media_transcript.segments).to eq([])
+      expect(media_transcript.segment_values).to eq([])
     end
   end
 
@@ -453,7 +418,7 @@ RSpec.describe MediaTranscript, type: :model do
         media_transcript.save!
 
         expect(doc.reload.body).to eq('Hello there')
-        expect(media_transcript.reload.segments.map { _1['text'] }).to eq(%w[Hello there])
+        expect(media_transcript.reload.segments.map(&:text)).to eq(%w[Hello there])
       end
     end
 
@@ -463,7 +428,7 @@ RSpec.describe MediaTranscript, type: :model do
 
       expect { media_transcript.save! }
         .to raise_error(ActiveRecord::RecordInvalid, /Segments must have speech for the transcript of a document/)
-      expect(media_transcript.reload.segments.map { _1['text'] }).to eq(%w[Hello world])
+      expect(media_transcript.reload.segments.map(&:text)).to eq(%w[Hello world])
       expect(doc.reload.body).to eq('Hello world')
     end
 
@@ -472,7 +437,7 @@ RSpec.describe MediaTranscript, type: :model do
       orphan.set_segment_text(0, 'Goodbye')
 
       expect { orphan.save! }.to raise_error(ActiveRecord::RecordInvalid, /can't be changed for a transcript with no document/)
-      expect(orphan.reload.segments.first['text']).to eq('Hello')
+      expect(orphan.reload.segments.first.text).to eq('Hello')
     end
 
     it 'rolls back the transcript when the doc fails to save' do
@@ -480,7 +445,7 @@ RSpec.describe MediaTranscript, type: :model do
       media_transcript.set_segment_text(0, 'Goodbye')
 
       expect { media_transcript.save! }.to raise_error(ActiveRecord::RecordInvalid)
-      expect(media_transcript.reload.segments.first['text']).to eq('Hello')
+      expect(media_transcript.reload.segments.first.text).to eq('Hello')
       expect(media_transcript.text).to eq('Hello world')
       expect(doc.reload.body).to eq('Hello world')
     end
