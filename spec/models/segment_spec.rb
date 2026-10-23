@@ -41,6 +41,30 @@ RSpec.describe Segment, type: :model do
     end
   end
 
+  describe 'text' do
+    it 'is stored with tabs as spaces' do
+      expect(create(:segment, text: "Hello\tworld").reload.text).to eq('Hello world')
+    end
+
+    it 'is stored with runs of spaces, including ones from tabs, as one space' do
+      expect(create(:segment, text: "Hello  \t world   again").reload.text).to eq('Hello world again')
+    end
+
+    it 'is stored with nothing around it, including line breaks' do
+      expect(create(:segment, text: " \tHello world \r\n").reload.text).to eq('Hello world')
+    end
+
+    it 'is stored with line breaks within it as spaces' do
+      %W[Hello\nworld Hello\r\nworld Hello\rworld Hello\n\nworld Hello\s\nworld].each do |text|
+        expect(create(:segment, text:).reload.text).to eq('Hello world')
+      end
+    end
+
+    it 'is stored blank when it is only spaces' do
+      expect(create(:segment, text: '   ').reload.text).to eq('')
+    end
+  end
+
   describe 'line_break_after' do
     it 'defaults to false' do
       expect(create(:segment).line_break_after).to be(false)
