@@ -79,6 +79,21 @@ RSpec.describe Doc, type: :model do
       expect(media_transcript.text).to eq('Changed body')
     end
 
+    it 'puts the body back in step with its transcript after an edit to only its whitespace' do
+      ["Hello  world", "Hello\nworld"].each do |body|
+        whitespace_medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
+        whitespace_doc = create(:doc, body: 'Hello world', medium: whitespace_medium)
+        media_transcript = MediaTranscript.create!(medium: whitespace_medium, doc: whitespace_doc, segment_values: one_segment)
+
+        whitespace_doc.update!(body:)
+
+        media_transcript.reload
+        expect(whitespace_doc.reload.body).to eq('Hello world')
+        expect(media_transcript.text).to eq('Hello world')
+        expect(media_transcript.segment_values).to eq([{ 'text' => 'Hello world', 'start_ms' => 0, 'end_ms' => 1000 }])
+      end
+    end
+
     it 'merges the segments of a transcript not from Whisper into one when the body changes' do
       media_transcript = MediaTranscript.create!(medium:, doc:, segment_values: [
         { 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 400 },
