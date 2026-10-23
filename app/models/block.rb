@@ -4,6 +4,9 @@ class Block < ActiveRecord::Base
 	include DocMemberConcern
 	include RangeConcern
 
+	# The fixed hid prefix for every Block (e.g. 'B1', 'B2', ...).
+	HID_PREFIX = 'B'.freeze
+
 	belongs_to :project
 	belongs_to :doc
 
@@ -104,7 +107,7 @@ class Block < ActiveRecord::Base
 	def self.new_id
 		loop do
 			@idnum += 1
-			_id = 'B' + @idnum.to_s
+			_id = HID_PREFIX + @idnum.to_s
 			break _id if !@to_avoid || !@to_avoid.include?(_id)
 		end
 	end
