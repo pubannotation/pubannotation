@@ -76,6 +76,19 @@ RSpec.describe 'POST /docs.json', type: :request do
       expect(media_transcript.segments).to eq([{ 'text' => 'doctor findings', 'start_ms' => 0, 'end_ms' => 4_980 }])
     end
 
+    it 'stores the line breaks of the body and its segment as LF' do
+      allow(AudioAnalyzer).to receive(:new).and_return(instance_double(AudioAnalyzer, duration: 4.98))
+      params[:doc][:text] = "doctor\r\nfindings"
+
+      post '/docs.json', params: params.merge(media_params), headers: headers
+
+      expect(response).to have_http_status(:created)
+      doc = Doc.last
+      expect(doc.body).to eq("doctor\nfindings")
+      expect(doc.media_transcript.text).to eq("doctor\nfindings")
+      expect(doc.media_transcript.segments.first['text']).to eq("doctor\nfindings")
+    end
+
     it "does not create the doc when the media's duration cannot be read" do
       analyzer = instance_double(AudioAnalyzer)
       allow(analyzer).to receive(:duration).and_raise(AudioAnalyzer::DurationDetectionError, 'ffprobe failed')

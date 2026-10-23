@@ -54,14 +54,6 @@ RSpec.describe Doc, type: :model do
       expect(doc.errors[:base]).to include('Body cannot be changed directly for a document transcribed by Whisper; edit its segments instead')
     end
 
-    it 'can change only the line endings of the body of a doc transcribed by Whisper' do
-      MediaTranscript.create!(medium:, doc:, generation_model: 'whisper:ggml-base.en', segments: one_segment)
-      doc.update_column(:body, "Hello\r\nworld")
-      doc.reload.body = "Hello\nworld"
-
-      expect(doc).to be_valid
-    end
-
     it 'can change the body of a doc transcribed by Whisper to follow its transcript' do
       media_transcript = MediaTranscript.create!(medium:, doc:, generation_model: 'whisper:ggml-base.en', segments: one_segment)
       media_transcript.update_column(:text, 'Goodbye world')
@@ -100,17 +92,18 @@ RSpec.describe Doc, type: :model do
       expect(media_transcript.text).to eq('Changed body')
     end
 
-    it 'leaves the segments alone when only the line endings of the body change' do
-      segments = [
-        { 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 400 },
-        { 'text' => 'world', 'start_ms' => 500, 'end_ms' => 1000 }
-      ]
-      media_transcript = MediaTranscript.create!(medium:, doc:, segments:)
-      doc.update_column(:body, "Hello\r\nworld")
+    it 'carries the line endings of a body stored with CRLF over to its transcript as they get normalized' do
+      media_transcript = MediaTranscript.create!(medium:, doc:, text: "Hello\r\nworld",
+                                                 segments: [{ 'text' => "Hello\r\nworld", 'start_ms' => 0, 'end_ms' => 1000 }])
+      # Stored with CRLF as before the body was normalized; SQL, since update_column normalizes it too.
+      Doc.where(id: doc.id).update_all(['body = ?', "Hello\r\nworld"])
 
-      doc.reload.update!(body: "Hello\nworld")
+      doc.reload.update!(body: "Hello\r\nworld")
 
-      expect(media_transcript.reload.segments).to eq(segments)
+      media_transcript.reload
+      expect(doc.reload.body).to eq("Hello\nworld")
+      expect(media_transcript.text).to eq("Hello\nworld")
+      expect(media_transcript.segments).to eq([{ 'text' => "Hello\nworld", 'start_ms' => 0, 'end_ms' => 1000 }])
     end
 
     it 'cannot change the body of a doc with audio or video to only a non-speech label' do

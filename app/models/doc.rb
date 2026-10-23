@@ -71,10 +71,13 @@ class Doc < ActiveRecord::Base
 	belongs_to :medium, optional: true
 	has_one :media_transcript, dependent: :destroy
 
+	# As LF, so char offsets into the body (e.g. denotations') don't depend on how it was submitted.
+	normalizes :body, with: ->(body) { body.gsub("\r\n", "\n") }
+
 	validate :media_reference_immutable, on: :update
 	validate :body_immutable_when_transcribed_by_whisper, on: :update
 	validate :body_has_speech, if: -> { medium&.transcribable? }
-	after_update :sync_media_transcript_with_body, if: -> { changed_beyond_line_endings?(saved_change_to_body) }
+	after_update :sync_media_transcript_with_body, if: :saved_change_to_body?
 
 	validates :body,     presence: true
 	validates :sourcedb, presence: true
@@ -376,7 +379,8 @@ class Doc < ActiveRecord::Base
 
 	def revise(new_hdoc)
 		messages = []
-		new_body = new_hdoc[:text] || new_hdoc[:body]
+		# As it will be stored, so it's compared, and the annotations aligned to it, with LF line endings.
+		new_body = Doc.normalize_value_for(:body, new_hdoc[:text] || new_hdoc[:body])
 
 		if new_body == self.body
 			unless self.divisions == new_hdoc[:divisions]
@@ -1143,7 +1147,7 @@ class Doc < ActiveRecord::Base
 
 	# A transcript not from Whisper follows the body instead (see #sync_media_transcript_with_body).
 	def body_immutable_when_transcribed_by_whisper
-		return unless changed_beyond_line_endings?(body_change_to_be_saved)
+		return unless will_save_change_to_body?
 
 		return unless media_transcript
 		return unless media_transcript.transcribed_by_whisper?
@@ -1157,15 +1161,6 @@ class Doc < ActiveRecord::Base
 	# non-speech label such as "(music)" (or empty, as its segments would make it with no speech left).
 	def body_has_speech
 		errors.add(:body, 'must have speech for a document with audio or video') if NonSpeechTextMatcher.match?(body)
-	end
-
-	# Whether a [before, after] change is more than its line endings, which a browser submits as CRLF
-	# whether or not the text was edited (docs#update normalizes them to LF).
-	def changed_beyond_line_endings?(change)
-		return false if change.blank?
-
-		before, after = change.map { |text| text.to_s.gsub(/\r\n/, "\n") }
-		before != after
 	end
 
 	def sync_media_transcript_with_body
