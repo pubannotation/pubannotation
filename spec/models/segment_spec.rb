@@ -22,7 +22,6 @@ RSpec.describe Segment, type: :model do
     it 'requires a non-negative integer sort order' do
       expect(build(:segment, sort_order: -1)).not_to be_valid
       expect(build(:segment, sort_order: 1.5)).not_to be_valid
-      expect(build(:segment, sort_order: nil)).not_to be_valid
     end
 
     it 'requires non-negative integer times' do
@@ -30,8 +29,8 @@ RSpec.describe Segment, type: :model do
       expect(build(:segment, end_ms: 1.5)).not_to be_valid
     end
 
-    it 'requires times, reporting a missing one only as blank' do
-      { start_ms: nil, end_ms: nil }.each do |attribute, value|
+    it 'requires a sort order and times, reporting a missing one only as blank' do
+      { sort_order: nil, start_ms: nil, end_ms: nil }.each do |attribute, value|
         segment = build(:segment, attribute => value)
 
         expect(segment).not_to be_valid
