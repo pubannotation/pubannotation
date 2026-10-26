@@ -44,10 +44,11 @@ RSpec.describe Doc, type: :model do
   describe 'body immutability with a media transcript' do
     let(:medium) { create(:medium, media_type: :audio, content_type: 'audio/mpeg') }
     let(:doc) { create(:doc, body: 'Hello world', medium:) }
-    let(:one_segment) { [{ 'text' => 'Hello world', 'start_ms' => 0, 'end_ms' => 1000 }] }
+    # A new Segment each time, as one can belong to only one transcript.
+    def one_segment = [Segment.new(sort_order: 0, text: 'Hello world', start_ms: 0, end_ms: 1000)]
 
     it 'cannot change the body of a doc transcribed by Whisper' do
-      MediaTranscript.create!(medium:, doc:, generation_model: 'whisper:ggml-base.en', segment_values: one_segment)
+      MediaTranscript.create!(medium:, doc:, generation_model: 'whisper:ggml-base.en', segments: one_segment)
       doc.reload.body = 'Changed body'
 
       expect(doc).not_to be_valid
@@ -55,7 +56,7 @@ RSpec.describe Doc, type: :model do
     end
 
     it 'can change the body of a doc transcribed by Whisper to follow its transcript' do
-      media_transcript = MediaTranscript.create!(medium:, doc:, generation_model: 'whisper:ggml-base.en', segment_values: one_segment)
+      media_transcript = MediaTranscript.create!(medium:, doc:, generation_model: 'whisper:ggml-base.en', segments: one_segment)
       media_transcript.update_column(:text, 'Goodbye world')
       doc.reload.body = 'Goodbye world'
 
@@ -63,14 +64,14 @@ RSpec.describe Doc, type: :model do
     end
 
     it 'can still change other attributes of a doc transcribed by Whisper' do
-      MediaTranscript.create!(medium:, doc:, generation_model: 'whisper:ggml-base.en', segment_values: one_segment)
+      MediaTranscript.create!(medium:, doc:, generation_model: 'whisper:ggml-base.en', segments: one_segment)
       doc.reload.source = 'https://example.com/changed'
 
       expect(doc).to be_valid
     end
 
     it 'carries a body change over to a single-segment transcript not from Whisper' do
-      media_transcript = MediaTranscript.create!(medium:, doc:, segment_values: one_segment)
+      media_transcript = MediaTranscript.create!(medium:, doc:, segments: one_segment)
 
       doc.reload.update!(body: 'Changed body')
 
@@ -83,7 +84,7 @@ RSpec.describe Doc, type: :model do
       ["Hello  world", "Hello\nworld"].each do |body|
         whitespace_medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
         whitespace_doc = create(:doc, body: 'Hello world', medium: whitespace_medium)
-        media_transcript = MediaTranscript.create!(medium: whitespace_medium, doc: whitespace_doc, segment_values: one_segment)
+        media_transcript = MediaTranscript.create!(medium: whitespace_medium, doc: whitespace_doc, segments: one_segment)
 
         whitespace_doc.update!(body:)
 
@@ -122,7 +123,7 @@ RSpec.describe Doc, type: :model do
     end
 
     it 'cannot change the body of a doc with audio or video to only a non-speech label' do
-      MediaTranscript.create!(medium:, doc:, segment_values: one_segment)
+      MediaTranscript.create!(medium:, doc:, segments: one_segment)
       doc.reload.body = '(music)'
 
       expect(doc).not_to be_valid
