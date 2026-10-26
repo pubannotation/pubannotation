@@ -69,24 +69,26 @@ RSpec.describe MediaDocCreationService do
         ])
       end
 
-      it 'creates one Denotation per speech segment, spanning its offset into the doc body' do
+      it 'creates one Block per speech segment, spanning its offset into the doc body' do
         doc = described_class.call(project, medium, user, attributes, media_transcript)
 
         expect(doc.body).to eq('Hello world')
-        denotations = Denotation.where(doc: doc).order(:begin)
-        expect(denotations.map { |d| [d.hid, d.begin, d.end, d.obj] }).to eq([
-          ['T1', 0, 5, 'AudioSegment'],
-          ['T2', 6, 11, 'AudioSegment']
+        blocks = Block.where(doc: doc).order(:begin)
+        expect(blocks.map { |b| [b.hid, b.begin, b.end, b.obj] }).to eq([
+          ['B1', 0, 5, 'AudioSegment'],
+          ['B2', 6, 11, 'AudioSegment']
         ])
+        expect(Denotation.where(doc: doc)).to be_empty
       end
 
-      it 'increments denotations_num on the project_doc, doc, and project by the segment count once' do
+      it 'increments blocks_num on the project_doc, doc, and project by the segment count once' do
         doc = described_class.call(project, medium, user, attributes, media_transcript)
         project_doc = ProjectDoc.find_by(project:, doc:)
 
-        expect(project_doc.denotations_num).to eq(2)
-        expect(doc.reload.denotations_num).to eq(2)
-        expect(project.reload.denotations_num).to eq(2)
+        expect(project_doc.blocks_num).to eq(2)
+        expect(doc.reload.blocks_num).to eq(2)
+        expect(project.reload.blocks_num).to eq(2)
+        expect(project_doc.denotations_num).to eq(0)
       end
 
       it 'touches the project\'s updated_at' do
@@ -96,10 +98,10 @@ RSpec.describe MediaDocCreationService do
           .to(change { project.reload.updated_at })
       end
 
-      it 'issues a single INSERT for all the segment denotations' do
+      it 'issues a single INSERT for all the segment blocks' do
         insert_queries = []
         callback = lambda do |*, payload|
-          insert_queries << payload[:sql] if payload[:sql]&.match?(/\AINSERT INTO "denotations"/)
+          insert_queries << payload[:sql] if payload[:sql]&.match?(/\AINSERT INTO "blocks"/)
         end
 
         ActiveSupport::Notifications.subscribed(callback, 'sql.active_record') do
@@ -117,12 +119,12 @@ RSpec.describe MediaDocCreationService do
           ])
         end
 
-        it 'creates a Denotation for the speech segment only' do
+        it 'creates a Block for the speech segment only' do
           doc = described_class.call(project, medium, user, attributes, media_transcript)
 
           expect(doc.body).to eq('Welcome.')
-          expect(Denotation.where(doc: doc).count).to eq(1)
-          expect(Denotation.find_by(doc: doc).attributes).to include('begin' => 0, 'end' => 8, 'obj' => 'AudioSegment')
+          expect(Block.where(doc: doc).count).to eq(1)
+          expect(Block.find_by(doc: doc).attributes).to include('begin' => 0, 'end' => 8, 'obj' => 'AudioSegment')
         end
       end
     end
@@ -131,10 +133,10 @@ RSpec.describe MediaDocCreationService do
       let(:medium) { create(:medium, media_type: :image, content_type: 'image/png') }
       let(:media_transcript) { MediaTranscript.new(medium: medium, text: 'A generated caption.') }
 
-      it 'creates no Denotations' do
+      it 'creates no Blocks' do
         doc = described_class.call(project, medium, user, attributes, media_transcript)
 
-        expect(Denotation.where(doc: doc)).to be_empty
+        expect(Block.where(doc: doc)).to be_empty
       end
     end
   end
