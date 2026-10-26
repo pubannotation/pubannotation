@@ -7,7 +7,7 @@ class MediaTranscript < ApplicationRecord
   belongs_to :media_transcription_task, optional: true
   belongs_to :doc, optional: true
 
-  # Timed transcript segments (see Segment), chronological and non-overlapping (enforced below);
+  # Timed transcript segments (see Segment), chronological and non-overlapping (enforced by Segment);
   # images have none. Changed only through this transcript (e.g. #set_segment_text), so that saving it
   # saves them along with the text and the doc's body rebuilt from them.
   has_many :segments, -> { order(:sort_order) }, autosave: true, inverse_of: :media_transcript
@@ -18,7 +18,6 @@ class MediaTranscript < ApplicationRecord
   validates :media_transcription_task_id, uniqueness: true, allow_nil: true
   validates :doc_id, uniqueness: true, allow_nil: true
   validate :doc_has_matching_medium
-  validate :segments_are_in_order
   validate :segments_unchanged_without_doc, on: :update
   validate :segments_have_speech, on: :update, if: :doc
 
@@ -141,15 +140,5 @@ class MediaTranscript < ApplicationRecord
   # no doc may (e.g. a transcription that found none, kept as a record).
   def segments_have_speech
     errors.add(:segments, 'must have speech for the transcript of a document') if segments_changing? && speech_segments.empty?
-  end
-
-  # Each segment's own times are checked by Segment; this checks them against each other.
-  def segments_are_in_order
-    current_segments.each_cons(2).with_index(1) do |(previous, segment), index|
-      next unless previous.end_ms && segment.start_ms
-
-      errors.add(:segments, "at index #{index} overlaps the previous segment: start_ms must be >= the previous end_ms") if
-        segment.start_ms < previous.end_ms
-    end
   end
 end

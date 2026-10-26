@@ -43,6 +43,38 @@ RSpec.describe Segment, type: :model do
       expect(build(:segment, start_ms: 300, end_ms: 299)).not_to be_valid
     end
 
+    context 'with the segment before it in its transcript' do
+      let(:media_transcript) { create(:media_transcript) }
+
+      it 'requires the start to be no earlier than its end' do
+        segment = media_transcript.segments.build(sort_order: 2, text: 'again', start_ms: 599, end_ms: 900)
+
+        expect(segment).not_to be_valid
+        expect(segment.errors[:start_ms]).to include("must be greater than or equal to the previous segment's end_ms (600)")
+      end
+
+      it 'allows it to start right at its end' do
+        expect(media_transcript.segments.build(sort_order: 2, text: 'again', start_ms: 600, end_ms: 900)).to be_valid
+      end
+
+      it 'looks only at segments before it in sort order' do
+        expect(media_transcript.segments.build(sort_order: 0, text: 'Hi', start_ms: 0, end_ms: 100)).to be_valid
+      end
+
+      it 'compares one loaded on its own as changed, not as stored' do
+        segment = Segment.find(media_transcript.segments.last.id)
+        segment.sort_order = 2
+
+        expect(segment).to be_valid
+      end
+
+      it 'leaves out one marked for destruction' do
+        media_transcript.segments.last.mark_for_destruction
+
+        expect(media_transcript.segments.build(sort_order: 2, text: 'again', start_ms: 300, end_ms: 900)).to be_valid
+      end
+    end
+
     it 'requires a media transcript' do
       expect(build(:segment, media_transcript: nil)).not_to be_valid
     end

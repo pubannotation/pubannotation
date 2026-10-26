@@ -1,7 +1,7 @@
 # A timed segment of a MediaTranscript: its text, which may be a non-speech label (see
 # NonSpeechTextMatcher), and its interval [start_ms, end_ms), in `sort_order` within the transcript.
 class Segment < ApplicationRecord
-  belongs_to :media_transcript
+  belongs_to :media_transcript, inverse_of: :segments
 
   # Line breaks, tabs and runs of spaces as one space, and none around the text.
   normalizes :text, with: ->(text) { text.gsub(/\r\n|[\r\n\t]/, ' ').gsub(/ {2,}/, ' ').strip }
@@ -13,9 +13,32 @@ class Segment < ApplicationRecord
   validates :start_ms, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 0, allow_nil: true }
   validates :end_ms, presence: true, numericality: { only_integer: true, allow_nil: true },
                      comparison: { greater_than_or_equal_to: :start_ms, allow_nil: true, if: :start_ms }
+  validate :start_not_before_previous_end
 
   # Whether it's actual speech, rather than a non-speech label such as "(music)".
   def speech?
     !NonSpeechTextMatcher.match?(text)
+  end
+
+  private
+
+  # Against the segment before it in its transcript, so the segments don't overlap. Its own times and
+  # sort_order are checked above.
+  def start_not_before_previous_end
+    return unless media_transcript && sort_order && start_ms
+
+    previous = previous_segment
+    return unless previous&.end_ms && start_ms < previous.end_ms
+
+    errors.add(:start_ms, "must be greater than or equal to the previous segment's end_ms (#{previous.end_ms})")
+  end
+
+  # The one just before it in sort_order among its transcript's segments staying once saved, or nil for the
+  # first.
+  def previous_segment
+    media_transcript.segments
+      .reject(&:marked_for_destruction?)
+      .select { |other| other.sort_order && other.sort_order < sort_order }
+      .max_by(&:sort_order)
   end
 end

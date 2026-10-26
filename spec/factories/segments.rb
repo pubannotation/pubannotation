@@ -2,7 +2,8 @@
 
 FactoryBot.define do
   factory :segment do
-    association :media_transcript
+    # One with no segments of its own, which this one could overlap.
+    association :media_transcript, segments: []
     sequence(:sort_order) { |n| n }
     text { 'Hello' }
     start_ms { 0 }
