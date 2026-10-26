@@ -14,6 +14,7 @@
 		<th>Text</th>
 		<th>Speech</th>
 		<% if @editable -%>
+			<th>Line break</th>
 			<th></th>
 		<% end -%>
 	</tr>
@@ -25,6 +26,14 @@
 			<td><%= segment.text %></td>
 			<td class="speech"><%= '✓' if segment.speech? %></td>
 			<% if @editable -%>
+				<td class="line-break">
+					<% if @media_transcript.line_break_settable_after?(segment) -%>
+						<%= form_with scope: :segment, url: doc_segment_path(@doc, segment), method: :patch, class: 'line-break-form' do |f| %>
+							<%= f.check_box :line_break_after, checked: segment.line_break_after, id: "segment_line_break_after_#{index}",
+								aria: { label: "Line break after segment ##{index}" } %>
+						<% end %>
+					<% end -%>
+				</td>
 				<td>
 					<%= button_tag 'Edit', type: 'button', class: 'button edit-segment',
 						data: { url: doc_segment_path(@doc, segment), index:, text: segment.text,

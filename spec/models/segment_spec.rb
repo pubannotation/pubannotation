@@ -106,6 +106,16 @@ RSpec.describe Segment, type: :model do
     end
   end
 
+  describe '#separator_after' do
+    it 'is a space' do
+      expect(build(:segment).separator_after).to eq(' ')
+    end
+
+    it 'is a line break with one after it' do
+      expect(build(:segment, line_break_after: true).separator_after).to eq("\n")
+    end
+  end
+
   describe '#speech?' do
     it 'is true for speech' do
       expect(build(:segment, text: 'Hello world')).to be_speech

@@ -14,6 +14,12 @@ class Segment < ApplicationRecord
                      comparison: { greater_than_or_equal_to: :start_ms, allow_nil: true, if: :start_ms }
   validate :start_not_before_previous_end
 
+  # What separates it from the next speech segment in the doc's body: a line break if it has one after
+  # it, or else a space.
+  def separator_after
+    line_break_after ? "\n" : ' '
+  end
+
   # Whether it's actual speech, rather than a non-speech label such as "(music)".
   def speech?
     !NonSpeechTextMatcher.match?(text)

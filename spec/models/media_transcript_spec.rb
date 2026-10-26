@@ -178,6 +178,63 @@ RSpec.describe MediaTranscript, type: :model do
     end
   end
 
+  describe '#line_break_settable_after?' do
+    let(:media_transcript) do
+      create(:media_transcript, segments: [
+        build(:segment, :without_transcript, sort_order: 0, text: 'Hello', start_ms: 0, end_ms: 300),
+        build(:segment, :without_transcript, sort_order: 1, text: '(music)', start_ms: 300, end_ms: 600),
+        build(:segment, :without_transcript, sort_order: 2, text: 'world', start_ms: 600, end_ms: 900),
+        build(:segment, :without_transcript, sort_order: 3, text: '(applause)', start_ms: 900, end_ms: 1200)
+      ])
+    end
+
+    it 'is true for a speech segment followed by another' do
+      expect(media_transcript.line_break_settable_after?(media_transcript.segments[0])).to be(true)
+    end
+
+    it 'is false for a non-speech segment' do
+      expect(media_transcript.line_break_settable_after?(media_transcript.segments[1])).to be(false)
+    end
+
+    it 'is false for the last speech segment, even with non-speech ones after it' do
+      expect(media_transcript.line_break_settable_after?(media_transcript.segments[2])).to be(false)
+    end
+  end
+
+  describe '#speech_text with line breaks' do
+    it 'separates a speech segment from the next with a line break when one follows it' do
+      media_transcript = build(:media_transcript, segments: [
+        build(:segment, :without_transcript, sort_order: 0, text: 'Hello', start_ms: 0, end_ms: 300, line_break_after: true),
+        build(:segment, :without_transcript, sort_order: 1, text: 'world', start_ms: 300, end_ms: 600),
+        build(:segment, :without_transcript, sort_order: 2, text: 'again', start_ms: 600, end_ms: 900)
+      ])
+
+      expect(media_transcript.speech_text).to eq("Hello\nworld again")
+    end
+
+    it 'takes the separator from the speech segment before a non-speech one, whose own is ignored' do
+      media_transcript = build(:media_transcript, segments: [
+        build(:segment, :without_transcript, sort_order: 0, text: 'Hello', start_ms: 0, end_ms: 300, line_break_after: true),
+        build(:segment, :without_transcript, sort_order: 1, text: '(music)', start_ms: 300, end_ms: 600),
+        build(:segment, :without_transcript, sort_order: 2, text: 'world', start_ms: 600, end_ms: 900)
+      ])
+
+      expect(media_transcript.speech_text).to eq("Hello\nworld")
+    end
+
+    it 'leaves the spans where they are, a line break being one char as a space is' do
+      media_transcript = build(:media_transcript, segments: [
+        build(:segment, :without_transcript, sort_order: 0, text: 'Hello', start_ms: 0, end_ms: 300, line_break_after: true),
+        build(:segment, :without_transcript, sort_order: 1, text: 'world', start_ms: 300, end_ms: 600)
+      ])
+
+      expect(media_transcript.speech_segment_spans).to eq([
+        { begin: 0, end: 5, start_ms: 0 },
+        { begin: 6, end: 11, start_ms: 300 }
+      ])
+    end
+  end
+
   describe '#speech_text' do
     it 'joins the text of only the speech segments' do
       media_transcript = build(:media_transcript, segments: [
@@ -447,6 +504,45 @@ RSpec.describe MediaTranscript, type: :model do
     let(:medium) { create(:medium, media_type: :audio, content_type: 'audio/mpeg') }
     let(:doc) { create(:doc, body: 'Hello world', medium:) }
     let!(:media_transcript) { create(:media_transcript, medium:, doc:, text: 'Hello world') }
+
+    it "puts a line break set after a segment into the text and the doc's body, keeping the segments apart" do
+      media_transcript.set_segment_line_break_after(media_transcript.segments.first, true)
+      media_transcript.save!
+
+      media_transcript.reload
+      expect(media_transcript.text).to eq("Hello\nworld")
+      expect(doc.reload.body).to eq("Hello\nworld")
+      expect(media_transcript.segments.map(&:line_break_after)).to eq([true, false])
+    end
+
+    it 'puts a space back when the line break is unset' do
+      media_transcript.set_segment_line_break_after(media_transcript.segments.first, true)
+      media_transcript.save!
+      media_transcript.set_segment_line_break_after(media_transcript.segments.first, false)
+      media_transcript.save!
+
+      expect(doc.reload.body).to eq('Hello world')
+    end
+
+    it "raises for a segment not among its own, e.g. another transcript's" do
+      other_segment = create(:segment)
+
+      expect { media_transcript.set_segment_line_break_after(other_segment, true) }
+        .to raise_error(ActiveRecord::RecordNotFound, /No segment with id #{other_segment.id}/)
+    end
+
+    context 'transcribed by Whisper, with a line break set after a segment' do
+      let!(:media_transcript) do
+        create(:media_transcript, medium:, doc:, text: 'Hello world', generation_model: 'whisper:ggml-base.en')
+      end
+
+      it "puts it into the doc's body, which is locked against other edits" do
+        media_transcript.set_segment_line_break_after(media_transcript.segments.first, true)
+        media_transcript.save!
+
+        expect(doc.reload.body).to eq("Hello\nworld")
+      end
+    end
 
     it "rebuilds the text and the doc's body from the segments" do
       media_transcript.set_segment_text(media_transcript.segments.last, 'there')

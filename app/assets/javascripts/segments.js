@@ -6,6 +6,11 @@
 		button.addEventListener('click', () => openDialogFor(button));
 	}
 
+	// Saves whether a line break follows a segment as soon as its checkbox is changed.
+	for (const checkbox of document.querySelectorAll('.line-break-form input[type="checkbox"]')) {
+		checkbox.addEventListener('change', () => checkbox.form.requestSubmit());
+	}
+
 	document.getElementById('segment-dialog-cancel').addEventListener('click', () => dialog.close());
 
 	// A click outside the dialog lands on the dialog itself (its backdrop), since its content fills it.

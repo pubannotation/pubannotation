@@ -52,6 +52,46 @@ RSpec.describe 'The segments page', type: :request do
       end
     end
 
+    describe 'the Line break column' do
+      it 'gives each speech segment but the last a checkbox, saved as it changes' do
+        get "/docs/#{doc.id}/segments"
+
+        expect(response.body).to include('<th>Line break</th>', 'id="segment_line_break_after_0"')
+        expect(response.body).not_to include('id="segment_line_break_after_1"')
+        expect(response.body).to include(%(class="line-break-form" action="/docs/#{doc.id}/segments/#{hello.id}"))
+      end
+    end
+
+    describe 'PATCH /docs/:doc_id/segments/:id with a line break' do
+      it "puts a line break after the segment into the doc's body, then goes back to the list" do
+        patch "/docs/#{doc.id}/segments/#{hello.id}", params: { segment: { line_break_after: '1' } }
+
+        expect(response).to redirect_to("/docs/#{doc.id}/segments")
+        expect(media_transcript.reload.segments.first.line_break_after).to be(true)
+        expect(media_transcript.text).to eq("Hello\nworld")
+        expect(doc.reload.body).to eq("Hello\nworld")
+      end
+
+      it 'goes back to the list with the error, not opening the dialog, when the line break is not saved' do
+        allow_any_instance_of(MediaTranscript).to receive(:set_segment_line_break_after).and_raise(ArgumentError, 'Line break failed.')
+
+        patch "/docs/#{doc.id}/segments/#{hello.id}", params: { segment: { line_break_after: '1' } }
+
+        expect(response).to redirect_to("/docs/#{doc.id}/segments")
+        follow_redirect!
+        expect(response.body).to include('Line break failed.', 'data-open-on-load="false"')
+        expect(doc.reload.body).to eq('Hello world')
+      end
+
+      it 'puts a space back when the checkbox is unchecked' do
+        patch "/docs/#{doc.id}/segments/#{hello.id}", params: { segment: { line_break_after: '1' } }
+        patch "/docs/#{doc.id}/segments/#{hello.id}", params: { segment: { line_break_after: '0' } }
+
+        expect(media_transcript.reload.segments.first.line_break_after).to be(false)
+        expect(doc.reload.body).to eq('Hello world')
+      end
+    end
+
     describe 'PATCH /docs/:doc_id/segments/:id' do
       it "updates the segment's text and the doc's body, then goes back to the list" do
         patch "/docs/#{doc.id}/segments/#{world.id}", params: { segment: { text: 'there' } }
@@ -182,7 +222,7 @@ RSpec.describe 'The segments page', type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include('Hello', 'world')
-      expect(response.body).not_to include('edit-segment', 'segment-dialog')
+      expect(response.body).not_to include('edit-segment', 'segment-dialog', 'Line break', 'line-break-form')
     end
 
     it 'forbids the update' do

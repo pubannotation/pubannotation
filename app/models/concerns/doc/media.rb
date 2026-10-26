@@ -7,7 +7,7 @@ module Doc::Media
     belongs_to :medium, optional: true
     has_one :media_transcript, dependent: :destroy
 
-    before_validation :flatten_speech_body, if: -> { medium&.transcribable? && will_save_change_to_body? }
+    before_validation :flatten_speech_body, if: -> { medium&.transcribable? && will_save_change_to_body? && !body_following_transcript? }
 
     validate :media_reference_immutable, on: :update
     validate :body_immutable_when_transcribed_by_whisper, on: :update
@@ -55,14 +55,20 @@ module Doc::Media
 
     return unless media_transcript
     return unless media_transcript.transcribed_by_whisper?
-    # The body following the transcript, once its segments changed (see MediaTranscript#sync_doc_body).
-    return if media_transcript.text == body
+    return if body_following_transcript?
 
     errors.add(:base, 'Body cannot be changed directly for a document transcribed by Whisper; edit its segments instead')
   end
 
-  # An audio/video doc's body is what was said, joined from its segments with a space (see
-  # MediaTranscript#speech_text), so one written by hand is spaced as a segment's text is.
+  # The body following the transcript, once its segments changed (see MediaTranscript#sync_doc_body), so
+  # already as the transcript has it, e.g. with the line breaks its segments set.
+  def body_following_transcript?
+    media_transcript&.text == body
+  end
+
+  # An audio/video doc's body is what was said, joined from its segments (see MediaTranscript#speech_text),
+  # so one written by hand is spaced as a segment's text is. One following the transcript is left as it
+  # has it.
   def flatten_speech_body
     self.body = TextNormalizable.normalize_inline_text(body)
   end
