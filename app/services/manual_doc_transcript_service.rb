@@ -12,7 +12,7 @@ class ManualDocTranscriptService
     MediaTranscript.new(
       medium:,
       text: body,
-      segment_values: [{ 'text' => body, 'start_ms' => 0, 'end_ms' => duration_ms }]
+      segments: [Segment.new(sort_order: 0, text: body, start_ms: 0, end_ms: duration_ms)]
     )
   end
 end
