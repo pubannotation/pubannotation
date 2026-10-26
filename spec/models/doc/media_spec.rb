@@ -174,7 +174,7 @@ RSpec.describe Doc, type: :model do
     it 'is false with no segments, e.g. an image caption' do
       image = create(:medium, media_type: :image, content_type: 'image/png')
       image_doc = create(:doc, body: 'A caption.', medium: image)
-      create(:media_transcript, medium: image, doc: image_doc, text: 'A caption.', segment_values: [])
+      create(:media_transcript, medium: image, doc: image_doc, text: 'A caption.', segments: [])
 
       expect(image_doc.reload.segment_editable_by?(create(:user, root: true))).to be(false)
     end
@@ -193,7 +193,7 @@ RSpec.describe Doc, type: :model do
     it 'is false with no segments, e.g. an image caption' do
       image = create(:medium, media_type: :image, content_type: 'image/png')
       image_doc = create(:doc, body: 'A caption.', medium: image)
-      create(:media_transcript, medium: image, doc: image_doc, text: 'A caption.', segment_values: [])
+      create(:media_transcript, medium: image, doc: image_doc, text: 'A caption.', segments: [])
 
       expect(image_doc.reload.segment_listable_by?(create(:user))).to be(false)
     end

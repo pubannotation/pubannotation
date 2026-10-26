@@ -104,7 +104,7 @@ RSpec.describe 'The segments page', type: :request do
 
       it 'has no link for a doc with an image' do
         image_doc = create(:doc, medium: create(:medium, media_type: :image, content_type: 'image/png'))
-        create(:media_transcript, medium: image_doc.medium, doc: image_doc, text: 'A caption.', segment_values: [])
+        create(:media_transcript, medium: image_doc.medium, doc: image_doc, text: 'A caption.', segments: [])
 
         get "/docs/sourcedb/#{image_doc.sourcedb}/sourceid/#{image_doc.sourceid}"
 

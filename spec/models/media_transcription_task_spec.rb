@@ -113,7 +113,7 @@ RSpec.describe MediaTranscriptionTask, type: :model do
 
     it 'transitions to succeeded even when the returned transcript has blank text' do
       task = create(:media_transcription_task)
-      media_transcript = build(:media_transcript, text: nil, segment_values: [])
+      media_transcript = build(:media_transcript, text: nil, segments: [])
 
       result = task.process { media_transcript }
 
