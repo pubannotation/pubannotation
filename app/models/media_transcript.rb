@@ -13,8 +13,8 @@ class MediaTranscript < ApplicationRecord
   has_many :segments, -> { order(:sort_order) }, autosave: true, inverse_of: :media_transcript
 
   # `text` is the plain-text Doc body: an image caption, or the speech transcript for audio/video, derived
-  # from the segments (see #derive_text). Blank, though not nil, when Whisper transcribes only non-speech
-  # labels such as "(music)".
+  # from the segments (see #default_text_from_segments). Blank, though not nil, when Whisper transcribes
+  # only non-speech labels such as "(music)".
   validates :text, exclusion: { in: [nil], message: "can't be nil" }
   validates :media_transcription_task_id, uniqueness: true, allow_nil: true
   validates :doc_id, uniqueness: true, allow_nil: true
@@ -23,7 +23,7 @@ class MediaTranscript < ApplicationRecord
   validate :segments_have_speech, on: :update, if: :doc
 
   # Records loaded from the database already have their text.
-  after_initialize :derive_text, if: :new_record?
+  after_initialize :default_text_from_segments, if: :new_record?
 
   # Once created, changed segments (e.g. a segment's text edited) rebuild text, and the doc's body
   # follows it. Checked on every update rather than only as text changes, since normalizing segments can
@@ -116,7 +116,7 @@ class MediaTranscript < ApplicationRecord
 
   # An image's caption is set explicitly. Audio and video have segments, even with no speech, to derive it
   # from; with none, it's left nil, which is invalid.
-  def derive_text
+  def default_text_from_segments
     return if text
 
     self.text = speech_text if segmented?
