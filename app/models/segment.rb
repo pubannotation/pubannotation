@@ -22,13 +22,13 @@ class Segment < ApplicationRecord
 
   private
 
-  # Against the segment before it in its transcript, so the segments don't overlap. Its own times and
-  # sort_order are checked above.
+  # Against the segment before it in its transcript, so the segments don't overlap. Its own sort_order is
+  # checked above.
   def start_not_before_previous_end
-    return unless media_transcript && sort_order && start_ms
+    return unless media_transcript && sort_order
 
     previous = previous_segment
-    return unless previous&.end_ms && start_ms < previous.end_ms
+    return unless previous && start_ms < previous.end_ms
 
     errors.add(:start_ms, "must be greater than or equal to the previous segment's end_ms (#{previous.end_ms})")
   end
