@@ -28,7 +28,15 @@ RSpec.describe Segment, type: :model do
     it 'requires non-negative integer times' do
       expect(build(:segment, start_ms: -1)).not_to be_valid
       expect(build(:segment, end_ms: 1.5)).not_to be_valid
-      expect(build(:segment, start_ms: nil)).not_to be_valid
+    end
+
+    it 'requires times, reporting a missing one only as blank' do
+      { start_ms: nil, end_ms: nil }.each do |attribute, value|
+        segment = build(:segment, attribute => value)
+
+        expect(segment).not_to be_valid
+        expect(segment.errors.to_hash).to eq(attribute => ["can't be blank"])
+      end
     end
 
     it 'requires the end to be no earlier than the start' do

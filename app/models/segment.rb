@@ -9,8 +9,11 @@ class Segment < ApplicationRecord
   validates :sort_order, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
   # May be blank, as Whisper can transcribe a segment as nothing (which isn't speech).
   validates :text, exclusion: { in: [nil], message: "can't be nil" }
-  validates :start_ms, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
-  validates :end_ms, numericality: { only_integer: true }, comparison: { greater_than_or_equal_to: :start_ms }
+  # Each checked further only once present, so a missing one is reported just as blank.
+  validates :start_ms, :end_ms, presence: true
+  validates :start_ms, numericality: { only_integer: true, greater_than_or_equal_to: 0, allow_nil: true }
+  validates :end_ms, numericality: { only_integer: true, allow_nil: true }
+  validates :end_ms, comparison: { greater_than_or_equal_to: :start_ms, allow_nil: true }, if: :start_ms
 
   # Whether it's actual speech, rather than a non-speech label such as "(music)".
   def speech?
