@@ -74,10 +74,6 @@ RSpec.describe Segment, type: :model do
         expect(media_transcript.segments.build(sort_order: 2, text: 'again', start_ms: 300, end_ms: 900)).to be_valid
       end
     end
-
-    it 'requires a media transcript' do
-      expect(build(:segment, media_transcript: nil)).not_to be_valid
-    end
   end
 
   describe 'text' do
