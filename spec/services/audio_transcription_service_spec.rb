@@ -65,12 +65,10 @@ RSpec.describe AudioTranscriptionService do
       it 'returns the timed segments' do
         result = described_class.new(audio_path).call
 
-        expect(result).to eq(
-          [
-            { 'text' => 'Ask not what your country', 'start_ms' => 0, 'end_ms' => 3500 },
-            { 'text' => 'can do for you.', 'start_ms' => 3500, 'end_ms' => 6000 }
-          ]
-        )
+        expect(result).to match([
+          have_attributes(sort_order: 0, text: 'Ask not what your country', start_ms: 0, end_ms: 3500),
+          have_attributes(sort_order: 1, text: 'can do for you.', start_ms: 3500, end_ms: 6000)
+        ])
       end
     end
 
@@ -87,7 +85,7 @@ RSpec.describe AudioTranscriptionService do
       it 'clamps end_ms to the probed audio duration' do
         result = described_class.new(audio_path).call
 
-        expect(result).to eq([{ 'text' => 'Hello world.', 'start_ms' => 0, 'end_ms' => 4980 }])
+        expect(result).to match([have_attributes(sort_order: 0, text: 'Hello world.', start_ms: 0, end_ms: 4980)])
       end
     end
 
@@ -107,9 +105,7 @@ RSpec.describe AudioTranscriptionService do
       it 'stops parsing instead of including the trailing out-of-range segment' do
         result = described_class.new(audio_path).call
 
-        expect(result).to eq(
-          [{ 'text' => 'Ask not what your country', 'start_ms' => 0, 'end_ms' => 3500 }]
-        )
+        expect(result).to match([have_attributes(sort_order: 0, text: 'Ask not what your country', start_ms: 0, end_ms: 3500)])
       end
     end
 
@@ -212,7 +208,7 @@ RSpec.describe AudioTranscriptionService do
 
       it 'invokes the configured binary' do
         result = described_class.new(audio_path).call
-        expect(result).to eq([{ 'text' => 'transcript', 'start_ms' => 0, 'end_ms' => 1000 }])
+        expect(result).to match([have_attributes(sort_order: 0, text: 'transcript', start_ms: 0, end_ms: 1000)])
       end
     end
 

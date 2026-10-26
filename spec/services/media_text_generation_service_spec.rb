@@ -60,7 +60,7 @@ RSpec.describe MediaTextGenerationService do
     end
 
     context 'with a valid audio medium' do
-      let(:segments) { [{ 'text' => 'A generated transcript.', 'start_ms' => 0, 'end_ms' => 1200 }] }
+      let(:segments) { [Segment.new(sort_order: 0, text: 'A generated transcript.', start_ms: 0, end_ms: 1200)] }
 
       before do
         allow(AudioTranscriptionService).to receive(:new).and_return(
@@ -75,7 +75,7 @@ RSpec.describe MediaTextGenerationService do
         expect(media_transcript).not_to be_persisted
         expect(media_transcript.medium).to eq(audio_medium)
         expect(media_transcript.text).to eq('A generated transcript.')
-        expect(media_transcript.segments).to match(segments.map { |segment| have_attributes(segment) })
+        expect(media_transcript.segments.to_a).to eq(segments)
       end
 
       it "sets generation_model from AudioTranscriptionService's generation_model" do
@@ -87,8 +87,8 @@ RSpec.describe MediaTextGenerationService do
       context 'when segments mix speech and non-speech labels' do
         let(:segments) do
           [
-            { 'text' => '(music)', 'start_ms' => 0, 'end_ms' => 3000 },
-            { 'text' => 'Welcome to the conference.', 'start_ms' => 3000, 'end_ms' => 6000 }
+            Segment.new(sort_order: 0, text: '(music)', start_ms: 0, end_ms: 3000),
+            Segment.new(sort_order: 1, text: 'Welcome to the conference.', start_ms: 3000, end_ms: 6000)
           ]
         end
 
@@ -96,13 +96,13 @@ RSpec.describe MediaTextGenerationService do
           media_transcript = described_class.new(audio_medium, 'moondream').call
 
           expect(media_transcript.text).to eq('Welcome to the conference.')
-          expect(media_transcript.segments).to match(segments.map { |segment| have_attributes(segment) })
+          expect(media_transcript.segments.to_a).to eq(segments)
         end
       end
     end
 
     context 'with a valid video medium' do
-      let(:segments) { [{ 'text' => 'A generated transcript.', 'start_ms' => 0, 'end_ms' => 1200 }] }
+      let(:segments) { [Segment.new(sort_order: 0, text: 'A generated transcript.', start_ms: 0, end_ms: 1200)] }
 
       before do
         allow(VideoTranscriptionService).to receive(:new).and_return(
@@ -117,7 +117,7 @@ RSpec.describe MediaTextGenerationService do
         expect(media_transcript).not_to be_persisted
         expect(media_transcript.medium).to eq(video_medium)
         expect(media_transcript.text).to eq('A generated transcript.')
-        expect(media_transcript.segments).to match(segments.map { |segment| have_attributes(segment) })
+        expect(media_transcript.segments.to_a).to eq(segments)
       end
 
       it "sets generation_model from VideoTranscriptionService's generation_model" do
