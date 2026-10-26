@@ -72,11 +72,12 @@ class MediaTranscript < ApplicationRecord
     generation_model.to_s.start_with?('whisper:')
   end
 
-  # Replaces the text of the segment at `index` (in sort_order), leaving its start_ms/end_ms as they
-  # are. On save, text and the doc's body are rebuilt to follow (see #rebuild_text and #sync_doc_body).
-  def set_segment_text(index, new_text)
-    segment = current_segments[index] if index >= 0
-    raise ArgumentError, "No segment at index #{index}." unless segment
+  # Replaces the text of the segment with `id`, leaving its start_ms/end_ms as they are. On save, text and
+  # the doc's body are rebuilt to follow (see #rebuild_text and #sync_doc_body). Fails for a segment since
+  # replaced, e.g. by #segment_values=, which gives the new ones new ids.
+  def set_segment_text(id, new_text)
+    segment = current_segments.find { |current| current.id == id }
+    raise ArgumentError, "No segment with id #{id}." unless segment
 
     # Checked once stripped, since strip also removes chars blank? doesn't count as blank, e.g. "\0".
     stripped_text = new_text&.strip

@@ -14,6 +14,8 @@ RSpec.describe 'The segments page', type: :request do
   let(:medium) { create(:medium, media_type: :audio, content_type: 'audio/mpeg') }
   let(:doc) { create(:doc, body: 'Hello world', medium:) }
   let!(:media_transcript) { create(:media_transcript, medium:, doc:, text: 'Hello world') }
+  let(:hello) { media_transcript.segments.first }
+  let(:world) { media_transcript.segments.last }
 
   context 'as a root user' do
     before { sign_in root_user }
@@ -38,7 +40,7 @@ RSpec.describe 'The segments page', type: :request do
       it 'gives each segment an Edit button for the dialog' do
         get "/docs/#{doc.id}/segments"
 
-        expect(response.body).to include(%(data-url="/docs/#{doc.id}/segments/1"), 'data-index="1"', 'data-text="world"')
+        expect(response.body).to include(%(data-url="/docs/#{doc.id}/segments/#{world.id}"), 'data-index="1"', 'data-text="world"')
         expect(response.body).to include('<dialog id="segment-dialog" aria-labelledby="segment-dialog-title" data-open-on-load="false">')
       end
 
@@ -50,9 +52,9 @@ RSpec.describe 'The segments page', type: :request do
       end
     end
 
-    describe 'PATCH /docs/:doc_id/segments/:index' do
+    describe 'PATCH /docs/:doc_id/segments/:id' do
       it "updates the segment's text and the doc's body, then goes back to the list" do
-        patch "/docs/#{doc.id}/segments/1", params: { segment: { text: 'there' } }
+        patch "/docs/#{doc.id}/segments/#{world.id}", params: { segment: { text: 'there' } }
 
         expect(response).to redirect_to("/docs/#{doc.id}/segments")
         expect(media_transcript.reload.segments.last.text).to eq('there')
@@ -61,37 +63,61 @@ RSpec.describe 'The segments page', type: :request do
 
       it 'keeps an edit of another segment saved since the page was loaded' do
         allow_any_instance_of(MediaTranscript).to receive(:with_lock).and_wrap_original do |original, *args, &block|
-          # Another request saves its edit of segment 0 just before this one locks the transcript.
-          MediaTranscript.find(media_transcript.id).tap { _1.set_segment_text(0, 'Goodbye') }.save!
+          # Another request saves its edit of the first segment just before this one locks the transcript.
+          MediaTranscript.find(media_transcript.id).tap { _1.set_segment_text(hello.id, 'Goodbye') }.save!
           original.call(*args, &block)
         end
 
-        patch "/docs/#{doc.id}/segments/1", params: { segment: { text: 'there' } }
+        patch "/docs/#{doc.id}/segments/#{world.id}", params: { segment: { text: 'there' } }
 
         expect(media_transcript.reload.segments.map(&:text)).to eq(%w[Goodbye there])
         expect(doc.reload.body).to eq('Goodbye there')
       end
 
       it 'saves line breaks as spaces, keeping the segment on one line' do
-        patch "/docs/#{doc.id}/segments/1", params: { segment: { text: "there\r\nagain" } }
+        patch "/docs/#{doc.id}/segments/#{world.id}", params: { segment: { text: "there\r\nagain" } }
 
         expect(media_transcript.reload.segments.last.text).to eq('there again')
         expect(doc.reload.body).to eq('Hello there again')
       end
 
       it 'shows the error, reopening the dialog with the entered text, when the update is rejected' do
-        patch "/docs/#{doc.id}/segments/1", params: { segment: { text: ' ' } }
+        patch "/docs/#{doc.id}/segments/#{world.id}", params: { segment: { text: ' ' } }
 
         expect(response).to have_http_status(:unprocessable_content)
         expect(response.body).to include('Text is missing.', 'data-open-on-load="true"', '<span id="segment-dialog-index">#1</span>', 'value=" "')
-        expect(response.body).to include(%(action="/docs/#{doc.id}/segments/1"))
+        expect(response.body).to include(%(action="/docs/#{doc.id}/segments/#{world.id}"))
         expect(media_transcript.reload.segments.last.text).to eq('world')
       end
 
-      it 'responds with not found for an index with no segment' do
-        patch "/docs/#{doc.id}/segments/2", params: { segment: { text: 'there' } }
+      it 'responds with not found for an id with no segment' do
+        patch "/docs/#{doc.id}/segments/0", params: { segment: { text: 'there' } }
 
         expect(response).to have_http_status(:not_found)
+      end
+
+      it "responds with not found for another doc's segment" do
+        other_doc = create(:doc, body: 'Hello world', medium: create(:medium, media_type: :audio, content_type: 'audio/mpeg'))
+        other_segment = create(:media_transcript, medium: other_doc.medium, doc: other_doc, text: 'Hello world').segments.first
+
+        patch "/docs/#{doc.id}/segments/#{other_segment.id}", params: { segment: { text: 'there' } }
+
+        expect(response).to have_http_status(:not_found)
+        expect(other_segment.reload.text).to eq('Hello')
+      end
+
+      it 'responds with not found for a segment replaced since the page was loaded, e.g. by a split' do
+        replaced_id = world.id
+        media_transcript.update!(segment_values: [
+          { 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 300 },
+          { 'text' => 'wor', 'start_ms' => 300, 'end_ms' => 450 },
+          { 'text' => 'ld', 'start_ms' => 450, 'end_ms' => 600 }
+        ])
+
+        patch "/docs/#{doc.id}/segments/#{replaced_id}", params: { segment: { text: 'there' } }
+
+        expect(response).to have_http_status(:not_found)
+        expect(media_transcript.reload.segments.map(&:text)).to eq(%w[Hello wor ld])
       end
     end
 
@@ -139,7 +165,7 @@ RSpec.describe 'The segments page', type: :request do
     end
 
     it 'forbids the update' do
-      patch "/docs/#{doc.id}/segments/1", params: { segment: { text: 'there' } }
+      patch "/docs/#{doc.id}/segments/#{world.id}", params: { segment: { text: 'there' } }
 
       expect(response).to have_http_status(:forbidden)
       expect(doc.reload.body).to eq('Hello world')

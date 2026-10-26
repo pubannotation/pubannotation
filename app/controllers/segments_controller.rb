@@ -12,12 +12,12 @@ class SegmentsController < ApplicationController
   def index
   end
 
-  # PATCH /docs/:doc_id/segments/:index
+  # PATCH /docs/:doc_id/segments/:id
   def update
     @text = segment_text_param
     # Reloads and locks the transcript, so a concurrent edit of another segment isn't overwritten.
     @media_transcript.with_lock do
-      @media_transcript.set_segment_text(@index, @text)
+      @media_transcript.set_segment_text(@segment.id, @text)
       @media_transcript.save!
     end
 
@@ -47,9 +47,12 @@ class SegmentsController < ApplicationController
     render_status_error(:forbidden) unless @editable
   end
 
+  # By id rather than position, so a segment deleted or split since the page was loaded isn't mistaken for
+  # another one now at its position.
   def set_segment
-    @index = Integer(params[:index], exception: false)
-    @segment = @media_transcript.segments[@index] if @index&.between?(0, @media_transcript.segments.size - 1)
-    render_status_error(:not_found) unless @segment
+    @segment = @media_transcript.segments.find_by(id: params[:id])
+    return render_status_error(:not_found) unless @segment
+
+    @index = @media_transcript.segments.index(@segment)
   end
 end

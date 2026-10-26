@@ -351,7 +351,7 @@ RSpec.describe MediaTranscript, type: :model do
     let!(:media_transcript) { create(:media_transcript, medium:, doc:, text: 'Hello world') }
 
     it "replaces the segment's text, keeping its timing, once saved" do
-      media_transcript.set_segment_text(0, 'Goodbye')
+      media_transcript.set_segment_text(media_transcript.segments.first.id, 'Goodbye')
       media_transcript.save!
 
       expect(media_transcript.reload.segments).to match([
@@ -361,25 +361,32 @@ RSpec.describe MediaTranscript, type: :model do
     end
 
     it 'strips surrounding whitespace from the text' do
-      media_transcript.set_segment_text(0, "  Goodbye\n")
+      media_transcript.set_segment_text(media_transcript.segments.first.id, "  Goodbye\n")
 
       expect(media_transcript.segments.first.text).to eq('Goodbye')
     end
 
-    it 'raises for an index with no segment' do
-      expect { media_transcript.set_segment_text(2, 'Goodbye') }.to raise_error(ArgumentError, /No segment at index 2/)
+    it 'raises for an id with no segment' do
+      expect { media_transcript.set_segment_text(0, 'Goodbye') }.to raise_error(ArgumentError, /No segment with id 0/)
+    end
+
+    it 'raises for a segment since replaced, which leaves its id with none' do
+      replaced_id = media_transcript.segments.first.id
+      media_transcript.update!(segment_values: [{ 'text' => 'Hello world', 'start_ms' => 0, 'end_ms' => 600 }])
+
+      expect { media_transcript.set_segment_text(replaced_id, 'Goodbye') }.to raise_error(ArgumentError, /No segment with id/)
     end
 
     it 'raises for blank text' do
-      expect { media_transcript.set_segment_text(0, ' ') }.to raise_error(ArgumentError, /Text is missing/)
+      expect { media_transcript.set_segment_text(media_transcript.segments.first.id, ' ') }.to raise_error(ArgumentError, /Text is missing/)
     end
 
     it 'raises for text that is empty once stripped, e.g. a null char' do
-      expect { media_transcript.set_segment_text(0, "\0") }.to raise_error(ArgumentError, /Text is missing/)
+      expect { media_transcript.set_segment_text(media_transcript.segments.first.id, "\0") }.to raise_error(ArgumentError, /Text is missing/)
     end
 
     it 'raises for no text' do
-      expect { media_transcript.set_segment_text(0, nil) }.to raise_error(ArgumentError, /Text is missing/)
+      expect { media_transcript.set_segment_text(media_transcript.segments.first.id, nil) }.to raise_error(ArgumentError, /Text is missing/)
     end
   end
 
@@ -415,7 +422,7 @@ RSpec.describe MediaTranscript, type: :model do
     let!(:media_transcript) { create(:media_transcript, medium:, doc:, text: 'Hello world') }
 
     it "rebuilds the text and the doc's body from the segments" do
-      media_transcript.set_segment_text(1, 'there')
+      media_transcript.set_segment_text(media_transcript.segments.last.id, 'there')
       media_transcript.save!
 
       expect(media_transcript.reload.text).to eq('Hello there')
@@ -428,7 +435,7 @@ RSpec.describe MediaTranscript, type: :model do
       end
 
       it "still rebuilds the doc's body, which is locked against other edits, keeping the segments apart" do
-        media_transcript.set_segment_text(1, 'there')
+        media_transcript.set_segment_text(media_transcript.segments.last.id, 'there')
         media_transcript.save!
 
         expect(doc.reload.body).to eq('Hello there')
@@ -437,8 +444,8 @@ RSpec.describe MediaTranscript, type: :model do
     end
 
     it 'refuses segments left with no speech, as the body would be left with none' do
-      media_transcript.set_segment_text(0, '(music)')
-      media_transcript.set_segment_text(1, '(applause)')
+      media_transcript.set_segment_text(media_transcript.segments.first.id, '(music)')
+      media_transcript.set_segment_text(media_transcript.segments.last.id, '(applause)')
 
       expect { media_transcript.save! }
         .to raise_error(ActiveRecord::RecordInvalid, /Segments must have speech for the transcript of a document/)
@@ -448,7 +455,7 @@ RSpec.describe MediaTranscript, type: :model do
 
     it 'refuses changed segments for a transcript with no doc' do
       orphan = create(:media_transcript, medium:)
-      orphan.set_segment_text(0, 'Goodbye')
+      orphan.set_segment_text(orphan.segments.first.id, 'Goodbye')
 
       expect { orphan.save! }.to raise_error(ActiveRecord::RecordInvalid, /can't be changed for a transcript with no document/)
       expect(orphan.reload.segments.first.text).to eq('Hello')
@@ -456,7 +463,7 @@ RSpec.describe MediaTranscript, type: :model do
 
     it 'rolls back the transcript when the doc fails to save' do
       allow(media_transcript.doc).to receive(:update!).and_raise(ActiveRecord::RecordInvalid)
-      media_transcript.set_segment_text(0, 'Goodbye')
+      media_transcript.set_segment_text(media_transcript.segments.first.id, 'Goodbye')
 
       expect { media_transcript.save! }.to raise_error(ActiveRecord::RecordInvalid)
       expect(media_transcript.reload.segments.first.text).to eq('Hello')
