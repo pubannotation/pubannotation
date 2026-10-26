@@ -2,6 +2,9 @@
 
 FactoryBot.define do
   factory :media_transcript do
+    # Built with its attributes, so its text is derived from its segments as it's initialized.
+    initialize_with { new(**attributes) }
+
     association :medium, media_type: :audio, content_type: 'audio/mpeg'
     media_transcription_task { nil }
     segments do

@@ -247,8 +247,26 @@ RSpec.describe MediaTranscript, type: :model do
       expect(media_transcript.text).to be_nil
     end
 
-    it 'is valid when blank' do
-      expect(build(:media_transcript, text: nil)).to be_valid
+    it 'is derived from the speech segments of a new one' do
+      expect(build(:media_transcript).text).to eq('Hello world')
+    end
+
+    it 'is derived blank from only non-speech segments, and is valid' do
+      media_transcript = build(:media_transcript, segments: [Segment.new(sort_order: 0, text: '(music)', start_ms: 0, end_ms: 100)])
+
+      expect(media_transcript.text).to eq('')
+      expect(media_transcript).to be_valid
+    end
+
+    it 'is kept as given, e.g. an image caption' do
+      expect(build(:media_transcript, text: 'A caption.', segments: []).text).to eq('A caption.')
+    end
+
+    it 'is required to be set, which it is not with no segments to derive it from' do
+      media_transcript = build(:media_transcript, segments: [])
+
+      expect(media_transcript).not_to be_valid
+      expect(media_transcript.errors[:text]).to include("can't be nil")
     end
 
     it 'is valid with a value' do
@@ -271,8 +289,8 @@ RSpec.describe MediaTranscript, type: :model do
       expect(media_transcript.segment_values).to eq([])
     end
 
-    it 'is valid with an empty array' do
-      expect(build(:media_transcript, segments: [])).to be_valid
+    it 'is valid with an empty array, e.g. for an image caption' do
+      expect(build(:media_transcript, text: 'A caption.', segments: [])).to be_valid
     end
 
     it 'is valid when a segment has equal start_ms and end_ms' do

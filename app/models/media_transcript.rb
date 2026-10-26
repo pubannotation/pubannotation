@@ -12,20 +12,18 @@ class MediaTranscript < ApplicationRecord
   # saves them along with the text and the doc's body rebuilt from them.
   has_many :segments, -> { order(:sort_order) }, autosave: true, inverse_of: :media_transcript
 
-  # `text` is the plain-text Doc body (an image caption, or the resolved speech transcript for
-  # audio/video); nullable since populating it is up to the caller/media type. A new record
-  # built with segments but no explicit `text` gets one derived below.
+  # `text` is the plain-text Doc body: an image caption, or the speech transcript for audio/video, derived
+  # from the segments (see #derive_text). Blank, though not nil, when Whisper transcribes only non-speech
+  # labels such as "(music)".
+  validates :text, exclusion: { in: [nil], message: "can't be nil" }
   validates :media_transcription_task_id, uniqueness: true, allow_nil: true
   validates :doc_id, uniqueness: true, allow_nil: true
   validate :doc_has_matching_medium
   validate :segments_unchanged_without_doc, on: :update
   validate :segments_have_speech, on: :update, if: :doc
 
-  # Derives `text` from segments for a new record, unless already set explicitly (e.g. an
-  # image's caption). Skipped for records loaded from the database.
-  after_initialize do
-    self.text ||= speech_text if new_record? && segmented?
-  end
+  # Records loaded from the database already have their text.
+  after_initialize :derive_text, if: :new_record?
 
   # Once created, changed segments (e.g. a segment's text edited) rebuild text, and the doc's body
   # follows it. Checked on every update rather than only as text changes, since normalizing segments can
@@ -114,6 +112,14 @@ class MediaTranscript < ApplicationRecord
 
   def segments_changing?
     segments.any? { |segment| segment.new_record? || segment.changed? || segment.marked_for_destruction? }
+  end
+
+  # An image's caption is set explicitly. Audio and video have segments, even with no speech, to derive it
+  # from; with none, it's left nil, which is invalid.
+  def derive_text
+    return if text
+
+    self.text = speech_text if segmented?
   end
 
   def rebuild_text
