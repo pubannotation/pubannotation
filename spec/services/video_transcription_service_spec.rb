@@ -15,7 +15,7 @@ RSpec.describe VideoTranscriptionService do
 
   describe '#call' do
     context 'when ffmpeg succeeds' do
-      let(:segments) { [Segment.new(sort_order: 0, text: 'A generated transcript.', start_ms: 0, end_ms: 1000)] }
+      let(:segments) { [build(:segment, :without_transcript, sort_order: 0, text: 'A generated transcript.', start_ms: 0, end_ms: 1000)] }
 
       before do
         success_status = instance_double(Process::Status, success?: true)

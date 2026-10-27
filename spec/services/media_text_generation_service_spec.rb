@@ -60,7 +60,7 @@ RSpec.describe MediaTextGenerationService do
     end
 
     context 'with a valid audio medium' do
-      let(:segments) { [Segment.new(sort_order: 0, text: 'A generated transcript.', start_ms: 0, end_ms: 1200)] }
+      let(:segments) { [build(:segment, :without_transcript, sort_order: 0, text: 'A generated transcript.', start_ms: 0, end_ms: 1200)] }
 
       before do
         allow(AudioTranscriptionService).to receive(:new).and_return(
@@ -87,8 +87,8 @@ RSpec.describe MediaTextGenerationService do
       context 'when segments mix speech and non-speech labels' do
         let(:segments) do
           [
-            Segment.new(sort_order: 0, text: '(music)', start_ms: 0, end_ms: 3000),
-            Segment.new(sort_order: 1, text: 'Welcome to the conference.', start_ms: 3000, end_ms: 6000)
+            build(:segment, :without_transcript, sort_order: 0, text: '(music)', start_ms: 0, end_ms: 3000),
+            build(:segment, :without_transcript, sort_order: 1, text: 'Welcome to the conference.', start_ms: 3000, end_ms: 6000)
           ]
         end
 
@@ -102,7 +102,7 @@ RSpec.describe MediaTextGenerationService do
     end
 
     context 'with a valid video medium' do
-      let(:segments) { [Segment.new(sort_order: 0, text: 'A generated transcript.', start_ms: 0, end_ms: 1200)] }
+      let(:segments) { [build(:segment, :without_transcript, sort_order: 0, text: 'A generated transcript.', start_ms: 0, end_ms: 1200)] }
 
       before do
         allow(VideoTranscriptionService).to receive(:new).and_return(
