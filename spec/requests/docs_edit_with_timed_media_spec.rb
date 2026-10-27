@@ -74,7 +74,7 @@ RSpec.describe 'Editing a doc with a media transcript', type: :request do
       expect(response).to have_http_status(:no_content)
       expect(doc.reload.body).to eq('Changed body')
       media_transcript.reload
-      expect(media_transcript.segment_values).to eq([{ 'text' => 'Changed body', 'start_ms' => 0, 'end_ms' => 1000 }])
+      expect(media_transcript.segments).to match([have_attributes(text: 'Changed body', start_ms: 0, end_ms: 1000)])
       expect(media_transcript.text).to eq('Changed body')
     end
   end

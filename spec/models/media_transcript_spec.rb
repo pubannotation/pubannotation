@@ -278,7 +278,7 @@ RSpec.describe MediaTranscript, type: :model do
     it 'stores an array of timed text segments' do
       media_transcript = create(:media_transcript, segments: [Segment.new(sort_order: 0, text: 'Hi', start_ms: 0, end_ms: 100)])
 
-      expect(media_transcript.reload.segment_values).to eq([{ 'text' => 'Hi', 'start_ms' => 0, 'end_ms' => 100 }])
+      expect(media_transcript.reload.segments).to match([have_attributes(text: 'Hi', start_ms: 0, end_ms: 100)])
     end
 
     it 'defaults to an empty array' do
@@ -286,7 +286,7 @@ RSpec.describe MediaTranscript, type: :model do
 
       media_transcript = MediaTranscript.new(medium: medium)
 
-      expect(media_transcript.segment_values).to eq([])
+      expect(media_transcript.segments).to be_empty
     end
 
     it 'is valid with an empty array, e.g. for an image caption' do
@@ -354,9 +354,9 @@ RSpec.describe MediaTranscript, type: :model do
       media_transcript.set_segment_text(0, 'Goodbye')
       media_transcript.save!
 
-      expect(media_transcript.reload.segment_values).to eq([
-        { 'text' => 'Goodbye', 'start_ms' => 0, 'end_ms' => 300 },
-        { 'text' => 'world', 'start_ms' => 300, 'end_ms' => 600 }
+      expect(media_transcript.reload.segments).to match([
+        have_attributes(text: 'Goodbye', start_ms: 0, end_ms: 300),
+        have_attributes(text: 'world', start_ms: 300, end_ms: 600)
       ])
     end
 
@@ -394,7 +394,7 @@ RSpec.describe MediaTranscript, type: :model do
 
       media_transcript.replace_text!('Goodbye world')
 
-      expect(media_transcript.reload.segment_values).to eq([{ 'text' => 'Goodbye world', 'start_ms' => 0, 'end_ms' => 1000 }])
+      expect(media_transcript.reload.segments).to match([have_attributes(text: 'Goodbye world', start_ms: 0, end_ms: 1000)])
       expect(media_transcript.text).to eq('Goodbye world')
     end
 
@@ -405,7 +405,7 @@ RSpec.describe MediaTranscript, type: :model do
       media_transcript.replace_text!('Another caption.')
 
       expect(media_transcript.reload.text).to eq('Another caption.')
-      expect(media_transcript.segment_values).to eq([])
+      expect(media_transcript.segments).to be_empty
     end
   end
 

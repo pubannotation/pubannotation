@@ -43,7 +43,7 @@ RSpec.describe MediaTextGenerationService do
         expect(media_transcript).not_to be_persisted
         expect(media_transcript.medium).to eq(image_medium)
         expect(media_transcript.text).to eq('A generated caption.')
-        expect(media_transcript.segment_values).to eq([])
+        expect(media_transcript.segments).to be_empty
       end
 
       it 'passes a given caption_model through to ImageCaptionService' do
@@ -75,7 +75,7 @@ RSpec.describe MediaTextGenerationService do
         expect(media_transcript).not_to be_persisted
         expect(media_transcript.medium).to eq(audio_medium)
         expect(media_transcript.text).to eq('A generated transcript.')
-        expect(media_transcript.segment_values).to eq(segments)
+        expect(media_transcript.segments).to match(segments.map { |segment| have_attributes(segment) })
       end
 
       it "sets generation_model from AudioTranscriptionService's generation_model" do
@@ -96,7 +96,7 @@ RSpec.describe MediaTextGenerationService do
           media_transcript = described_class.new(audio_medium, 'moondream').call
 
           expect(media_transcript.text).to eq('Welcome to the conference.')
-          expect(media_transcript.segment_values).to eq(segments)
+          expect(media_transcript.segments).to match(segments.map { |segment| have_attributes(segment) })
         end
       end
     end
@@ -117,7 +117,7 @@ RSpec.describe MediaTextGenerationService do
         expect(media_transcript).not_to be_persisted
         expect(media_transcript.medium).to eq(video_medium)
         expect(media_transcript.text).to eq('A generated transcript.')
-        expect(media_transcript.segment_values).to eq(segments)
+        expect(media_transcript.segments).to match(segments.map { |segment| have_attributes(segment) })
       end
 
       it "sets generation_model from VideoTranscriptionService's generation_model" do

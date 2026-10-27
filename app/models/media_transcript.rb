@@ -30,12 +30,6 @@ class MediaTranscript < ApplicationRecord
   before_update :rebuild_text, if: :segments_changing?
   after_update :sync_doc_body, if: -> { doc && saved_change_to_text? }
 
-  # The segments as hashes with 'text', 'start_ms' and 'end_ms', in their order, as #segment_values=
-  # takes them.
-  def segment_values
-    current_segments.map { |segment| { 'text' => segment.text, 'start_ms' => segment.start_ms, 'end_ms' => segment.end_ms } }
-  end
-
   # Replaces the segments with ones made from `values`, each a hash with 'text', 'start_ms' and
   # 'end_ms' (e.g. as AudioTranscriptionService transcribes them), in their order.
   def segment_values=(values)

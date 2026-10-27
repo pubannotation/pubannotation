@@ -76,7 +76,7 @@ RSpec.describe Doc, type: :model do
       doc.reload.update!(body: 'Changed body')
 
       media_transcript.reload
-      expect(media_transcript.segment_values).to eq([{ 'text' => 'Changed body', 'start_ms' => 0, 'end_ms' => 1000 }])
+      expect(media_transcript.segments).to match([have_attributes(text: 'Changed body', start_ms: 0, end_ms: 1000)])
       expect(media_transcript.text).to eq('Changed body')
     end
 
@@ -89,7 +89,7 @@ RSpec.describe Doc, type: :model do
       doc.reload.update!(body: 'Changed body')
 
       media_transcript.reload
-      expect(media_transcript.segment_values).to eq([{ 'text' => 'Changed body', 'start_ms' => 0, 'end_ms' => 1000 }])
+      expect(media_transcript.segments).to match([have_attributes(text: 'Changed body', start_ms: 0, end_ms: 1000)])
       expect(media_transcript.text).to eq('Changed body')
     end
 
@@ -104,7 +104,7 @@ RSpec.describe Doc, type: :model do
       media_transcript.reload
       expect(doc.reload.body).to eq('Hello world')
       expect(media_transcript.text).to eq('Hello world')
-      expect(media_transcript.segment_values).to eq([{ 'text' => 'Hello world', 'start_ms' => 0, 'end_ms' => 1000 }])
+      expect(media_transcript.segments).to match([have_attributes(text: 'Hello world', start_ms: 0, end_ms: 1000)])
     end
 
     it 'cannot change the body of a doc with audio or video to only a non-speech label' do
@@ -124,7 +124,7 @@ RSpec.describe Doc, type: :model do
 
       doc.reload.update!(body: 'Goodbye world')
 
-      expect(media_transcript.reload.segment_values).to eq(segments)
+      expect(media_transcript.reload.segments).to match(segments.map { |segment| have_attributes(segment) })
     end
 
     it 'can change the body of a doc with an image transcript, carrying it over to the caption' do

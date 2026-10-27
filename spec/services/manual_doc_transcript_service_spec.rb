@@ -30,7 +30,7 @@ RSpec.describe ManualDocTranscriptService do
           expect(media_transcript).not_to be_persisted
           expect(media_transcript.medium).to eq(medium)
           expect(media_transcript.text).to eq('Hello world')
-          expect(media_transcript.segment_values).to eq([{ 'text' => 'Hello world', 'start_ms' => 0, 'end_ms' => 4_980 }])
+          expect(media_transcript.segments).to match([have_attributes(text: 'Hello world', start_ms: 0, end_ms: 4_980)])
         end
       end
     end

@@ -27,7 +27,7 @@ RSpec.describe DocGenerationFromMediaJob, type: :job do
         media_transcript = MediaTranscript.find_by(medium: medium)
         expect(media_transcript).to be_present
         expect(media_transcript.text).to eq('A generated caption.')
-        expect(media_transcript.segment_values).to eq([])
+        expect(media_transcript.segments).to be_empty
         expect(media_transcript.media_transcription_task).to eq(task)
       end
 
@@ -72,7 +72,7 @@ RSpec.describe DocGenerationFromMediaJob, type: :job do
         task = MediaTranscriptionTask.find_by(medium: medium)
         media_transcript = MediaTranscript.find_by(medium: medium)
         expect(media_transcript.text).to eq('A generated transcript.')
-        expect(media_transcript.segment_values).to eq(segments)
+        expect(media_transcript.segments).to match(segments.map { |segment| have_attributes(segment) })
         expect(media_transcript.media_transcription_task).to eq(task)
       end
 
