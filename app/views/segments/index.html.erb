@@ -20,14 +20,14 @@
 	<% @media_transcript.segments.each_with_index do |segment, index| -%>
 		<tr>
 			<td><%= index %></td>
-			<td><%= segment_time(segment['start_ms']) %></td>
-			<td><%= segment_time(segment['end_ms']) %></td>
-			<td><%= segment['text'] %></td>
-			<td class="speech"><%= '✓' if @media_transcript.speech_segment?(segment) %></td>
+			<td><%= segment_time(segment.start_ms) %></td>
+			<td><%= segment_time(segment.end_ms) %></td>
+			<td><%= segment.text %></td>
+			<td class="speech"><%= '✓' if segment.speech? %></td>
 			<% if @editable -%>
 				<td>
 					<%= button_tag 'Edit', type: 'button', class: 'button edit-segment',
-						data: { url: doc_segment_path(@doc, index), index:, text: segment['text'],
+						data: { url: doc_segment_path(@doc, index), index:, text: segment.text,
 						        time: segment_time_range(segment) } %>
 				</td>
 			<% end -%>
