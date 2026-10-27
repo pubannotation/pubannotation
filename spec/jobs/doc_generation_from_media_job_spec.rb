@@ -6,8 +6,11 @@ RSpec.describe DocGenerationFromMediaJob, type: :job do
   let(:user) { create(:user) }
   let(:project) { create(:project, user: user) }
   let(:attributes) { { sourcedb: 'Example', sourceid: '001' } }
-  let(:segments) { [{ 'text' => 'A generated transcript.', 'start_ms' => 0, 'end_ms' => 1000 }] }
-  let(:generated_media_transcript) { MediaTranscript.new(medium:, text: 'A generated transcript.', segment_values: segments) }
+  let(:generated_media_transcript) do
+    MediaTranscript.new(medium:, text: 'A generated transcript.', segments: [
+      Segment.new(sort_order: 0, text: 'A generated transcript.', start_ms: 0, end_ms: 1000)
+    ])
+  end
   let(:text_generation) { instance_double(MediaTextGenerationService, call: generated_media_transcript) }
 
   describe '#perform' do
@@ -18,7 +21,7 @@ RSpec.describe DocGenerationFromMediaJob, type: :job do
 
     context 'with an image medium' do
       let(:medium) { create(:medium, user: user, media_type: :image, content_type: 'image/png') }
-      let(:generated_media_transcript) { MediaTranscript.new(medium:, text: 'A generated caption.', segment_values: []) }
+      let(:generated_media_transcript) { MediaTranscript.new(medium:, text: 'A generated caption.', segments: []) }
 
       it 'persists the transcript returned by MediaTextGenerationService, linked to the task' do
         DocGenerationFromMediaJob.perform_now(project, medium, user, attributes, 'moondream')
@@ -72,7 +75,7 @@ RSpec.describe DocGenerationFromMediaJob, type: :job do
         task = MediaTranscriptionTask.find_by(medium: medium)
         media_transcript = MediaTranscript.find_by(medium: medium)
         expect(media_transcript.text).to eq('A generated transcript.')
-        expect(media_transcript.segments).to match(segments.map { |segment| have_attributes(segment) })
+        expect(media_transcript.segments).to match([have_attributes(text: 'A generated transcript.', start_ms: 0, end_ms: 1000)])
         expect(media_transcript.media_transcription_task).to eq(task)
       end
 
@@ -115,7 +118,7 @@ RSpec.describe DocGenerationFromMediaJob, type: :job do
       end
 
       context 'when the generated transcript has no speech' do
-        let(:generated_media_transcript) { MediaTranscript.new(medium:, text: '', segment_values: []) }
+        let(:generated_media_transcript) { MediaTranscript.new(medium:, text: '', segments: []) }
 
         it 'marks the task succeeded, persists the transcript, but does not create a doc' do
           DocGenerationFromMediaJob.perform_now(project, medium, user, attributes, 'moondream')

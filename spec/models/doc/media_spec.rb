@@ -81,9 +81,9 @@ RSpec.describe Doc, type: :model do
     end
 
     it 'merges the segments of a transcript not from Whisper into one when the body changes' do
-      media_transcript = MediaTranscript.create!(medium:, doc:, segment_values: [
-        { 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 400 },
-        { 'text' => 'world', 'start_ms' => 500, 'end_ms' => 1000 }
+      media_transcript = MediaTranscript.create!(medium:, doc:, segments: [
+        Segment.new(sort_order: 0, text: 'Hello', start_ms: 0, end_ms: 400),
+        Segment.new(sort_order: 1, text: 'world', start_ms: 500, end_ms: 1000)
       ])
 
       doc.reload.update!(body: 'Changed body')
@@ -95,7 +95,7 @@ RSpec.describe Doc, type: :model do
 
     it 'puts a body stored with CRLF, and its transcript, on one line as it gets saved again' do
       media_transcript = MediaTranscript.create!(medium:, doc:, text: "Hello\r\nworld",
-                                                 segment_values: [{ 'text' => "Hello\r\nworld", 'start_ms' => 0, 'end_ms' => 1000 }])
+                                                 segments: [Segment.new(sort_order: 0, text: "Hello\r\nworld", start_ms: 0, end_ms: 1000)])
       # Stored with CRLF as before the body was normalized; SQL, since update_column normalizes it too.
       Doc.where(id: doc.id).update_all(['body = ?', "Hello\r\nworld"])
 
@@ -116,15 +116,17 @@ RSpec.describe Doc, type: :model do
     end
 
     it 'leaves the segments alone when the body changes to follow the transcript' do
-      segments = [
-        { 'text' => 'Goodbye', 'start_ms' => 0, 'end_ms' => 400 },
-        { 'text' => 'world', 'start_ms' => 500, 'end_ms' => 1000 }
-      ]
-      media_transcript = MediaTranscript.create!(medium:, doc:, text: 'Goodbye world', segment_values: segments)
+      media_transcript = MediaTranscript.create!(medium:, doc:, text: 'Goodbye world', segments: [
+        Segment.new(sort_order: 0, text: 'Goodbye', start_ms: 0, end_ms: 400),
+        Segment.new(sort_order: 1, text: 'world', start_ms: 500, end_ms: 1000)
+      ])
 
       doc.reload.update!(body: 'Goodbye world')
 
-      expect(media_transcript.reload.segments).to match(segments.map { |segment| have_attributes(segment) })
+      expect(media_transcript.reload.segments).to match([
+        have_attributes(text: 'Goodbye', start_ms: 0, end_ms: 400),
+        have_attributes(text: 'world', start_ms: 500, end_ms: 1000)
+      ])
     end
 
     it 'can change the body of a doc with an image transcript, carrying it over to the caption' do
