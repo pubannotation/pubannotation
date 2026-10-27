@@ -30,13 +30,11 @@ class MediaTranscript < ApplicationRecord
   before_update :rebuild_text, if: :segments_changing?
   after_update :sync_doc_body, if: -> { doc && saved_change_to_text? }
 
-  # Replaces the segments with ones made from `values`, each a hash with 'text', 'start_ms' and
-  # 'end_ms' (e.g. as AudioTranscriptionService transcribes them), in their order.
-  def segment_values=(values)
+  # Replaces the segments with `new_segments`, each with its sort_order, once saved.
+  def replace_segments(new_segments)
     segments.each(&:mark_for_destruction)
-    values.each_with_index do |value, index|
-      segments.build(sort_order: index, text: value['text'], start_ms: value['start_ms'], end_ms: value['end_ms'])
-    end
+    # Through the inverse, each joins `segments` unsaved, as `segments <<` would save it at once.
+    new_segments.each { |segment| segment.media_transcript = self }
   end
 
   # Segments that are actual speech, excluding Whisper's non-speech labels (e.g. "(music)").
@@ -89,10 +87,12 @@ class MediaTranscript < ApplicationRecord
 
   # Replaces the whole text, merging the segments, if any, into one spanning them all.
   def replace_text!(new_text)
-    return update!(text: new_text) unless segmented?
+    # An image caption has no segments.
+    return update!(text: new_text) unless segments.any?
 
-    first, last = current_segments.values_at(0, -1)
-    self.segment_values = [{ 'text' => new_text, 'start_ms' => first.start_ms, 'end_ms' => last.end_ms }]
+    replace_segments([
+      Segment.new(sort_order: 0, text: new_text, start_ms: segments.first.start_ms, end_ms: segments.last.end_ms)
+    ])
     save!
   end
 
