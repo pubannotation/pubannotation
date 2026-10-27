@@ -26,10 +26,9 @@ class MediaTranscript < ApplicationRecord
   after_initialize :default_text_from_segments, if: :new_record?
 
   # Once created, changed segments (e.g. a segment's text edited) rebuild text, and the doc's body
-  # follows it. Checked on every update rather than only as text changes, since normalizing segments can
-  # leave text as it was while the body just written differs (e.g. its whitespace alone edited).
+  # follows it.
   before_update :rebuild_text, if: :segments_changing?
-  after_update :sync_doc_body, if: :doc
+  after_update :sync_doc_body, if: -> { doc && saved_change_to_text? }
 
   # The segments as hashes with 'text', 'start_ms' and 'end_ms', in their order, as #segment_values=
   # takes them.
