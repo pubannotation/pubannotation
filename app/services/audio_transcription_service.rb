@@ -18,6 +18,7 @@ class AudioTranscriptionService
     @audio_path = audio_path
   end
 
+  # Returns the transcribed segments, as unsaved Segments in their order.
   def call
     raise ArgumentError, "Audio file appears to be silent." if AudioSilenceDetector.new(@audio_path).silent?
 
@@ -55,7 +56,7 @@ class AudioTranscriptionService
       break if start_ms > duration_ms
 
       end_ms = clamp(timestamp_to_ms(match[5], match[6], match[7], match[8]), duration_ms)
-      segments << { 'text' => match[9].strip, 'start_ms' => start_ms, 'end_ms' => end_ms }
+      segments << Segment.new(sort_order: segments.size, text: match[9].strip, start_ms:, end_ms:)
     end
 
     segments

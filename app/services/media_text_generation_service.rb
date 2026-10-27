@@ -22,21 +22,13 @@ class MediaTextGenerationService
       MediaTranscript.new(medium: @medium, text: ImageCaptionService.new(file_path, @caption_model).call,
                           generation_model: @caption_model)
     when 'audio'
-      MediaTranscript.new(medium: @medium, segments: segments_from(AudioTranscriptionService.new(file_path).call),
+      MediaTranscript.new(medium: @medium, segments: AudioTranscriptionService.new(file_path).call,
                           generation_model: AudioTranscriptionService.generation_model)
     when 'video'
-      MediaTranscript.new(medium: @medium, segments: segments_from(VideoTranscriptionService.new(file_path).call),
+      MediaTranscript.new(medium: @medium, segments: VideoTranscriptionService.new(file_path).call,
                           generation_model: VideoTranscriptionService.generation_model)
     else
       raise ArgumentError, "Unsupported media type: #{@medium.media_type.inspect}"
-    end
-  end
-
-  # Segments from `values`, each a hash with 'text', 'start_ms' and 'end_ms' as the transcription
-  # services give them, in their order. Temporary: to go once those services give Segments themselves (#341).
-  def segments_from(values)
-    values.each_with_index.map do |value, index|
-      Segment.new(sort_order: index, text: value['text'], start_ms: value['start_ms'], end_ms: value['end_ms'])
     end
   end
 

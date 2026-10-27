@@ -15,6 +15,8 @@ RSpec.describe VideoTranscriptionService do
 
   describe '#call' do
     context 'when ffmpeg succeeds' do
+      let(:segments) { [build(:segment, :without_transcript, sort_order: 0, text: 'A generated transcript.', start_ms: 0, end_ms: 1000)] }
+
       before do
         success_status = instance_double(Process::Status, success?: true)
         allow(Open3).to receive(:capture3) do |*args|
@@ -27,13 +29,13 @@ RSpec.describe VideoTranscriptionService do
         end
         allow(AudioTranscriptionService).to receive(:new) do |audio_path|
           expect(audio_path).to end_with('.wav')
-          instance_double(AudioTranscriptionService, call: [{ 'text' => 'A generated transcript.', 'start_ms' => 0, 'end_ms' => 1000 }])
+          instance_double(AudioTranscriptionService, call: segments)
         end
       end
 
       it 'transcribes the audio extracted from the video' do
         result = described_class.new(video_path).call
-        expect(result).to eq([{ 'text' => 'A generated transcript.', 'start_ms' => 0, 'end_ms' => 1000 }])
+        expect(result).to eq(segments)
       end
     end
 
