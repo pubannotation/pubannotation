@@ -76,17 +76,30 @@ RSpec.describe 'POST /docs.json', type: :request do
       expect(media_transcript.segments).to match([have_attributes(text: 'doctor findings', start_ms: 0, end_ms: 4_980)])
     end
 
-    it 'stores the line breaks of the body as LF, and its segment on one line' do
+    it 'creates the body and its segment on one line, with line breaks and runs of spaces as one space' do
       allow(AudioAnalyzer).to receive(:new).and_return(instance_double(AudioAnalyzer, duration: 4.98))
-      params[:doc][:text] = "doctor\r\nfindings"
+      params[:doc][:text] = "doctor\r\nfindings  here"
 
       post '/docs.json', params: params.merge(media_params), headers: headers
 
       expect(response).to have_http_status(:created)
       doc = Doc.last
-      expect(doc.body).to eq("doctor\nfindings")
-      expect(doc.media_transcript.text).to eq("doctor\nfindings")
-      expect(doc.media_transcript.segments.first.text).to eq('doctor findings')
+      expect(doc.body).to eq('doctor findings here')
+      expect(doc.media_transcript.text).to eq('doctor findings here')
+      expect(doc.media_transcript.segments.first.text).to eq('doctor findings here')
+    end
+
+    it 'plays back the whole body, written with repeated whitespace, as its one segment' do
+      allow(AudioAnalyzer).to receive(:new).and_return(instance_double(AudioAnalyzer, duration: 4.98))
+
+      ["Hello  world", "Hello\n\nworld"].each_with_index do |text, index|
+        post '/docs.json', params: params.merge(media_params).deep_merge(doc: { text:, sourceid: "00#{index + 2}" }), headers: headers
+
+        expect(response).to have_http_status(:created)
+        doc = Doc.last
+        expect(doc.body).to eq('Hello world')
+        expect(doc.media_transcript.speech_segment_spans).to eq([{ begin: 0, end: doc.body.length, start_ms: 0 }])
+      end
     end
 
     it "does not create the doc when the media's duration cannot be read" do

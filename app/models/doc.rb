@@ -74,6 +74,8 @@ class Doc < ActiveRecord::Base
 	# As LF, so char offsets into the body (e.g. denotations') don't depend on how it was submitted.
 	normalizes :body, with: ->(body) { body.gsub("\r\n", "\n") }
 
+	before_validation :flatten_speech_body, if: -> { medium&.transcribable? && will_save_change_to_body? }
+
 	validate :media_reference_immutable, on: :update
 	validate :body_immutable_when_transcribed_by_whisper, on: :update
 	validate :body_has_speech, if: -> { medium&.transcribable? }
@@ -1155,6 +1157,12 @@ class Doc < ActiveRecord::Base
 		return if media_transcript.text == body
 
 		errors.add(:base, 'Body cannot be changed directly for a document transcribed by Whisper; edit its segments instead')
+	end
+
+	# An audio/video doc's body is what was said, joined from its segments with a space (see
+	# MediaTranscript#speech_text), so one written by hand is spaced as a segment's text is.
+	def flatten_speech_body
+		self.body = Segment.normalize_value_for(:text, body) if body
 	end
 
 	# An audio/video doc's body is what was said, to be highlighted as it's played, so it can't be only a
