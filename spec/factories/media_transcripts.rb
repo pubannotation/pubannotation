@@ -9,8 +9,8 @@ FactoryBot.define do
     media_transcription_task { nil }
     segments do
       [
-        Segment.new(sort_order: 0, text: 'Hello', start_ms: 0, end_ms: 300),
-        Segment.new(sort_order: 1, text: 'world', start_ms: 300, end_ms: 600)
+        FactoryBot.build(:segment, :without_transcript, sort_order: 0, text: 'Hello', start_ms: 0, end_ms: 300),
+        FactoryBot.build(:segment, :without_transcript, sort_order: 1, text: 'world', start_ms: 300, end_ms: 600)
       ]
     end
 

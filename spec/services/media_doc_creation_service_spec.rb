@@ -64,8 +64,8 @@ RSpec.describe MediaDocCreationService do
     context 'with a transcript containing speech segments' do
       let(:media_transcript) do
         MediaTranscript.new(medium: medium, segments: [
-          Segment.new(sort_order: 0, text: 'Hello', start_ms: 0, end_ms: 300),
-          Segment.new(sort_order: 1, text: 'world', start_ms: 300, end_ms: 600)
+          build(:segment, :without_transcript, sort_order: 0, text: 'Hello', start_ms: 0, end_ms: 300),
+          build(:segment, :without_transcript, sort_order: 1, text: 'world', start_ms: 300, end_ms: 600)
         ])
       end
 
@@ -114,8 +114,8 @@ RSpec.describe MediaDocCreationService do
       context 'when segments mix speech and non-speech labels' do
         let(:media_transcript) do
           MediaTranscript.new(medium: medium, segments: [
-            Segment.new(sort_order: 0, text: '(music)', start_ms: 0, end_ms: 3000),
-            Segment.new(sort_order: 1, text: 'Welcome.', start_ms: 3000, end_ms: 6000)
+            build(:segment, :without_transcript, sort_order: 0, text: '(music)', start_ms: 0, end_ms: 3000),
+            build(:segment, :without_transcript, sort_order: 1, text: 'Welcome.', start_ms: 3000, end_ms: 6000)
           ])
         end
 

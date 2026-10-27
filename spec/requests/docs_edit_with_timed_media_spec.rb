@@ -20,7 +20,7 @@ RSpec.describe 'Editing a doc with a media transcript', type: :request do
   context 'when the doc was transcribed by Whisper' do
     before do
       MediaTranscript.create!(medium:, doc:, generation_model: 'whisper:ggml-base.en',
-                              segments: [Segment.new(sort_order: 0, text: 'Hello world', start_ms: 0, end_ms: 1000)])
+                              segments: [build(:segment, :without_transcript, sort_order: 0, text: 'Hello world', start_ms: 0, end_ms: 1000)])
     end
 
     it 'shows the edit page with the text read-only' do
@@ -57,7 +57,7 @@ RSpec.describe 'Editing a doc with a media transcript', type: :request do
 
   context 'when the doc has a single-segment media transcript not from Whisper, e.g. registered manually' do
     let!(:media_transcript) do
-      MediaTranscript.create!(medium:, doc:, segments: [Segment.new(sort_order: 0, text: 'Hello world', start_ms: 0, end_ms: 1000)])
+      MediaTranscript.create!(medium:, doc:, segments: [build(:segment, :without_transcript, sort_order: 0, text: 'Hello world', start_ms: 0, end_ms: 1000)])
     end
 
     it 'shows the edit page with the text editable' do
@@ -82,8 +82,8 @@ RSpec.describe 'Editing a doc with a media transcript', type: :request do
   context 'when the doc has several segments in a media transcript not from Whisper' do
     before do
       MediaTranscript.create!(medium:, doc:, segments: [
-        Segment.new(sort_order: 0, text: 'Hello', start_ms: 0, end_ms: 400),
-        Segment.new(sort_order: 1, text: 'world', start_ms: 500, end_ms: 1000)
+        build(:segment, :without_transcript, sort_order: 0, text: 'Hello', start_ms: 0, end_ms: 400),
+        build(:segment, :without_transcript, sort_order: 1, text: 'world', start_ms: 500, end_ms: 1000)
       ])
     end
 

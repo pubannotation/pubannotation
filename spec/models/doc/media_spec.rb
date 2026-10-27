@@ -45,7 +45,7 @@ RSpec.describe Doc, type: :model do
     let(:medium) { create(:medium, media_type: :audio, content_type: 'audio/mpeg') }
     let(:doc) { create(:doc, body: 'Hello world', medium:) }
     # A new Segment each time, as one can belong to only one transcript.
-    def one_segment = [Segment.new(sort_order: 0, text: 'Hello world', start_ms: 0, end_ms: 1000)]
+    def one_segment = [build(:segment, :without_transcript, sort_order: 0, text: 'Hello world', start_ms: 0, end_ms: 1000)]
 
     it 'cannot change the body of a doc transcribed by Whisper' do
       MediaTranscript.create!(medium:, doc:, generation_model: 'whisper:ggml-base.en', segments: one_segment)
@@ -82,8 +82,8 @@ RSpec.describe Doc, type: :model do
 
     it 'merges the segments of a transcript not from Whisper into one when the body changes' do
       media_transcript = MediaTranscript.create!(medium:, doc:, segments: [
-        Segment.new(sort_order: 0, text: 'Hello', start_ms: 0, end_ms: 400),
-        Segment.new(sort_order: 1, text: 'world', start_ms: 500, end_ms: 1000)
+        build(:segment, :without_transcript, sort_order: 0, text: 'Hello', start_ms: 0, end_ms: 400),
+        build(:segment, :without_transcript, sort_order: 1, text: 'world', start_ms: 500, end_ms: 1000)
       ])
 
       doc.reload.update!(body: 'Changed body')
@@ -95,7 +95,7 @@ RSpec.describe Doc, type: :model do
 
     it 'puts a body stored with CRLF, and its transcript, on one line as it gets saved again' do
       media_transcript = MediaTranscript.create!(medium:, doc:, text: "Hello\r\nworld",
-                                                 segments: [Segment.new(sort_order: 0, text: "Hello\r\nworld", start_ms: 0, end_ms: 1000)])
+                                                 segments: [build(:segment, :without_transcript, sort_order: 0, text: "Hello\r\nworld", start_ms: 0, end_ms: 1000)])
       # Stored with CRLF as before the body was normalized; SQL, since update_column normalizes it too.
       Doc.where(id: doc.id).update_all(['body = ?', "Hello\r\nworld"])
 
@@ -117,8 +117,8 @@ RSpec.describe Doc, type: :model do
 
     it 'leaves the segments alone when the body changes to follow the transcript' do
       media_transcript = MediaTranscript.create!(medium:, doc:, text: 'Goodbye world', segments: [
-        Segment.new(sort_order: 0, text: 'Goodbye', start_ms: 0, end_ms: 400),
-        Segment.new(sort_order: 1, text: 'world', start_ms: 500, end_ms: 1000)
+        build(:segment, :without_transcript, sort_order: 0, text: 'Goodbye', start_ms: 0, end_ms: 400),
+        build(:segment, :without_transcript, sort_order: 1, text: 'world', start_ms: 500, end_ms: 1000)
       ])
 
       doc.reload.update!(body: 'Goodbye world')

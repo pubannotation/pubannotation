@@ -30,8 +30,8 @@ RSpec.describe 'GET /docs/:sourcedb/:sourceid speech segment highlighting', type
       MediaTranscript.new(
         medium: medium, doc: doc,
         segments: [
-          Segment.new(sort_order: 0, text: 'Hello', start_ms: 0, end_ms: 300),
-          Segment.new(sort_order: 1, text: 'world', start_ms: 300, end_ms: 600)
+          build(:segment, :without_transcript, sort_order: 0, text: 'Hello', start_ms: 0, end_ms: 300),
+          build(:segment, :without_transcript, sort_order: 1, text: 'world', start_ms: 300, end_ms: 600)
         ]
       ).save!
     end
@@ -77,8 +77,8 @@ RSpec.describe 'GET /docs/:sourcedb/:sourceid speech segment highlighting', type
       MediaTranscript.new(
         medium: medium, doc: doc,
         segments: [
-          Segment.new(sort_order: 0, text: 'Hello', start_ms: 0, end_ms: 300),
-          Segment.new(sort_order: 1, text: 'world', start_ms: 300, end_ms: 600)
+          build(:segment, :without_transcript, sort_order: 0, text: 'Hello', start_ms: 0, end_ms: 300),
+          build(:segment, :without_transcript, sort_order: 1, text: 'world', start_ms: 300, end_ms: 600)
         ]
       ).save!
     end

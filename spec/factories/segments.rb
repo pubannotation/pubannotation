@@ -8,5 +8,10 @@ FactoryBot.define do
     text { 'Hello' }
     start_ms { 0 }
     end_ms { 300 }
+
+    # For giving a transcript, which it then belongs to, so none of its own is built.
+    trait :without_transcript do
+      media_transcript { nil }
+    end
   end
 end
