@@ -108,11 +108,12 @@ RSpec.describe 'The segments page', type: :request do
 
       it 'responds with not found for a segment replaced since the page was loaded, e.g. by a split' do
         replaced_id = world.id
-        media_transcript.update!(segment_values: [
-          { 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 300 },
-          { 'text' => 'wor', 'start_ms' => 300, 'end_ms' => 450 },
-          { 'text' => 'ld', 'start_ms' => 450, 'end_ms' => 600 }
+        media_transcript.replace_segments([
+          build(:segment, :without_transcript, sort_order: 0, text: 'Hello', start_ms: 0, end_ms: 300),
+          build(:segment, :without_transcript, sort_order: 1, text: 'wor', start_ms: 300, end_ms: 450),
+          build(:segment, :without_transcript, sort_order: 2, text: 'ld', start_ms: 450, end_ms: 600)
         ])
+        media_transcript.save!
 
         patch "/docs/#{doc.id}/segments/#{replaced_id}", params: { segment: { text: 'there' } }
 

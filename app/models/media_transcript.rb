@@ -74,7 +74,7 @@ class MediaTranscript < ApplicationRecord
 
   # Replaces the text of the segment with `id`, leaving its start_ms/end_ms as they are. On save, text and
   # the doc's body are rebuilt to follow (see #rebuild_text and #sync_doc_body). Fails for a segment since
-  # replaced, e.g. by #segment_values=, which gives the new ones new ids.
+  # replaced, e.g. by #replace_segments, which gives the new ones new ids.
   def set_segment_text(id, new_text)
     segment = current_segments.find { |current| current.id == id }
     raise ArgumentError, "No segment with id #{id}." unless segment
