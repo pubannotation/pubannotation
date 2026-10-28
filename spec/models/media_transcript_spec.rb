@@ -224,6 +224,29 @@ RSpec.describe MediaTranscript, type: :model do
     end
   end
 
+  describe '#create_segment_blocks!' do
+    before { allow(Elasticsearch::IndexQueue).to receive(:index_doc) }
+
+    it 'gives its doc, in the project, an AudioSegment block for each speech segment, counted once' do
+      project = create(:project)
+      medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
+      doc = create(:doc, body: 'Hello world', medium:).tap { project.add_doc!(it) }
+      media_transcript = create(:media_transcript, medium:, doc:, text: 'Hello world', segments: [
+        build(:segment, :without_transcript, sort_order: 0, text: 'Hello', start_ms: 0, end_ms: 300),
+        build(:segment, :without_transcript, sort_order: 1, text: '(music)', start_ms: 300, end_ms: 600),
+        build(:segment, :without_transcript, sort_order: 2, text: 'world', start_ms: 600, end_ms: 900)
+      ])
+
+      media_transcript.create_segment_blocks!(project)
+
+      expect(doc.blocks.order(:hid).pluck(:project_id, :hid, :begin, :end, :obj))
+        .to eq([[project.id, 'B1', 0, 5, 'AudioSegment'], [project.id, 'B2', 6, 11, 'AudioSegment']])
+      expect(ProjectDoc.find_by(project:, doc:).blocks_num).to eq(2)
+      expect(doc.reload.blocks_num).to eq(2)
+      expect(project.reload.blocks_num).to eq(2)
+    end
+  end
+
   describe '#transcribed_by_whisper?' do
     it 'is true for a Whisper model' do
       expect(build(:media_transcript, generation_model: 'whisper:ggml-base.en').transcribed_by_whisper?).to be(true)

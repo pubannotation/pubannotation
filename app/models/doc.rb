@@ -807,6 +807,22 @@ class Doc < ActiveRecord::Base
 		segment_listable_by?(current_user) && updatable_for?(current_user)
 	end
 
+	# For a doc registered by hand with an audio/video medium, so its detail page can highlight and seek it
+	# like a transcribed doc: with no timing to go on, its whole body becomes a single segment spanning the
+	# media's full duration. Returns the transcript.
+	def create_media_transcript_from_body!
+		raise ArgumentError, "Specified media can't get a transcript." unless medium&.transcribable?
+
+		# text is set explicitly, since deriving it would drop a body that looks like a Whisper
+		# non-speech label (e.g. "(music)").
+		MediaTranscript.create!(
+			medium:,
+			doc: self,
+			text: body,
+			segments: [Segment.new(sort_order: 0, text: body, start_ms: 0, end_ms: medium.duration_ms)]
+		)
+	end
+
 	# Anyone can, given segments; access to media, while it's being tried out, is checked by the controller.
 	def segment_listable_by?(current_user)
 		media_transcript&.segmented?

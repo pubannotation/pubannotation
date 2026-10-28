@@ -344,7 +344,8 @@ class DocsController < ApplicationController
 				@doc = Doc.store_hdoc!(hdoc)
 				@project.add_doc!(@doc)
 				if medium&.transcribable?
-					ManualDocPlaybackService.call(@project, @doc)
+					media_transcript = @doc.create_media_transcript_from_body!
+					media_transcript.create_segment_blocks!(@project)
 				end
 			end
 
