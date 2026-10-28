@@ -195,25 +195,6 @@ RSpec.describe MediaTranscript, type: :model do
     end
   end
 
-  describe '#speech_segment_blocks' do
-    it 'gives each speech segment as an AudioSegment block on the text, skipping non-speech ones' do
-      media_transcript = build(:media_transcript, segments: [
-        build(:segment, :without_transcript, sort_order: 0, text: 'Hello', start_ms: 0, end_ms: 300),
-        build(:segment, :without_transcript, sort_order: 1, text: '(music)', start_ms: 300, end_ms: 600),
-        build(:segment, :without_transcript, sort_order: 2, text: 'world', start_ms: 600, end_ms: 900)
-      ])
-
-      expect(media_transcript.speech_segment_blocks).to eq([
-        { id: 'B1', span: { begin: 0, end: 5 }, obj: 'AudioSegment' },
-        { id: 'B2', span: { begin: 6, end: 11 }, obj: 'AudioSegment' }
-      ])
-    end
-
-    it 'is empty with no segments, e.g. an image caption' do
-      expect(build(:media_transcript, segments: []).speech_segment_blocks).to eq([])
-    end
-  end
-
   describe '#speech_segment_spans' do
     it "returns each speech segment's char offset into #speech_text alongside its start_ms" do
       media_transcript = build(:media_transcript, segments: [

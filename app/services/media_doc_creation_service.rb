@@ -1,4 +1,8 @@
 class MediaDocCreationService
+  # Marks a Block as corresponding to a spoken segment of the media, kept apart from the denotations
+  # of real semantic annotations. Its span is what selects it for playback-position highlighting.
+  BLOCK_OBJ = 'AudioSegment'.freeze
+
   # media_transcript is expected to already be persisted (with doc: nil) by the caller.
   def self.call(project, medium, user, attributes, media_transcript)
     hdoc = Doc.hdoc_normalize!(
@@ -27,10 +31,18 @@ class MediaDocCreationService
       )
       media_transcript.update!(doc:)
       project.add_doc!(doc)
-      segment_blocks = media_transcript.speech_segment_blocks
-      project.instantiate_and_save_annotations({ blocks: segment_blocks }, doc) if segment_blocks.any?
+      create_segment_blocks!(project, doc, media_transcript)
     end
 
     doc
+  end
+
+  # Creates, in `project`, a Block for each speech segment of `media_transcript` on `doc`, which is expected
+  # to be already added to `project`. Also for a doc registered by hand (see ManualDocPlaybackService).
+  def self.create_segment_blocks!(project, doc, media_transcript)
+    blocks = media_transcript.speech_segment_spans.map.with_index(1) do |span, index|
+      { id: "#{Block::HID_PREFIX}#{index}", span: span.slice(:begin, :end), obj: BLOCK_OBJ }
+    end
+    project.instantiate_and_save_annotations({ blocks: }, doc) if blocks.any?
   end
 end

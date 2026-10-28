@@ -1,8 +1,4 @@
 class MediaTranscript < ApplicationRecord
-  # The obj of the Block for each speech segment (see #speech_segment_blocks), whose span is what selects
-  # it for playback-position highlighting.
-  SEGMENT_BLOCK_OBJ = 'AudioSegment'.freeze
-
   # `medium` is stored directly (not via doc/media_transcription_task) since both associations
   # are optional: a Doc never exists for a no-speech result, and MediaTranscriptionTask can be
   # cleaned up independently (dependent: :nullify). A Doc, once linked, is not severable the
@@ -68,14 +64,6 @@ class MediaTranscript < ApplicationRecord
       char_position = char_end + 1
 
       { begin: char_begin, end: char_end, start_ms: segment.start_ms }
-    end
-  end
-
-  # Each speech segment as a Block annotation (see Project#instantiate_and_save_annotations) on the doc's
-  # body, marked as a spoken segment of the media rather than a semantic annotation.
-  def speech_segment_blocks
-    speech_segment_spans.map.with_index(1) do |span, index|
-      { id: "#{Block::HID_PREFIX}#{index}", span: span.slice(:begin, :end), obj: SEGMENT_BLOCK_OBJ }
     end
   end
 
