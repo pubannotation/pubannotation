@@ -92,6 +92,15 @@ RSpec.describe 'The segments page', type: :request do
         expect(doc.reload.body).to eq('Hello world')
       end
 
+      it 'goes back to the list with the error for a null line break, leaving the body as it was' do
+        patch "/docs/#{doc.id}/segments/#{hello.id}", params: { segment: { line_break_after: nil } }, as: :json
+
+        expect(response).to redirect_to("/docs/#{doc.id}/segments")
+        expect(flash[:alert]).to include("can't be nil")
+        expect(media_transcript.reload.segments.first.line_break_after).to be(false)
+        expect(doc.reload.body).to eq('Hello world')
+      end
+
       it 'puts a space back when the checkbox is unchecked' do
         patch "/docs/#{doc.id}/segments/#{hello.id}", params: { segment: { line_break_after: '1' } }
         patch "/docs/#{doc.id}/segments/#{hello.id}", params: { segment: { line_break_after: '0' } }

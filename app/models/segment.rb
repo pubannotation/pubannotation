@@ -7,6 +7,8 @@ class Segment < ApplicationRecord
 
   # May be blank, as Whisper can transcribe a segment as nothing (which isn't speech).
   validates :text, exclusion: { in: [nil], message: "can't be nil" }
+  # A blank value, e.g. null in JSON or "", casts to nil, which the column doesn't take.
+  validates :line_break_after, exclusion: { in: [nil], message: "can't be nil" }
   # Each checked further only once present, so a missing one is reported just as blank.
   validates :sort_order, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 0, allow_nil: true }
   validates :start_ms, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 0, allow_nil: true }

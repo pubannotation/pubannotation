@@ -19,6 +19,13 @@ RSpec.describe Segment, type: :model do
       expect(segment.errors[:text]).to include("can't be nil")
     end
 
+    it 'requires line_break_after, which a blank value casts to nil' do
+      segment = build(:segment, line_break_after: '')
+
+      expect(segment).not_to be_valid
+      expect(segment.errors[:line_break_after]).to include("can't be nil")
+    end
+
     it 'requires a non-negative integer sort order' do
       expect(build(:segment, sort_order: -1)).not_to be_valid
       expect(build(:segment, sort_order: 1.5)).not_to be_valid
