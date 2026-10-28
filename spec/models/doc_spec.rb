@@ -340,9 +340,9 @@ RSpec.describe Doc, type: :model do
 
     before do
       MediaTranscript.create!(medium:, doc:, segments: [
-        { 'text' => 'Hello', 'start_ms' => 0, 'end_ms' => 300 },
-        { 'text' => 'big', 'start_ms' => 300, 'end_ms' => 600 },
-        { 'text' => 'world', 'start_ms' => 600, 'end_ms' => 900 }
+        build(:segment, :without_transcript, sort_order: 0, text: 'Hello', start_ms: 0, end_ms: 300),
+        build(:segment, :without_transcript, sort_order: 1, text: 'big', start_ms: 300, end_ms: 600),
+        build(:segment, :without_transcript, sort_order: 2, text: 'world', start_ms: 600, end_ms: 900)
       ])
     end
 
