@@ -8,14 +8,13 @@ class ManualDocPlaybackService
     medium = doc.medium
     raise ArgumentError, "Specified media can't get a transcript." unless medium&.transcribable?
 
-    duration_ms = medium.file.open { |file| (AudioAnalyzer.new(file.path).duration * 1000).round }
     # text is set explicitly, since deriving it would drop a body that looks like a Whisper
     # non-speech label (e.g. "(music)").
     media_transcript = MediaTranscript.create!(
       medium:,
       doc:,
       text: doc.body,
-      segments: [Segment.new(sort_order: 0, text: doc.body, start_ms: 0, end_ms: duration_ms)]
+      segments: [Segment.new(sort_order: 0, text: doc.body, start_ms: 0, end_ms: medium.duration_ms)]
     )
 
     MediaDocCreationService.create_segment_blocks!(project, doc, media_transcript)
