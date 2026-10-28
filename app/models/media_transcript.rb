@@ -127,7 +127,7 @@ class MediaTranscript < ApplicationRecord
   # Whether a line break can follow `segment` in the doc's body: a speech segment's can, but the last
   # one's, which nothing follows.
   def line_break_settable_after?(segment)
-    segment.speech? && segment != speech_segments.last
+    segment.speech? && segment != last_speech_segment
   end
 
   # Sets whether a line break, rather than a space, follows `segment` in the doc's body. On save, text and the
@@ -157,6 +157,12 @@ class MediaTranscript < ApplicationRecord
   # The segments as they'll be once saved: without those marked for destruction.
   def current_segments
     segments.reject(&:marked_for_destruction?)
+  end
+
+  # The last of #speech_segments, searched from the end so each row of the segment list doesn't scan them all.
+  # to_a, as the association's reverse_each (Enumerable's) would collect them all first.
+  def last_speech_segment
+    segments.to_a.reverse_each.find { |segment| !segment.marked_for_destruction? && segment.speech? }
   end
 
   def segments_changing?
