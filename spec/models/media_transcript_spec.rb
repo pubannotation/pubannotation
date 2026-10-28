@@ -531,6 +531,12 @@ RSpec.describe MediaTranscript, type: :model do
         .to raise_error(ActiveRecord::RecordNotFound, /No segment with id #{other_segment.id}/)
     end
 
+    it 'raises for a segment no line break can follow, e.g. the last one, leaving it unchanged' do
+      expect { media_transcript.set_segment_line_break_after(media_transcript.segments.last, true) }
+        .to raise_error(ArgumentError, 'No line break can follow this segment.')
+      expect(media_transcript.segments.last).not_to be_changed
+    end
+
     context 'transcribed by Whisper, with a line break set after a segment' do
       let!(:media_transcript) do
         create(:media_transcript, medium:, doc:, text: 'Hello world', generation_model: 'whisper:ggml-base.en')

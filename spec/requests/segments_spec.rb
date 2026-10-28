@@ -83,6 +83,15 @@ RSpec.describe 'The segments page', type: :request do
         expect(doc.reload.body).to eq('Hello world')
       end
 
+      it 'goes back to the list with the error for a segment no line break can follow, e.g. the last one' do
+        patch "/docs/#{doc.id}/segments/#{world.id}", params: { segment: { line_break_after: '1' } }
+
+        expect(response).to redirect_to("/docs/#{doc.id}/segments")
+        expect(flash[:alert]).to eq('No line break can follow this segment.')
+        expect(media_transcript.reload.segments.last.line_break_after).to be(false)
+        expect(doc.reload.body).to eq('Hello world')
+      end
+
       it 'puts a space back when the checkbox is unchecked' do
         patch "/docs/#{doc.id}/segments/#{hello.id}", params: { segment: { line_break_after: '1' } }
         patch "/docs/#{doc.id}/segments/#{hello.id}", params: { segment: { line_break_after: '0' } }
