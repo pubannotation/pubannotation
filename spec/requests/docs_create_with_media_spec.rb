@@ -80,7 +80,7 @@ RSpec.describe 'POST /docs.json', type: :request do
 
     it 'creates none of the doc, transcript or block when saving the block fails' do
       allow(AudioAnalyzer).to receive(:new).and_return(instance_double(AudioAnalyzer, duration: 4.98))
-      allow(Block).to receive(:import).and_raise(ActiveRecord::StatementInvalid, 'insert failed')
+      allow(Block).to receive(:insert_all).and_raise(ActiveRecord::StatementInvalid, 'insert failed')
 
       counts = -> { [Doc.count, MediaTranscript.count, Block.count] }
 

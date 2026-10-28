@@ -37,12 +37,30 @@ class MediaDocCreationService
     doc
   end
 
-  # Creates, in `project`, a Block for each speech segment of `media_transcript` on `doc`, which is expected
-  # to be already added to `project`. Also for a doc registered by hand (see ManualDocPlaybackService).
+  # insert_all (not Block.create! in a loop) so it's one INSERT, but that skips after_create's
+  # counter callbacks — replicated manually below instead. hids are numbered locally rather than via
+  # Block.new_id, which uses process-shared state. Also for a doc registered by hand (see
+  # ManualDocPlaybackService).
   def self.create_segment_blocks!(project, doc, media_transcript)
-    blocks = media_transcript.speech_segment_spans.map.with_index(1) do |span, index|
-      { id: "#{Block::HID_PREFIX}#{index}", span: span.slice(:begin, :end), obj: BLOCK_OBJ }
+    spans = media_transcript.speech_segment_spans
+    return if spans.empty?
+
+    records = spans.map.with_index(1) do |span, index|
+      {
+        hid: "#{Block::HID_PREFIX}#{index}",
+        begin: span[:begin],
+        end: span[:end],
+        obj: BLOCK_OBJ,
+        project_id: project.id,
+        doc_id: doc.id
+      }
     end
-    project.instantiate_and_save_annotations({ blocks: }, doc) if blocks.any?
+
+    Block.insert_all(records, record_timestamps: true)
+
+    ProjectDoc.find_by!(project:, doc:).increment!(:blocks_num, records.size)
+    doc.increment!(:blocks_num, records.size)
+    project.increment!(:blocks_num, records.size)
+    project.update_updated_at
   end
 end
