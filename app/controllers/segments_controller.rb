@@ -17,7 +17,7 @@ class SegmentsController < ApplicationController
     @text = segment_text_param
     # Reloads and locks the transcript, so a concurrent edit of another segment isn't overwritten.
     @media_transcript.with_lock do
-      @media_transcript.set_segment_text(@segment.id, @text)
+      @media_transcript.set_segment_text(@segment, @text)
       @media_transcript.save!
     end
 

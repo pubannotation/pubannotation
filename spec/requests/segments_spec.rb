@@ -64,7 +64,7 @@ RSpec.describe 'The segments page', type: :request do
       it 'keeps an edit of another segment saved since the page was loaded' do
         allow_any_instance_of(MediaTranscript).to receive(:with_lock).and_wrap_original do |original, *args, &block|
           # Another request saves its edit of the first segment just before this one locks the transcript.
-          MediaTranscript.find(media_transcript.id).tap { _1.set_segment_text(hello.id, 'Goodbye') }.save!
+          MediaTranscript.find(media_transcript.id).tap { _1.set_segment_text(hello, 'Goodbye') }.save!
           original.call(*args, &block)
         end
 
