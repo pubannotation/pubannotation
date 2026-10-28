@@ -120,6 +120,26 @@ RSpec.describe 'The segments page', type: :request do
         expect(response).to have_http_status(:not_found)
         expect(media_transcript.reload.segments.map(&:text)).to eq(%w[Hello wor ld])
       end
+
+      it 'responds with not found for a segment replaced just before the transcript is locked' do
+        replaced_id = world.id
+        allow_any_instance_of(MediaTranscript).to receive(:with_lock).and_wrap_original do |original, *args, &block|
+          # Another request's split, landing after set_segment found the segment.
+          other = MediaTranscript.find(media_transcript.id)
+          other.replace_segments([
+            build(:segment, :without_transcript, sort_order: 0, text: 'Hello', start_ms: 0, end_ms: 300),
+            build(:segment, :without_transcript, sort_order: 1, text: 'wor', start_ms: 300, end_ms: 450),
+            build(:segment, :without_transcript, sort_order: 2, text: 'ld', start_ms: 450, end_ms: 600)
+          ])
+          other.save!
+          original.call(*args, &block)
+        end
+
+        patch "/docs/#{doc.id}/segments/#{replaced_id}", params: { segment: { text: 'there' } }
+
+        expect(response).to have_http_status(:not_found)
+        expect(media_transcript.reload.segments.map(&:text)).to eq(%w[Hello wor ld])
+      end
     end
 
     describe 'the doc detail page' do

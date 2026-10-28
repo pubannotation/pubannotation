@@ -77,7 +77,7 @@ class MediaTranscript < ApplicationRecord
   # replaced, e.g. by #replace_segments, which gives the new ones new ids.
   def set_segment_text(id, new_text)
     segment = current_segments.find { |current| current.id == id }
-    raise ArgumentError, "No segment with id #{id}." unless segment
+    raise ActiveRecord::RecordNotFound, "No segment with id #{id}." unless segment
 
     # Checked once stripped, since strip also removes chars blank? doesn't count as blank, e.g. "\0".
     stripped_text = new_text&.strip

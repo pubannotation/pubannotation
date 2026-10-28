@@ -367,7 +367,7 @@ RSpec.describe MediaTranscript, type: :model do
     end
 
     it 'raises for an id with no segment' do
-      expect { media_transcript.set_segment_text(0, 'Goodbye') }.to raise_error(ArgumentError, /No segment with id 0/)
+      expect { media_transcript.set_segment_text(0, 'Goodbye') }.to raise_error(ActiveRecord::RecordNotFound, /No segment with id 0/)
     end
 
     it 'raises for a segment since replaced, which leaves its id with none' do
@@ -375,7 +375,7 @@ RSpec.describe MediaTranscript, type: :model do
       media_transcript.replace_segments([build(:segment, :without_transcript, sort_order: 0, text: 'Hello world', start_ms: 0, end_ms: 600)])
       media_transcript.save!
 
-      expect { media_transcript.set_segment_text(replaced_id, 'Goodbye') }.to raise_error(ArgumentError, /No segment with id/)
+      expect { media_transcript.set_segment_text(replaced_id, 'Goodbye') }.to raise_error(ActiveRecord::RecordNotFound, /No segment with id/)
     end
 
     it 'raises for blank text' do

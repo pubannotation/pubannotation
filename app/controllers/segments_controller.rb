@@ -22,6 +22,9 @@ class SegmentsController < ApplicationController
     end
 
     redirect_to doc_segments_path(@doc), notice: 'Segment text was successfully updated.'
+  rescue ActiveRecord::RecordNotFound
+    # Replaced (e.g. split) by another request after set_segment found it, so gone once locked and reloaded.
+    render_status_error(:not_found)
   rescue ArgumentError, ActiveRecord::RecordInvalid => e
     # Reopens the dialog with the entered text and the error, for it to be fixed and saved again.
     @error = e.message
