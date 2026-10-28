@@ -77,7 +77,7 @@ class MediaTranscript < ApplicationRecord
   # these ones, which may have been reloaded since `segment` was loaded (e.g. as the transcript was locked),
   # so fails for one since replaced, e.g. by #replace_segments, which gives the new ones new ids.
   def set_segment_text(segment, new_text)
-    current = current_segments.find { |current_segment| current_segment == segment }
+    current = current_segments.find { it == segment }
     raise ActiveRecord::RecordNotFound, "No segment with id #{segment.id}." unless current
 
     # Checked once stripped, since strip also removes chars blank? doesn't count as blank, e.g. "\0".
