@@ -1,6 +1,6 @@
 # Lets a Doc registered by hand with an audio/video Medium be highlighted and sought on its detail page
 # like a transcribed Doc: gives it a MediaTranscript and, in its project, a Block for its speech (see
-# MediaDocCreationService.create_segment_blocks!). With no timing to go on, the whole body becomes a single
+# MediaTranscript#create_segment_blocks!). With no timing to go on, the whole body becomes a single
 # segment spanning the media's full duration.
 class ManualDocPlaybackService
   # `doc` is expected to be already added to `project`.
@@ -17,6 +17,6 @@ class ManualDocPlaybackService
       segments: [Segment.new(sort_order: 0, text: doc.body, start_ms: 0, end_ms: medium.duration_ms)]
     )
 
-    MediaDocCreationService.create_segment_blocks!(project, doc, media_transcript)
+    media_transcript.create_segment_blocks!(project)
   end
 end

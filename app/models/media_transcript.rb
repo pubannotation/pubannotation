@@ -1,4 +1,8 @@
 class MediaTranscript < ApplicationRecord
+  # Marks a Block as corresponding to a spoken segment of the media, kept apart from the denotations
+  # of real semantic annotations. Its span is what selects it for playback-position highlighting.
+  SEGMENT_BLOCK_OBJ = 'AudioSegment'.freeze
+
   # `medium` is stored directly (not via doc/media_transcription_task) since both associations
   # are optional: a Doc never exists for a no-speech result, and MediaTranscriptionTask can be
   # cleaned up independently (dependent: :nullify). A Doc, once linked, is not severable the
@@ -65,6 +69,35 @@ class MediaTranscript < ApplicationRecord
 
       { begin: char_begin, end: char_end, start_ms: segment.start_ms }
     end
+  end
+
+  # Creates, in `project`, a Block for each speech segment on its doc, which is expected to be already added
+  # to `project`.
+  #
+  # insert_all (not Block.create! in a loop) so it's one INSERT, but that skips after_create's
+  # counter callbacks — replicated manually below instead. hids are numbered locally rather than via
+  # Block.new_id, which uses process-shared state.
+  def create_segment_blocks!(project)
+    spans = speech_segment_spans
+    return if spans.empty?
+
+    records = spans.map.with_index(1) do |span, index|
+      {
+        hid: "#{Block::HID_PREFIX}#{index}",
+        begin: span[:begin],
+        end: span[:end],
+        obj: SEGMENT_BLOCK_OBJ,
+        project_id: project.id,
+        doc_id: doc.id
+      }
+    end
+
+    Block.insert_all(records, record_timestamps: true)
+
+    ProjectDoc.find_by!(project:, doc:).increment!(:blocks_num, records.size)
+    doc.increment!(:blocks_num, records.size)
+    project.increment!(:blocks_num, records.size)
+    project.update_updated_at
   end
 
   # generation_model as AudioTranscriptionService.generation_model records it, e.g. "whisper:ggml-base.en".
