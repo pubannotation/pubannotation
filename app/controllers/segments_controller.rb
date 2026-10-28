@@ -22,9 +22,6 @@ class SegmentsController < ApplicationController
     end
 
     redirect_to doc_segments_path(@doc), notice: 'Segment text was successfully updated.'
-  rescue ActiveRecord::RecordNotFound
-    # Replaced (e.g. split) by another request after set_segment found it, so gone once locked and reloaded.
-    render_status_error(:not_found)
   rescue ArgumentError, ActiveRecord::RecordInvalid => e
     # Reopens the dialog with the entered text and the error, for it to be fixed and saved again.
     @error = e.message
@@ -53,9 +50,7 @@ class SegmentsController < ApplicationController
   # By id rather than position, so a segment deleted or split since the page was loaded isn't mistaken for
   # another one now at its position.
   def set_segment
-    @segment = @media_transcript.segments.find_by(id: params[:id])
-    return render_status_error(:not_found) unless @segment
-
+    @segment = @media_transcript.segments.find(params[:id])
     @index = @media_transcript.segments.index(@segment)
   end
 end
