@@ -27,6 +27,11 @@ class Medium < ApplicationRecord
     audio? || video?
   end
 
+  # The playing time of its audio/video file, in milliseconds.
+  def duration_ms
+    file.open { |opened| (AudioAnalyzer.new(opened.path).duration * 1000).round }
+  end
+
   private
 
   def set_media_type_from_content_type

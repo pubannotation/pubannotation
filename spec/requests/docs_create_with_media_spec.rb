@@ -64,6 +64,29 @@ RSpec.describe 'POST /docs.json', type: :request do
     end
     let(:media_params) { { media: { sourcedb: medium.sourcedb, sourceid: medium.sourceid } } }
 
+    it 'adds the doc to the project with an AudioSegment block spanning the body' do
+      allow(AudioAnalyzer).to receive(:new).and_return(instance_double(AudioAnalyzer, duration: 4.98))
+
+      post '/docs.json', params: params.merge(media_params), headers: headers
+
+      expect(response).to have_http_status(:created)
+      doc = Doc.last
+      expect(doc.blocks.pluck(:project_id, :hid, :begin, :end, :obj))
+        .to eq([[project.id, 'B1', 0, 'doctor findings'.length, 'AudioSegment']])
+      expect(doc.denotations).to be_empty
+      expect(project.reload.blocks_num).to eq(1)
+      expect(doc.reload.blocks_num).to eq(1)
+    end
+
+    it 'creates none of the doc, transcript or block when saving the block fails' do
+      allow(AudioAnalyzer).to receive(:new).and_return(instance_double(AudioAnalyzer, duration: 4.98))
+      allow(Block).to receive(:insert_all).and_raise(ActiveRecord::StatementInvalid, 'insert failed')
+
+      counts = -> { [Doc.count, MediaTranscript.count, Block.count] }
+
+      expect { post '/docs.json', params: params.merge(media_params), headers: headers }.not_to change(&counts)
+    end
+
     it "creates a media_transcript with the body as one segment spanning the media's duration" do
       allow(AudioAnalyzer).to receive(:new).and_return(instance_double(AudioAnalyzer, duration: 4.98))
 

@@ -84,6 +84,17 @@ RSpec.describe Medium, type: :model do
     end
   end
 
+  describe '#duration_ms' do
+    it 'is the playing time of its file, rounded to milliseconds' do
+      medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
+      medium.file.attach(io: File.open(Rails.root.join('spec', 'fixtures', 'files', 'test_audio.mp3')),
+                         filename: 'test_audio.mp3', content_type: 'audio/mpeg')
+      allow(AudioAnalyzer).to receive(:new).with(a_string_ending_with('.mp3')).and_return(instance_double(AudioAnalyzer, duration: 4.9876))
+
+      expect(medium.duration_ms).to eq(4_988)
+    end
+  end
+
   describe 'ActiveStorage' do
     it 'has one attached file' do
       expect(Medium.new).to respond_to(:file)
