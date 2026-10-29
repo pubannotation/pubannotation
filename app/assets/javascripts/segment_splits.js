@@ -1,67 +1,68 @@
 // Loaded with defer only by segment_splits/edit, so the DOM is already parsed when this runs.
 (() => {
-	const mediaPlayer = document.getElementById('media-player');
-	const container = document.getElementById('split-segments');
-	const splitPoint = document.getElementById('split-point');
-	const splitHere = document.getElementById('split-here');
-	const splitError = document.getElementById('split-error');
-	const playbackTime = document.getElementById('playback-time');
-
 	// The segments as split on this page so far; not saved yet.
-	const segments = JSON.parse(container.dataset.segments);
+	const segments = JSON.parse(document.getElementById('split-segments').dataset.segments);
 	// Where to split: the index of the segment and the character offset into its text.
 	let point = null;
 
 	render();
 
-	// Shows the playback time Split here would split at, kept up to date while playing and seeking.
+	// Kept up to date while playing and seeking.
 	for (const event of ['timeupdate', 'seeked', 'loadedmetadata']) {
-		mediaPlayer.addEventListener(event, () => {
-			const ms = Math.round(mediaPlayer.currentTime * 1000);
-			playbackTime.textContent = `${formatTime(ms)} (${ms} ms)`;
-		});
+		document.getElementById('media-player').addEventListener(event, showPlaybackTime);
 	}
 
-	splitHere.addEventListener('click', () => {
-		const segment = segments[point.index];
-		const ms = Math.round(mediaPlayer.currentTime * 1000);
+	document.getElementById('split-here').addEventListener('click', splitAtPoint);
 
-		if (point.offset <= 0 || point.offset >= segment.text.length) {
-			return showError('Point inside the text, not at its start or end.');
-		}
-		if (ms <= segment.start_ms || ms >= segment.end_ms) {
-			return showError(`Play the media to between ${formatTime(segment.start_ms)} and ${formatTime(segment.end_ms)}.`);
-		}
+	// Splits the pointed segment at the playback time, or shows why it can't.
+	function splitAtPoint() {
+		const error = splitSegment(point.index, point.offset, currentMs());
+		if (error) return showError(error);
 
-		segments.splice(point.index, 1,
-			{ ...segment, text: segment.text.slice(0, point.offset), end_ms: ms },
-			{ ...segment, text: segment.text.slice(point.offset), start_ms: ms });
 		point = null;
 		render();
-	});
+	}
 
-	// One row per segment: its times and its text, which can be clicked to point where to split it.
+	// Splits the segment at `index` into two at `offset` into its text and at `ms`, the earlier one ending and
+	// the later one starting there. Returns why it can't be split, if it can't.
+	function splitSegment(index, offset, ms) {
+		const segment = segments[index];
+
+		if (offset <= 0 || offset >= segment.text.length) {
+			return 'Point inside the text, not at its start or end.';
+		}
+		if (ms <= segment.start_ms || ms >= segment.end_ms) {
+			return `Play the media to between ${formatTime(segment.start_ms)} and ${formatTime(segment.end_ms)}.`;
+		}
+
+		segments.splice(index, 1,
+			{ ...segment, text: segment.text.slice(0, offset), end_ms: ms },
+			{ ...segment, text: segment.text.slice(offset), start_ms: ms });
+	}
+
 	function render() {
-		container.replaceChildren(...segments.map((segment, index) => {
-			const row = document.createElement('div');
-			row.className = 'split-segment';
-
-			const time = document.createElement('span');
-			time.className = 'split-segment-time';
-			time.textContent = `${formatTime(segment.start_ms)} - ${formatTime(segment.end_ms)}`;
-
-			const text = document.createElement('span');
-			text.className = 'split-segment-text';
-			text.textContent = segment.text;
-			text.addEventListener('click', () => pointAt(text, index));
-
-			row.append(time, ' ', text);
-			return row;
-		}));
-
-		splitHere.disabled = !point;
-		splitPoint.textContent = "Click in a segment's text to point where to split it.";
+		document.getElementById('split-segments').replaceChildren(...segments.map(segmentRow));
+		showPoint();
 		showError('');
+	}
+
+	// A segment's times and its text, which can be clicked to point where to split it.
+	function segmentRow(segment, index) {
+		const time = element('span', 'split-segment-time');
+		time.textContent = `${formatTime(segment.start_ms)} - ${formatTime(segment.end_ms)}`;
+
+		const text = element('span', 'split-segment-text');
+		// With a mark where it's pointed to be split, if it is.
+		if (point?.index === index) {
+			text.append(segment.text.slice(0, point.offset), element('span', 'split-mark'), segment.text.slice(point.offset));
+		} else {
+			text.textContent = segment.text;
+		}
+		text.addEventListener('click', () => pointAt(text, index));
+
+		const row = element('div', 'split-segment');
+		row.append(time, ' ', text);
+		return row;
 	}
 
 	// Points where to split a segment: the character clicked in its text.
@@ -69,29 +70,45 @@
 		const selection = document.getSelection();
 		if (!selection.isCollapsed || !text.contains(selection.anchorNode)) return;
 
-		// Counted from the start of the segment's text, which a mark from an earlier click splits up.
-		const range = document.createRange();
-		range.setStart(text, 0);
-		range.setEnd(selection.anchorNode, selection.anchorOffset);
-		const offset = range.toString().length;
-
+		point = { index, offset: offsetInText(text, selection.anchorNode, selection.anchorOffset) };
 		render();
-		point = { index, offset };
-		splitHere.disabled = false;
-		markPoint(container.children[index].querySelector('.split-segment-text'), offset);
-		splitPoint.textContent = `Segment #${index}, before character ${offset}`;
 	}
 
-	// Shows the pointed position as a mark between the characters on either side of it.
-	function markPoint(text, offset) {
-		const characters = text.textContent;
-		const mark = document.createElement('span');
-		mark.className = 'split-mark';
-		text.replaceChildren(characters.slice(0, offset), mark, characters.slice(offset));
+	// Counted from the start of the segment's text, which a mark from an earlier click splits up.
+	function offsetInText(text, node, offset) {
+		const range = document.createRange();
+		range.setStart(text, 0);
+		range.setEnd(node, offset);
+		return range.toString().length;
+	}
+
+	// Where it's pointed to split, if it is, enabling Split here.
+	function showPoint() {
+		document.getElementById('split-here').disabled = !point;
+		document.getElementById('split-point').textContent = point
+			? `Segment #${point.index}, before character ${point.offset}`
+			: "Click in a segment's text to point where to split it.";
+	}
+
+	// The playback time Split here would split at.
+	function showPlaybackTime() {
+		const ms = currentMs();
+		document.getElementById('playback-time').textContent = `${formatTime(ms)} (${ms} ms)`;
 	}
 
 	function showError(message) {
-		splitError.textContent = message;
+		document.getElementById('split-error').textContent = message;
+	}
+
+	function element(tagName, className) {
+		const created = document.createElement(tagName);
+		created.className = className;
+		return created;
+	}
+
+	// The playback time in ms.
+	function currentMs() {
+		return Math.round(document.getElementById('media-player').currentTime * 1000);
 	}
 
 	// Playback time in ms as "m:ss.mmm", as SegmentsHelper#segment_time formats it.
