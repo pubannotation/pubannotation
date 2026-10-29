@@ -1,10 +1,12 @@
 # frozen_string_literal: true
 
-class DocCountsUpdater
-  class << self
+module Doc::AnnotationCounts
+  extend ActiveSupport::Concern
+
+  class_methods do
     # Shared method to bulk update annotation counts for docs table
     # @param doc_ids [Array<Integer>, nil] Optional array of doc IDs to update. If nil, updates all docs.
-    def update(doc_ids = nil)
+    def bulk_update_docs_counts(doc_ids: nil)
       return if doc_ids&.empty?
 
       if doc_ids.nil?
@@ -24,7 +26,7 @@ class DocCountsUpdater
       end
     end
 
-    def increment(doc_deltas)
+    def bulk_increment_counts_for_batch(doc_deltas:)
       # Bulk update docs counters for a batch of documents
       # doc_deltas = { doc_id => {denotations: X, blocks: Y, relations: Z}, ... }
       #

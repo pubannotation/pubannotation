@@ -9,7 +9,7 @@ RSpec.describe Doc, '.bulk_update_docs_counts - scaling paths', type: :model do
 			docs = FactoryBot.create_list(:doc, 10)
 			docs.each { |doc| project.docs << doc }
 
-			expect(DocCountsUpdater).to receive(:bulk_update_with_in_clause).once.and_call_original
+			expect(Doc).to receive(:bulk_update_with_in_clause).once.and_call_original
 			Doc.bulk_update_docs_counts(doc_ids: docs.map(&:id))
 		end
 
@@ -18,7 +18,7 @@ RSpec.describe Doc, '.bulk_update_docs_counts - scaling paths', type: :model do
 			doc_ids = (1..6000).to_a
 
 			# Should call bulk_update_with_in_clause twice: once for first 5000, once for remaining 1000
-			expect(DocCountsUpdater).to receive(:bulk_update_with_in_clause).twice
+			expect(Doc).to receive(:bulk_update_with_in_clause).twice
 
 			# Don't actually execute the SQL since we don't have 6000 real docs
 			allow(ActiveRecord::Base.connection).to receive(:update).and_return(0)
@@ -30,7 +30,7 @@ RSpec.describe Doc, '.bulk_update_docs_counts - scaling paths', type: :model do
 			# Create a large array to trigger temp table approach
 			doc_ids = (1..150000).to_a
 
-			expect(DocCountsUpdater).to receive(:bulk_update_with_temp_table).once
+			expect(Doc).to receive(:bulk_update_with_temp_table).once
 
 			# Mock the temp table operations
 			allow(ActiveRecord::Base.connection).to receive(:execute)
@@ -54,7 +54,7 @@ RSpec.describe Doc, '.bulk_update_docs_counts - scaling paths', type: :model do
 
 			# Simulate large batch by directly calling temp table method
 			# (using small number for test performance)
-			DocCountsUpdater.send(:bulk_update_with_temp_table, docs.map(&:id))
+			Doc.send(:bulk_update_with_temp_table, docs.map(&:id))
 
 			# Verify counts were corrected
 			docs.each do |doc|

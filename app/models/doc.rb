@@ -1,4 +1,5 @@
 class Doc < ActiveRecord::Base
+	include Doc::AnnotationCounts
 	include ElasticsearchIndexable
 	include TermSearchConcern
 	include PaginateConcern
@@ -856,14 +857,6 @@ class Doc < ActiveRecord::Base
 			bulk_update_docs_counts
 			ProjectDoc.bulk_update_counts
 		end
-	end
-
-	def self.bulk_update_docs_counts(doc_ids: nil)
-		DocCountsUpdater.update(doc_ids)
-	end
-
-	def self.bulk_increment_counts_for_batch(doc_deltas:)
-		DocCountsUpdater.increment(doc_deltas)
 	end
 
 	def rdfizer_spans
