@@ -141,6 +141,17 @@ class MediaTranscript < ApplicationRecord
     current.line_break_after = line_break_after
   end
 
+  # Changes `segment` by `attributes`, its text and/or whether a line break follows it, and saves it, rebuilding
+  # text and the doc's body. Reloads and locks itself first, so a concurrent edit of another segment isn't
+  # overwritten.
+  def update_segment!(segment, attributes)
+    with_lock do
+      set_segment_text(segment, attributes[:text]) if attributes.key?(:text)
+      set_segment_line_break_after(segment, attributes[:line_break_after]) if attributes.key?(:line_break_after)
+      save!
+    end
+  end
+
   # Replaces the whole text, merging the segments, if any, into one spanning them all.
   def replace_text!(new_text)
     # An image caption has no segments.

@@ -474,6 +474,38 @@ RSpec.describe MediaTranscript, type: :model do
     end
   end
 
+  describe '#update_segment!' do
+    let(:medium) { create(:medium, media_type: :audio, content_type: 'audio/mpeg') }
+    let(:doc) { create(:doc, body: 'Hello world', medium:) }
+    let!(:media_transcript) { create(:media_transcript, medium:, doc:, text: 'Hello world') }
+
+    it "saves the segment's text, rebuilding the text and the doc's body" do
+      media_transcript.update_segment!(media_transcript.segments.last, { text: 'there' })
+
+      expect(media_transcript.reload.segments.map(&:text)).to eq(%w[Hello there])
+      expect(doc.reload.body).to eq('Hello there')
+    end
+
+    it "saves whether a line break follows the segment, rebuilding the text and the doc's body" do
+      media_transcript.update_segment!(media_transcript.segments.first, { line_break_after: true })
+
+      expect(media_transcript.reload.segments.first.line_break_after).to be(true)
+      expect(doc.reload.body).to eq("Hello\nworld")
+    end
+
+    it 'locks itself while changing the segment' do
+      expect(media_transcript).to receive(:with_lock).and_call_original
+
+      media_transcript.update_segment!(media_transcript.segments.last, { text: 'there' })
+    end
+
+    it 'saves nothing when the change is rejected' do
+      expect { media_transcript.update_segment!(media_transcript.segments.last, { text: ' ' }) }
+        .to raise_error(ArgumentError, 'Text is missing.')
+      expect(doc.reload.body).to eq('Hello world')
+    end
+  end
+
   describe '#replace_text!' do
     it 'merges the segments into one spanning them all' do
       medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
