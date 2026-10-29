@@ -4,6 +4,46 @@ module Doc::Search
   extend ActiveSupport::Concern
 
   class_methods do
+    def search_by_active_record(page, per, project = nil, sourcedb = nil,
+                              sort_key = nil, sort_direction = nil, is_randomize = false)
+      docs = all
+      docs = docs.joins(:projects).where(projects: { id: project.id }) if project.present?
+      docs = docs.where(sourcedb: sourcedb) if sourcedb.present?
+
+      sort_order = if sort_key.present? && sort_direction.present?
+                     "#{sort_key} #{sort_direction}"
+                   else
+                     default_sort_order_for project
+                   end
+      sort_order = [sort_order, Arel.sql('random()')] if is_randomize
+
+      docs.order(sort_order).simple_paginate(page, per)
+    end
+
+    def search_by_term(user, base_project_name, terms, predicates, projects, page, per)
+      base_project = Project.accessible(user).find_by!(name: base_project_name) if base_project_name.present?
+      docs = base_project.present? ? base_project.docs : Doc.all
+
+      if terms.present?
+        docs = docs.with_terms terms,
+                               user,
+                               predicates,
+                               projects
+      end
+
+      docs.select('sourcedb', 'sourceid')
+          .simple_paginate(page, per)
+          .map(&:to_list_hash)
+    end
+
+    # default sort order
+    #DefaultSort = [['sourceid', 'ASC']]
+    def default_sort_order_for(project)
+      return "sourceid ASC" if project&.small?
+
+      ''
+    end
+
     # Search documents using Elasticsearch 8.x
     # This method signature is kept for backward compatibility with existing code
     #

@@ -94,38 +94,6 @@ class Doc < ActiveRecord::Base
 		where('sourcedb LIKE ?', "%#{UserSourcedbSeparator}#{username}")
 	}
 
-	def self.search_by_active_record(page, per, project = nil, sourcedb = nil,
-																	 sort_key = nil, sort_direction = nil, is_randomize = false)
-		docs = all
-		docs = docs.joins(:projects).where(projects: { id: project.id }) if project.present?
-		docs = docs.where(sourcedb: sourcedb) if sourcedb.present?
-
-		sort_order = if sort_key.present? && sort_direction.present?
-									 "#{sort_key} #{sort_direction}"
-								 else
-									 default_sort_order_for project
-								 end
-		sort_order = [sort_order, Arel.sql('random()')] if is_randomize
-
-		docs.order(sort_order).simple_paginate(page, per)
-	end
-
-	def self.search_by_term(user, base_project_name, terms, predicates, projects, page, per)
-		base_project = Project.accessible(user).find_by!(name: base_project_name) if base_project_name.present?
-		docs = base_project.present? ? base_project.docs : Doc.all
-
-		if terms.present?
-			docs = docs.with_terms terms,
-														 user,
-														 predicates,
-														 projects
-		end
-
-		docs.select('sourcedb', 'sourceid')
-				.simple_paginate(page, per)
-				.map(&:to_list_hash)
-	end
-
 	def increment_docs_projects_counter(project)
 		Doc.increment_counter(:projects_num, self.id)
 	end
@@ -147,25 +115,12 @@ class Doc < ActiveRecord::Base
 		"#{sourcedb}-#{sourceid}"
 	end
 
-	def self.parse_filename(_filename)
-		parts = _filename.split('-')
-		raise ArgumentError, "The filename of a txt file has to be in the form of 'sourcedb-sourceid': #{_filename}" unless parts.length > 1
-		sourceid = parts.pop
-		sourcedb = parts.join('-')
-		[sourcedb, sourceid]
-	end
-
 	def self.get_doc(docspec)
 		if docspec[:sourcedb].present? && docspec[:sourceid].present?
 			Doc.find_by_sourcedb_and_sourceid(docspec[:sourcedb], docspec[:sourceid])
 		else
 			nil
 		end
-	end
-
-	# returns relations count which belongs to project and doc
-	def project_relations_num(project_id)
-		ActiveRecord::Base.connection.select_value "SELECT relations_num FROM project_docs WHERE project_id=#{project_id} AND doc_id=#{id}"
 	end
 
 	def get_project_count(span = nil)
@@ -201,57 +156,6 @@ class Doc < ActiveRecord::Base
 		attribute_hids = get_attribute_hids(project_id, base_ids)
 
 		denotation_hids + block_hids + relation_hids + attribute_hids
-	end
-
-	def get_denotations_count(project_id = nil, span = nil)
-		if project_id.nil? && span.nil?
-			denotations_num
-		elsif span.nil?
-			ActiveRecord::Base.connection.select_value <<~SQL.squish
-				SELECT denotations_num
-				FROM project_docs
-				WHERE project_id=#{project_id}
-				AND doc_id=#{id}
-			SQL
-		else
-			denotations.in_project_and_span(project_id, span).count
-		end
-	end
-
-	def get_blocks_count(project_id = nil, span = nil)
-		if project_id.nil? && span.nil?
-			blocks_num
-		elsif span.nil?
-			ActiveRecord::Base.connection.select_value <<~SQL.squish
-				SELECT blocks_num
-				FROM project_docs
-				WHERE project_id=#{project_id}
-				AND doc_id=#{id}
-			SQL
-		else
-			blocks.in_project_and_span(project_id, span).count
-		end
-	end
-
-	def get_relations_count(project_id = nil, span = nil)
-		if project_id.nil? && span.nil?
-			relations_num
-		elsif span.nil?
-			ActiveRecord::Base.connection.select_value <<~SQL.squish
-				SELECT relations_num
-				FROM project_docs
-				WHERE project_id=#{project_id}
-				AND doc_id=#{id}
-			SQL
-		else
-			scope = relations
-				.joins("INNER JOIN denotations AS subj_d ON subj_d.id = relations.subj_id AND relations.subj_type = 'Denotation'")
-				.joins("INNER JOIN denotations AS obj_d  ON obj_d.id  = relations.obj_id  AND relations.obj_type  = 'Denotation'")
-				.where('subj_d.begin >= :b AND subj_d."end" <= :e', b: span[:begin], e: span[:end])
-				.where('obj_d.begin  >= :b AND obj_d."end"  <= :e', b: span[:begin], e: span[:end])
-			scope = scope.where(project_id: project_id) if project_id
-			scope.count
-		end
 	end
 
 	# the first argument, project_id, may be a single id or an array of ids
@@ -290,54 +194,7 @@ class Doc < ActiveRecord::Base
 		sourcedb.include?(':') && sourcedb.include?("#{UserSourcedbSeparator}#{current_user.username}")
 	end
 
-	def self.hdoc_normalize!(hdoc, current_user, no_personalize = false)
-		raise SecurityError, "You have to be logged in to create a document." unless current_user.present?
-
-		# body = text
-		hdoc[:body] ||= hdoc[:text] || raise(ArgumentError, "Text is missing.")
-		hdoc.delete(:text) if hdoc[:text].present?
-
-		# sourcedb, to be personalized
-		if no_personalize
-			raise ArgumentError, "For admin, the 'sourcedb' cannot be automatically generated." unless hdoc[:sourcedb].present?
-		else
-			# personalize the sourcedb unless no_personalize
-			if hdoc[:sourcedb].present?
-				if hdoc[:sourcedb].include?(Doc::UserSourcedbSeparator)
-					parts = hdoc[:sourcedb].split(Doc::UserSourcedbSeparator)
-					raise ArgumentError, "'#{Doc::UserSourcedbSeparator}' is a special character reserved for separation of the username from a personal sourcedb name." unless parts.length == 2
-					sourcedb, username = parts
-					raise ArgumentError, "This document belongs to '#{username}'." unless username == current_user.username
-				else
-					hdoc[:sourcedb] += UserSourcedbSeparator + current_user.username
-				end
-			else
-				hdoc[:sourcedb] = UserSourcedbSeparator + current_user.username
-			end
-		end
-
-		# sourceid control
-		unless hdoc[:sourceid].present?
-			last_id = Doc.where(sourcedb: hdoc[:sourcedb]).pluck(:sourceid).max_by{|i| i.to_i}
-			hdoc[:sourceid] = last_id.nil? ? '1' : last_id.next
-		end
-
-		hdoc
-	end
-
 	def self.delete_orphan_docs_of_user_sourcedb
 		d_num = ActiveRecord::Base.connection.delete("DELETE FROM docs WHERE sourcedb LIKE '%#{Doc::UserSourcedbSeparator}%' AND NOT EXISTS (SELECT 1 FROM project_docs WHERE project_docs.doc_id = docs.id)")
 	end
-
-	private
-
-	# default sort order
-	#DefaultSort = [['sourceid', 'ASC']]
-	def self.default_sort_order_for(project)
-		return "sourceid ASC" if project&.small?
-
-		''
-	end
-
-
 end
