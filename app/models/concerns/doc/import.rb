@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
-class DocImporter
-  class << self
+module Doc::Import
+  extend ActiveSupport::Concern
+
+  class_methods do
     def hdoc_valid?(hdoc)
       return false unless hdoc[:text].present?
       return false unless hdoc[:sourcedb].present?
@@ -10,7 +12,7 @@ class DocImporter
     end
 
     # Returns [documents, messages].
-    def fetch(sourcedb, sourceids)
+    def sequence_docs(sourcedb, sourceids)
       raise ArgumentError, "sourcedb is empty" unless sourcedb.present?
       raise ArgumentError, "sourceids is empty" unless sourceids.present?
 
@@ -33,7 +35,7 @@ class DocImporter
       [docs, messages]
     end
 
-    def store!(hdoc)
+    def store_hdoc!(hdoc)
       hdoc[:text] = hdoc[:body] if !hdoc[:text] && hdoc[:body]
 
       doc = nil
@@ -55,9 +57,9 @@ class DocImporter
       doc
     end
 
-    def store(hdoc)
+    def store_hdoc(hdoc)
       begin
-        store!(hdoc)
+        store_hdoc!(hdoc)
       rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotUnique => e
         if e.message.include?("already been taken") || e.message.include?("duplicate") || e.message.include?("unique")
           # Document was created by another job (race condition) - find and return it
@@ -68,12 +70,12 @@ class DocImporter
       end
     end
 
-    def store_many(hdocs)
+    def store_hdocs(hdocs)
       docs_saved = []
       messages = []
 
       hdocs.each do |hdoc|
-        doc = store(hdoc)
+        doc = store_hdoc(hdoc)
         docs_saved << doc if doc  # Only add if doc was created/found
       rescue => e
         messages << {sourcedb:hdoc[:sourcedb], sourceid:[hdoc[:sourceid]], body:e.message}
@@ -82,15 +84,15 @@ class DocImporter
       [docs_saved, messages]
     end
 
-    def import!(sourcedb, sourceid)
-      docs, messages = fetch(sourcedb, [sourceid])
+    def sequence_and_store_doc!(sourcedb, sourceid)
+      docs, messages = sequence_docs(sourcedb, [sourceid])
       raise messages.first[:body] unless docs.present?
-      store!(docs.first)
+      store_hdoc!(docs.first)
     end
 
-    def import_many(sourcedb, sourceids)
-      docs, messages = fetch(sourcedb, sourceids)
-      docs_saved, messages2 = store_many(docs)
+    def sequence_and_store_docs(sourcedb, sourceids)
+      docs, messages = sequence_docs(sourcedb, sourceids)
+      docs_saved, messages2 = store_hdocs(docs)
       [docs_saved, messages + messages2]
     end
   end

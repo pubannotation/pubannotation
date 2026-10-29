@@ -1,5 +1,6 @@
 class Doc < ActiveRecord::Base
 	include Doc::AnnotationCounts
+	include Doc::Import
 	include ElasticsearchIndexable
 	include TermSearchConcern
 	include PaginateConcern
@@ -244,14 +245,6 @@ class Doc < ActiveRecord::Base
 		!self.get_doc(docspec).nil?
 	end
 
-	def self.hdoc_valid?(hdoc)
-		DocImporter.hdoc_valid?(hdoc)
-	end
-
-	def self.sequence_docs(sourcedb, sourceids)
-		DocImporter.fetch(sourcedb, sourceids)
-	end
-
 	def store_divisions(hdivisions)
 		return [] if hdivisions.nil?
 
@@ -290,26 +283,6 @@ class Doc < ActiveRecord::Base
 		raise "Failed to save the typesettings." unless r.failed_instances.empty?
 
 		typesettings
-	end
-
-	def self.store_hdoc!(hdoc)
-		DocImporter.store!(hdoc)
-	end
-
-	def self.store_hdoc(hdoc)
-		DocImporter.store(hdoc)
-	end
-
-	def self.store_hdocs(hdocs)
-		DocImporter.store_many(hdocs)
-	end
-
-	def self.sequence_and_store_doc!(sourcedb, sourceid)
-		DocImporter.import!(sourcedb, sourceid)
-	end
-
-	def self.sequence_and_store_docs(sourcedb, sourceids)
-		DocImporter.import_many(sourcedb, sourceids)
 	end
 
 	def revise(new_hdoc)
