@@ -271,37 +271,6 @@ class Doc < ActiveRecord::Base
 		attrivutes.in_project(project_id).among_entities(base_ids).pluck(:hid)
 	end
 
-	# ToDo: del me in favor of the identical one in the ProjectDoc class
-	def hannotations(projects, span, context_size,
-									 terms: nil, predicates: nil,
-									 is_sort: false, is_full: false, is_bag_denotations: false)
-		annotations_hash = if projects.present?
-			AnnotationsHash.new self,
-								projects,
-								span,
-								context_size,
-								terms,
-								predicates,
-								is_sort,
-								is_full,
-								is_bag_denotations,
-								projects.respond_to?(:each) # When project is single, return annotations without track.
-		else
-			AnnotationsHash.new self,
-								nil,
-								span,
-								context_size,
-								terms,
-								predicates,
-								is_sort,
-								is_full,
-								is_bag_denotations,
-								true
-		end
-
-		annotations_hash.to_hash
-	end
-
 	def updatable_for?(current_user)
 		if current_user.present?
 			(current_user.root? || created_by?(current_user))

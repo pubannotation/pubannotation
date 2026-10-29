@@ -57,4 +57,58 @@ RSpec.describe Doc, 'serialization', type: :model do
     expect(Doc.hash_to_tsv([])).to be_nil
     expect(Doc.hash_to_tsv(nil)).to be_nil
   end
+
+  describe '#hannotations' do
+    let(:doc) { super().tap(&:save!) }
+    let(:project) { create(:project) }
+    let(:other_project) { create(:project) }
+    let!(:denotation) { create(:denotation, doc: doc, project: project, begin: 3, end: 5) }
+    let!(:other_denotation) { create(:denotation, doc: doc, project: other_project, begin: 6, end: 8) }
+
+    before do
+      create(:project_doc, doc: doc, project: project)
+      create(:project_doc, doc: doc, project: other_project)
+    end
+
+    it 'merges a single project annotations into the document without tracks' do
+      hash = doc.hannotations(project, nil, nil)
+
+      expect(hash).to include(text: doc.body, target: target, project: project.name, denotations: [denotation.as_json])
+      expect(hash).not_to have_key(:tracks)
+    end
+
+    it 'exports only the selected projects as tracks when given a collection' do
+      hash = doc.hannotations([project], nil, nil)
+
+      expect(hash).to include(text: doc.body, target: target)
+      expect(hash[:tracks]).to contain_exactly(include(project: project.name, denotations: [denotation.as_json]))
+      expect(hash).not_to have_key(:denotations)
+    end
+
+    it 'exports all project tracks when no project is specified' do
+      hash = doc.hannotations(nil, nil, nil)
+
+      expect(hash[:tracks]).to contain_exactly(
+        include(project: project.name, denotations: [denotation.as_json]),
+        include(project: other_project.name, denotations: [other_denotation.as_json])
+      )
+    end
+
+    it 'exports text and annotation offsets relative to the span and context' do
+      hash = doc.hannotations(project, { begin: 3, end: 6 }, 1, is_sort: true)
+
+      expect(hash).to include(
+        text: '23456',
+        denotations: [{ id: denotation.hid, obj: denotation.obj, span: { begin: 1, end: 3 } }]
+      )
+    end
+
+    it 'retains empty project tracks only when full output is requested' do
+      empty_project = create(:project)
+      create(:project_doc, doc: doc, project: empty_project)
+
+      expect(doc.hannotations([empty_project], nil, nil)[:tracks]).to eq([])
+      expect(doc.hannotations([empty_project], nil, nil, is_full: true)[:tracks]).to contain_exactly(include(project: empty_project.name))
+    end
+  end
 end

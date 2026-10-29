@@ -31,6 +31,36 @@ module Doc::Serialization
     }
   end
 
+  def hannotations(projects, span, context_size,
+                   terms: nil, predicates: nil,
+                   is_sort: false, is_full: false, is_bag_denotations: false)
+    annotations_hash = if projects.present?
+                         AnnotationsHash.new self,
+                           projects,
+                           span,
+                           context_size,
+                           terms,
+                           predicates,
+                           is_sort,
+                           is_full,
+                           is_bag_denotations,
+                           projects.respond_to?(:each) # When project is single, return annotations without track.
+                       else
+                         AnnotationsHash.new self,
+                           nil,
+                           span,
+                           context_size,
+                           terms,
+                           predicates,
+                           is_sort,
+                           is_full,
+                           is_bag_denotations,
+                           true
+                       end
+
+    annotations_hash.to_hash
+  end
+
   class_methods do
     def hash_to_tsv(docs)
       return nil unless docs.present?
