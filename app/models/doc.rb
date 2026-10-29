@@ -1,51 +1,12 @@
 class Doc < ActiveRecord::Base
 	include Doc::AnnotationCounts
 	include Doc::Import
+	include Doc::Search
 	include ElasticsearchIndexable
 	include TermSearchConcern
 	include PaginateConcern
 
 	SOURCEDBS = ['PubMed', 'PMC', 'GrayAnatomy']
-
-	# Search documents using Elasticsearch 8.x
-	# This method signature is kept for backward compatibility with existing code
-	#
-	# @param keywords [String] Search query
-	# @param project [Project, nil] Filter by project
-	# @param sourcedb [String, nil] Filter by sourcedb
-	# @param page [Integer] Page number (1-based)
-	# @param per [Integer] Results per page
-	# @param semantic [Boolean] Use hybrid semantic search
-	# @return [SearchResults] Wrapped search results
-	def self.search_by_elasticsearch(keywords, project, sourcedb, page, per, semantic: false)
-		return SearchResults.new({ 'hits' => { 'hits' => [], 'total' => 0 } }, self, page: page, per: per) if keywords.blank?
-
-		if semantic
-			hybrid_search(keywords, project: project, sourcedb: sourcedb, page: page, per: per)
-		else
-			query = build_search_query(keywords, project, sourcedb)
-
-			response = ELASTICSEARCH_CLIENT.search(
-				index: ELASTICSEARCH_INDEX_ALIAS,
-				body: {
-					query: query,
-					highlight: {
-						fields: {
-							body: {}
-						}
-					},
-					from: (page - 1) * per,
-					size: per
-				}
-			)
-
-			SearchResults.new(response, self, page: page, per: per)
-		end
-	rescue => e
-		Rails.logger.error "[ES Search] Error: #{e.message}"
-		# Return empty results on ES errors to avoid breaking the UI
-		SearchResults.new({ 'hits' => { 'hits' => [], 'total' => 0 } }, self, page: page, per: per)
-	end
 
 	UserSourcedbSeparator = '@'
 	# before_validation :attach_sourcedb_suffix
