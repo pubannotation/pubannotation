@@ -1,19 +1,19 @@
 # frozen_string_literal: true
 
-# ElasticsearchIndexable concern provides queue-based Elasticsearch indexing
-# for models. It replaces the synchronous elasticsearch-model callbacks with
+# Doc::ElasticsearchIndexable concern provides queue-based Elasticsearch indexing
+# for Doc. It replaces the synchronous elasticsearch-model callbacks with
 # asynchronous Redis-based queue operations.
 #
 # Usage:
 #   class Doc < ApplicationRecord
-#     include ElasticsearchIndexable
+#     include Doc::ElasticsearchIndexable
 #   end
 #
 # This will automatically:
 #   - Queue document for indexing on create/update
 #   - Queue document for deletion on destroy
 #
-module ElasticsearchIndexable
+module Doc::ElasticsearchIndexable
   extend ActiveSupport::Concern
 
   included do

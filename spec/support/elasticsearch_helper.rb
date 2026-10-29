@@ -141,7 +141,7 @@ end
 
 RSpec.configure do |config|
   # Stub IndexQueue for all non-elasticsearch tests to avoid Redis connection errors.
-  # ElasticsearchIndexable registers after_commit callbacks that push to Redis;
+  # Doc::ElasticsearchIndexable registers after_commit callbacks that push to Redis;
   # non-ES tests don't need real indexing and Redis is not guaranteed to be running.
   config.before(:each) do |example|
     unless example.metadata[:elasticsearch]
