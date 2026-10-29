@@ -44,21 +44,5 @@ module Doc::Serialization
       end
       return tsv
     end
-
-    def to_tsv(docs, doc_type)
-      headers = docs.first.to_list_hash().keys
-      tsv = CSV.generate(col_sep:"\t") do |csv|
-        # headers
-        csv << headers
-        docs.each do |doc|
-          doc_values = Array.new
-          headers.each do |key|
-            doc_values << doc.to_list_hash()[key]
-          end
-          csv << doc_values
-        end
-      end
-      return tsv
-    end
   end
 end

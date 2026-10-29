@@ -57,14 +57,4 @@ RSpec.describe Doc, 'serialization', type: :model do
     expect(Doc.hash_to_tsv([])).to be_nil
     expect(Doc.hash_to_tsv(nil)).to be_nil
   end
-
-  it 'exports document list hashes as TSV' do
-    other = build(:doc, sourcedb: 'PubMed', sourceid: '456')
-    url = routes.doc_sourcedb_sourceid_show_url('PMC', '123')
-    other_url = routes.doc_sourcedb_sourceid_show_url('PubMed', '456')
-
-    expect(Doc.to_tsv([doc, other], nil)).to eq(
-      "sourcedb\tsourceid\turl\nPMC\t123\t#{url}\nPubMed\t456\t#{other_url}\n"
-    )
-  end
 end
