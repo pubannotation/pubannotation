@@ -182,10 +182,6 @@ class Doc < ActiveRecord::Base
 		end
 	end
 
-	def self.exist?(docspec)
-		!self.get_doc(docspec).nil?
-	end
-
 	def store_divisions(hdivisions)
 		return [] if hdivisions.nil?
 
