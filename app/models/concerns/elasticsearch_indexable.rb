@@ -83,40 +83,6 @@ module ElasticsearchIndexable
   end
 
   class_methods do
-    # Search documents using Elasticsearch 8.x with parent-child support
-    #
-    # @param keywords [String] Search query for body text
-    # @param project [Project, nil] Filter by project
-    # @param sourcedb [String, nil] Filter by sourcedb
-    # @param page [Integer] Page number (1-based)
-    # @param per [Integer] Results per page
-    # @param semantic [Boolean] Use semantic/vector search (requires embeddings)
-    # @return [SearchResults] Wrapped search results with pagination
-    def search_by_elasticsearch(keywords, project = nil, sourcedb = nil, page = 1, per = 10, semantic: false)
-      # Use hybrid search when semantic is enabled
-      if semantic
-        return hybrid_search(keywords, project: project, sourcedb: sourcedb, page: page, per: per)
-      end
-
-      query = build_search_query(keywords, project, sourcedb)
-
-      response = ELASTICSEARCH_CLIENT.search(
-        index: ELASTICSEARCH_INDEX_ALIAS,
-        body: {
-          query: query,
-          highlight: {
-            fields: {
-              body: {}
-            }
-          },
-          from: (page - 1) * per,
-          size: per
-        }
-      )
-
-      SearchResults.new(response, self, page: page, per: per)
-    end
-
     # Build the ES query based on parameters
     def build_search_query(keywords, project = nil, sourcedb = nil)
       must_clauses = []
