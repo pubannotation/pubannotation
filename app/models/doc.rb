@@ -45,45 +45,6 @@ class Doc < ActiveRecord::Base
   validates :sourceid, presence: true
   validates :sourceid, uniqueness: { scope: :sourcedb }
 
-  scope :relations_num, -> {
-    joins("LEFT OUTER JOIN denotations ON denotations.doc_id = docs.id LEFT OUTER JOIN relations ON relations.subj_id = denotations.id AND relations.subj_type = 'Denotation'")
-      .group('docs.id')
-      .order('count(relations.id) DESC')
-  }
-
-  scope :projects_docs, ->(project_ids) {
-    {
-      joins: :projects,
-      conditions: ["docs_projects.project_id IN (?)", project_ids],
-      group: 'docs.id'
-    }
-  }
-
-  scope :accessible_projects, ->(current_user_id) {
-    joins([:projects])
-      .where('projects.accessibility = 1 OR projects.user_id = ?', current_user_id)
-  }
-
-  scope :sql, ->(ids) {
-    where('docs.id IN(?)', ids)
-      .order('docs.id ASC')
-  }
-
-  # scope :source_db_id, ->(order_key_method) {
-  #   # source id should cast as integer
-  #   order_key_method ||= 'sourcedb ASC, sourceid_int ASC'
-  #   where(['sourcedb NOT ? AND sourcedb != ? AND sourceid NOT ? AND sourceid != ?', nil, '', nil, ''])
-  #   .select('*, COUNT(sourcedb) AS sourcedb_count, COUNT(sourceid) AS sourceid_count, CAST(sourceid AS INT) AS sourceid_int')
-  #   .group(:sourcedb).group(:sourceid).order(order_key_method)
-  # }
-
-  scope :source_db_id, ->(order_key_method) {
-    order_key_method ||= 'sourcedb ASC, sourceid_int ASC'
-    where(['sourcedb IS NOT ? AND sourceid IS NOT ?', nil, nil])
-      .select('*, CAST(sourceid AS INT) AS sourceid_int')
-      .group(:id).group(:sourcedb).group(:sourceid).order(order_key_method)
-  }
-
   scope :same_sourcedb_sourceid, ->(sourcedb, sourceid) {
     where(['sourcedb = ? AND sourceid = ?', sourcedb, sourceid])
   }
