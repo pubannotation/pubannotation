@@ -450,24 +450,6 @@ class Doc < ActiveRecord::Base
 		annotations_hash.to_hash
 	end
 
-	def self.sql_find(params, current_user, project)
-		if params[:sql].present?
-			current_user_id = current_user.present? ? current_user.id : nil
-			sanitized_sql = sanitize_sql(params[:sql])
-			results = self.connection.execute(sanitized_sql)
-			if results.present?
-				ids = results.collect{| result | result['id']}
-				if project.present?
-					# within project
-					docs = self.accessible_projects(current_user_id).projects_docs([project.id]).sql(ids)
-				else
-					# within accessible projects
-					docs = self.accessible_projects(current_user_id).sql(ids)
-				end
-			end
-		end
-	end
-
 	def updatable_for?(current_user)
 		if current_user.present?
 			(current_user.root? || created_by?(current_user))
