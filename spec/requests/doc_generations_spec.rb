@@ -33,6 +33,22 @@ RSpec.describe 'DocGenerationsController', type: :request do
         expect(response).to have_http_status(:ok)
       end
 
+      it 'keeps the document Source DB optional for regular users' do
+        get new_project_doc_generation_path(project.name)
+
+        expect(Nokogiri::HTML(response.body).at_css('input[name="sourcedb"]')['required']).to be_nil
+      end
+
+      context 'when the user is root' do
+        let(:user) { create(:user, root: true).tap { |u| u.confirm } }
+
+        it 'requires the document Source DB' do
+          get new_project_doc_generation_path(project.name)
+
+          expect(Nokogiri::HTML(response.body).at_css('input[name="sourcedb"]')['required']).to be_present
+        end
+      end
+
       it 'offers OLLAMA_CAPTION_MODELS in order, so the form preselects the first as the default' do
         with_env('OLLAMA_CAPTION_MODELS' => 'medgemma:4b,moondream') do
           get new_project_doc_generation_path(project.name)
@@ -78,6 +94,45 @@ RSpec.describe 'DocGenerationsController', type: :request do
       before { sign_in user }
 
       around { |example| with_env('OLLAMA_CAPTION_MODELS' => 'moondream,medgemma:4b') { example.run } }
+
+      context 'when the user is root' do
+        let(:user) { create(:user, root: true).tap { |u| u.confirm } }
+
+        [nil, '', '   '].each do |sourcedb|
+          it "rejects a blank document sourcedb (#{sourcedb.inspect}) before creating a job" do
+            expect {
+              post project_doc_generations_path(project.name, format: :json),
+                   params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, sourcedb: sourcedb, caption_model: 'moondream' }
+            }.not_to have_enqueued_job(DocGenerationFromMediaJob)
+
+            expect(response).to have_http_status(:unprocessable_content)
+            expect(response.parsed_body['message']).to eq("For admin, the 'sourcedb' cannot be automatically generated.")
+            expect(project.jobs).to be_empty
+          end
+        end
+
+        it 'redirects HTML requests with a missing document sourcedb back to the form' do
+          expect {
+            post project_doc_generations_path(project.name),
+                 params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, caption_model: 'moondream' }
+          }.not_to have_enqueued_job(DocGenerationFromMediaJob)
+
+          expect(response).to redirect_to(new_project_doc_generation_path(project.name))
+          expect(flash[:notice]).to eq("For admin, the 'sourcedb' cannot be automatically generated.")
+        end
+
+        it 'creates a document using the specified sourcedb without personalization' do
+          allow(ImageCaptionService).to receive(:new).and_return(instance_double(ImageCaptionService, call: 'A generated caption.'))
+
+          perform_enqueued_jobs do
+            post project_doc_generations_path(project.name),
+                 params: { media: { sourcedb: image_medium.sourcedb, sourceid: image_medium.sourceid }, sourcedb: 'Example', caption_model: 'moondream' }
+          end
+
+          expect(response).to redirect_to(project_docs_path(project.name))
+          expect(project.docs.last.sourcedb).to eq('Example')
+        end
+      end
 
       it 'enqueues a job to generate the doc instead of creating it synchronously' do
         expect {

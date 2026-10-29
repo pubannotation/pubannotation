@@ -21,7 +21,7 @@ module Doc::Import
 
       # sourcedb, to be personalized
       if no_personalize
-        raise ArgumentError, "For admin, the 'sourcedb' cannot be automatically generated." unless hdoc[:sourcedb].present?
+        validate_sourcedb!(hdoc[:sourcedb], no_personalize)
       else
         # personalize the sourcedb unless no_personalize
         if hdoc[:sourcedb].present?
@@ -45,6 +45,12 @@ module Doc::Import
       end
 
       hdoc
+    end
+
+    def validate_sourcedb!(sourcedb, no_personalize)
+      if no_personalize && sourcedb.blank?
+        raise ArgumentError, "For admin, the 'sourcedb' cannot be automatically generated."
+      end
     end
 
     def hdoc_valid?(hdoc)

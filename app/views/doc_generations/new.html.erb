@@ -46,7 +46,7 @@
 							</tr>
 							<tr>
 								<th>Source DB</th>
-								<td><%= text_field_tag :sourcedb %></td>
+								<td><%= text_field_tag :sourcedb, nil, required: current_user.root? %></td>
 							</tr>
 							<tr>
 								<th>Source Id</th>

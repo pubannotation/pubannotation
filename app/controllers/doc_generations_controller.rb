@@ -14,7 +14,10 @@ class DocGenerationsController < ApplicationController
     raise ArgumentError, "Specified media does not exist." unless medium
     raise Exceptions::TooManyBackgroundJobsError, "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless @project.jobs.count < 10
 
-    active_job = DocGenerationFromMediaJob.perform_later(@project, medium, current_user, doc_attributes, caption_model(medium))
+    attributes = doc_attributes
+    Doc.validate_sourcedb!(attributes[:sourcedb], current_user.root?)
+
+    active_job = DocGenerationFromMediaJob.perform_later(@project, medium, current_user, attributes, caption_model(medium))
     job = Job.find_by(active_job_id: active_job.job_id)
     notice = t('controllers.docs.text_generation_started', job_name: active_job.job_name)
 
