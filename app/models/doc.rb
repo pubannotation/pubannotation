@@ -503,12 +503,6 @@ class Doc < ActiveRecord::Base
 		hdoc
 	end
 
-	def self.dummy(repeat_times)
-		repeat_times.times do |t|
-			create({sourcedb: 'FFIK', body: "body is #{ t }", sourceid: t.to_s})
-		end
-	end
-
 	def rdfizer_spans
 		@rdfizer_spans ||= TAO::RDFizer.new(:spans)
 	end
