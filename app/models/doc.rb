@@ -480,10 +480,6 @@ class Doc < ActiveRecord::Base
 		end
 	end
 
-	def self.sourcedb_public?(sourcedb)
-		!sourcedb.include?(UserSourcedbSeparator)
-	end
-
 	def self.sourcedb_mine?(sourcedb, current_user)
 		current_user.present? && sourcedb.include?("#{UserSourcedbSeparator}#{current_user.username}")
 	end
