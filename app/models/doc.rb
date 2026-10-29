@@ -4,6 +4,7 @@ class Doc < ActiveRecord::Base
 	include Doc::Media
 	include Doc::TextOperations
 	include Doc::Serialization
+	include Doc::Rdf
 	include Doc::Search
 	include Doc::ElasticsearchIndexable
 	include TermSearchConcern
@@ -121,27 +122,6 @@ class Doc < ActiveRecord::Base
 		docs.select('sourcedb', 'sourceid')
 				.simple_paginate(page, per)
 				.map(&:to_list_hash)
-	end
-
-	def self.graph_uri
-		"https://pubannotation.org/docs"
-	end
-
-	def graph_uri
-		Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_url(sourcedb, sourceid, only_path: false)
-	end
-
-	def last_indexed_at(endpoint = nil)
-		if endpoint.nil?
-			endpoint = stardog(Rails.application.config.ep_url, user: Rails.application.config.ep_user, password: Rails.application.config.ep_password)
-		end
-		db = Rails.application.config.ep_database
-		result = endpoint.query(db, "select ?o where {<#{graph_uri}> <http://www.w3.org/ns/prov#generatedAtTime> ?o}")
-		begin
-			DateTime.parse(result.body["results"]["bindings"].first["o"]["value"])
-		rescue
-			nil
-		end
 	end
 
 	def increment_docs_projects_counter(project)
@@ -311,17 +291,6 @@ class Doc < ActiveRecord::Base
 		attribute_hids = get_attribute_hids(project_id, base_ids)
 
 		denotation_hids + block_hids + relation_hids + attribute_hids
-	end
-
-	# the first argument, project_id, may be a single id or an array of ids
-	def get_denotations_hash_all(project_id = nil)
-		annotations = {}
-		annotations[:denotations] = denotations.in_project(project_id).as_json + blocks.in_project(project_id).as_json
-		annotations[:target] = Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_url(sourcedb, sourceid, :only_path => false)
-		annotations[:sourcedb] = sourcedb
-		annotations[:sourceid] = sourceid
-		annotations[:text] = body
-		annotations
 	end
 
 	def get_denotations_count(project_id = nil, span = nil)
@@ -501,46 +470,6 @@ class Doc < ActiveRecord::Base
 		end
 
 		hdoc
-	end
-
-	def rdfizer_spans
-		@rdfizer_spans ||= TAO::RDFizer.new(:spans)
-	end
-
-	# the first argument, project_id, may be a single id or an array of ids
-	def get_spans_rdf(project_id, options = {})
-		graph_uri_doc = self.graph_uri
-		graph_uri_doc_spans = self.graph_uri + '/spans'
-
-		doc_spans = self.get_denotations_hash_all(project_id)
-
-		with_prefixes = options.has_key?(:with_prefixes) ? options[:with_prefixes] == true : false
-
-		doc_spans_trig = ''
-
-		if with_prefixes
-			doc_spans_trig += rdfizer_spans.rdfize([doc_spans], {only_prefixes: true})
-			doc_spans_trig += "@prefix oa: <http://www.w3.org/ns/oa#> .\n"
-			doc_spans_trig += "@prefix prov: <http://www.w3.org/ns/prov#> .\n"
-			doc_spans_trig += "\n"
-		end
-
-		if doc_spans && doc_spans[:denotations].present?
-			doc_spans_ttl = rdfizer_spans.rdfize([doc_spans], {with_prefixes: false})
-			doc_spans_trig += <<~HEREDOC
-				<#{graph_uri_doc_spans}> rdf:type oa:Annotation ;
-					oa:has_body <#{graph_uri_doc_spans}> ;
-					oa:has_target <#{graph_uri_doc}> ;
-					prov:generatedAtTime "#{DateTime.now.iso8601}"^^xsd:dateTime .
-
-				GRAPH <#{graph_uri_doc_spans}>
-				{
-					#{doc_spans_ttl.gsub(/\n/, "\n\t")}
-				}
-			HEREDOC
-		end
-
-		doc_spans_trig
 	end
 
 	def self.delete_orphan_docs_of_user_sourcedb
