@@ -133,15 +133,6 @@ class SearchResults
     response['timed_out']
   end
 
-  # Return self for compatibility with pagination helpers
-  def page(num)
-    self
-  end
-
-  def per(num)
-    self
-  end
-
   private
 
   def hits
