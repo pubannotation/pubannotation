@@ -503,18 +503,6 @@ class Doc < ActiveRecord::Base
 		hdoc
 	end
 
-	def self.count_per_sourcedb(current_user)
-		docs_count_per_sourcedb = Doc.group(:sourcedb).count
-		if current_user
-			docs_count_per_sourcedb.delete_if do |sourcedb, doc_count|
-				sourcedb.include?(Doc::UserSourcedbSeparator) && sourcedb.split(Doc::UserSourcedbSeparator)[1] != current_user.username
-			end
-		else
-			docs_count_per_sourcedb.delete_if{|sourcedb, doc_count| sourcedb.include?(Doc::UserSourcedbSeparator)}
-		end
-		docs_count_per_sourcedb
-	end
-
 	def self.dummy(repeat_times)
 		repeat_times.times do |t|
 			create({sourcedb: 'FFIK', body: "body is #{ t }", sourceid: t.to_s})
