@@ -26,13 +26,15 @@ class SegmentsController < ApplicationController
 
     redirect_to doc_segments_path(@doc), notice: 'Segment was successfully updated.'
   rescue ArgumentError, ActiveRecord::RecordInvalid => e
-    # A checkbox's change has nothing to fix in the dialog, so it goes back to the list with the error.
-    return redirect_to doc_segments_path(@doc), alert: e.message unless attributes&.key?(:text)
-
-    # Reopens the dialog with the entered text and the error, for it to be fixed and saved again.
-    @error = e.message
-    @media_transcript.reload
-    render :index, status: :unprocessable_content
+    if attributes.key?(:text)
+      # Reopens the dialog with the entered text and the error, for it to be fixed and saved again.
+      @error = e.message
+      @media_transcript.reload
+      render :index, status: :unprocessable_content
+    else
+      # A checkbox's change has nothing to fix in a dialog, so it goes back to the list with the error.
+      redirect_to doc_segments_path(@doc), alert: e.message
+    end
   end
 
   private
