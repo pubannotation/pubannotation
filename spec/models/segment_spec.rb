@@ -19,11 +19,11 @@ RSpec.describe Segment, type: :model do
       expect(segment.errors[:text]).to include("can't be nil")
     end
 
-    it 'requires line_break_after, which a blank value casts to nil' do
+    it 'requires line_break_after to be true or false, not nil, which a blank value casts to' do
       segment = build(:segment, line_break_after: '')
 
       expect(segment).not_to be_valid
-      expect(segment.errors[:line_break_after]).to include("can't be nil")
+      expect(segment.errors[:line_break_after]).to include('is not included in the list')
     end
 
     it 'requires a non-negative integer sort order' do

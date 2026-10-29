@@ -96,7 +96,7 @@ RSpec.describe 'The segments page', type: :request do
         patch "/docs/#{doc.id}/segments/#{hello.id}", params: { segment: { line_break_after: nil } }, as: :json
 
         expect(response).to redirect_to("/docs/#{doc.id}/segments")
-        expect(flash[:alert]).to include("can't be nil")
+        expect(flash[:alert]).to include('line break after is not included in the list')
         expect(media_transcript.reload.segments.first.line_break_after).to be(false)
         expect(doc.reload.body).to eq('Hello world')
       end
