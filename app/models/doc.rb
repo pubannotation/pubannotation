@@ -318,12 +318,6 @@ class Doc < ActiveRecord::Base
 		denotation_hids + block_hids + relation_hids + attribute_hids
 	end
 
-	def copy_annotations(source_project, destin_project, options = {})
-		if options[:mode] == 'replace'
-
-		end
-	end
-
 	# the first argument, project_id, may be a single id or an array of ids
 	def get_denotations_hash_all(project_id = nil)
 		annotations = {}
