@@ -140,32 +140,4 @@ RSpec.describe 'Elasticsearch Search Integration', :elasticsearch do
       expect(results).to be_present
     end
   end
-
-  describe 'Document count' do
-    before do
-      5.times do |i|
-        doc = create(:doc, body: "Test document #{i}")
-        ElasticsearchTestHelper.index_document(doc)
-      end
-      ElasticsearchTestHelper.refresh_index
-    end
-
-    it 'returns correct document count' do
-      count = Doc.es_count
-
-      expect(count).to eq(5)
-    end
-
-    it 'returns count filtered by project' do
-      project = create(:project)
-      doc = Doc.first
-      create(:project_doc, project: project, doc: doc)
-      ElasticsearchTestHelper.index_project_membership(doc.id, project.id, project.name)
-      ElasticsearchTestHelper.refresh_index
-
-      count = Doc.es_count(project: project)
-
-      expect(count).to eq(1)
-    end
-  end
 end

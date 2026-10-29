@@ -343,35 +343,5 @@ module Doc::Search
 
       { 'body' => [snippet] }
     end
-
-    # Count documents in the index
-    # @param project [Project, nil] Filter by project
-    # @return [Integer]
-    def es_count(project: nil)
-      query = if project.present?
-                {
-                  bool: {
-                    filter: [
-                      { term: { 'doc_project_join' => 'doc' } },
-                      {
-                        has_child: {
-                          type: 'project_membership',
-                          query: { term: { project_id: project.id } }
-                        }
-                      }
-                    ]
-                  }
-                }
-              else
-                { term: { 'doc_project_join' => 'doc' } }
-              end
-
-      response = ELASTICSEARCH_CLIENT.count(
-        index: ELASTICSEARCH_INDEX_ALIAS,
-        body: { query: query }
-      )
-
-      response['count']
-    end
   end
 end
