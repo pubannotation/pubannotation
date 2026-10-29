@@ -454,13 +454,6 @@ class Doc < ActiveRecord::Base
 		annotations_hash.to_hash
 	end
 
-	def spans_projects(params)
-		self_denotations = self.denotations
-		if self_denotations.present?
-			self_denotations.within_span({:begin => params[:begin], :end => params[:end]}).collect{|denotation| denotation.project}.uniq.compact
-		end
-	end
-
 	def self.sql_find(params, current_user, project)
 		if params[:sql].present?
 			current_user_id = current_user.present? ? current_user.id : nil
