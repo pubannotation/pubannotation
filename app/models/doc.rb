@@ -12,7 +12,6 @@ class Doc < ActiveRecord::Base
 	SOURCEDBS = ['PubMed', 'PMC', 'GrayAnatomy']
 
 	UserSourcedbSeparator = '@'
-	# before_validation :attach_sourcedb_suffix
 
 	attr_accessor :username, :text_aligner
 
@@ -502,12 +501,6 @@ class Doc < ActiveRecord::Base
 		end
 
 		hdoc
-	end
-
-	def attach_sourcedb_suffix
-		if sourcedb.include?(UserSourcedbSeparator) == false && username.present?
-			self.sourcedb = "#{sourcedb}#{UserSourcedbSeparator}#{username}"
-		end
 	end
 
 	def self.count_per_sourcedb(current_user)
