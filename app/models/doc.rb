@@ -292,21 +292,6 @@ class Doc < ActiveRecord::Base
 		Doc.where(:sourceid => self.sourceid).sum('relations_num')
 	end
 
-	def to_csv(params)
-		focus, left, right = self.span(params)
-		CSV.generate(col_sep: "\t") do |csv|
-			if params[:context_size].present?
-				headers = %w(left focus right)
-				values = [left, focus, right]
-			else
-				headers = %w(focus)
-				values = [focus]
-			end
-			csv << headers
-			csv << values
-		end
-	end
-
 	def get_project_count(span = nil)
 		return self.projects.count if span.nil?
 
