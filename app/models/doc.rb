@@ -1063,7 +1063,7 @@ class Doc < ActiveRecord::Base
 	# An audio/video doc's body is what was said, joined from its segments with a space (see
 	# MediaTranscript#speech_text), so one written by hand is spaced as a segment's text is.
 	def flatten_speech_body
-		self.body = Segment.normalize_value_for(:text, body) if body
+		self.body = TextNormalizable.normalize_inline_text(body)
 	end
 
 	# An audio/video doc's body is what was said, to be highlighted as it's played, so it can't be only a
