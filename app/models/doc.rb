@@ -729,21 +729,6 @@ class Doc < ActiveRecord::Base
 		end
 	end
 
-	def self.update_numbers(project = nil)
-		if project
-			doc_ids = project.docs.pluck(:id)
-			return if doc_ids.empty?
-
-			# Use shared methods for bulk updates
-			bulk_update_docs_counts(doc_ids: doc_ids)
-			ProjectDoc.bulk_update_counts(project_id: project.id)
-		else
-			# Update all docs and project_docs
-			bulk_update_docs_counts
-			ProjectDoc.bulk_update_counts
-		end
-	end
-
 	def rdfizer_spans
 		@rdfizer_spans ||= TAO::RDFizer.new(:spans)
 	end
