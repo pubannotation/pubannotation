@@ -283,10 +283,6 @@ class Doc < ActiveRecord::Base
 		ActiveRecord::Base.connection.select_value "SELECT relations_num FROM project_docs WHERE project_id=#{project_id} AND doc_id=#{id}"
 	end
 
-	def same_sourceid_relations_num
-		Doc.where(:sourceid => self.sourceid).sum('relations_num')
-	end
-
 	def get_project_count(span = nil)
 		return self.projects.count if span.nil?
 
