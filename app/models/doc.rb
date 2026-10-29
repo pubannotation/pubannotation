@@ -2,7 +2,7 @@ class Doc < ActiveRecord::Base
 	include Doc::AnnotationCounts
 	include Doc::Import
 	include Doc::Media
-	include Doc::Text
+	include Doc::TextOperations
 	include Doc::Search
 	include Doc::ElasticsearchIndexable
 	include TermSearchConcern

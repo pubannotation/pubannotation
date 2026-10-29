@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module Doc::Text
+module Doc::TextOperations
   extend ActiveSupport::Concern
 
   attr_accessor :original_body
