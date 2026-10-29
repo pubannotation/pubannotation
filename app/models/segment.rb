@@ -3,8 +3,7 @@
 class Segment < ApplicationRecord
   belongs_to :media_transcript, inverse_of: :segments
 
-  # Line breaks, tabs and runs of spaces as one space, and none around the text.
-  normalizes :text, with: ->(text) { text.gsub(/\r\n|[\r\n\t]/, ' ').gsub(/ {2,}/, ' ').strip }
+  normalizes :text, with: ->(text) { TextNormalizable.normalize_inline_text(text) }
 
   # May be blank, as Whisper can transcribe a segment as nothing (which isn't speech).
   validates :text, exclusion: { in: [nil], message: "can't be nil" }
