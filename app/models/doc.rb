@@ -283,12 +283,6 @@ class Doc < ActiveRecord::Base
 		ActiveRecord::Base.connection.select_value "SELECT relations_num FROM project_docs WHERE project_id=#{project_id} AND doc_id=#{id}"
 	end
 
-	def same_sourceid_denotations_num
-		#denotation_doc_ids = Doc.where(:sourceid => self.sourceid).collect{|doc| doc.id}
-		#Denotation.select('doc_id').where('doc_id IN (?)', denotation_doc_ids).size
-		Doc.where(:sourceid => self.sourceid).sum('denotations_num')
-	end
-
 	def same_sourceid_relations_num
 		Doc.where(:sourceid => self.sourceid).sum('relations_num')
 	end
