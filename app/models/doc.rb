@@ -480,10 +480,6 @@ class Doc < ActiveRecord::Base
 		end
 	end
 
-	def self.sourcedb_mine?(sourcedb, current_user)
-		current_user.present? && sourcedb.include?("#{UserSourcedbSeparator}#{current_user.username}")
-	end
-
 	# Returns the personalized sourcedb for a given sourcedb and username
 	# Example: personalize_sourcedb("PMC", "alice") => "PMC@alice"
 	def self.personalize_sourcedb(sourcedb, username)
