@@ -28,7 +28,7 @@
 			<% if @editable -%>
 				<td class="line-break">
 					<% if @media_transcript.line_break_settable_after?(segment) -%>
-						<%= form_with scope: :segment, url: doc_segment_path(@doc, segment), method: :patch, class: 'line-break-form' do |f| %>
+						<%= form_with scope: :segment, url: line_break_doc_segment_path(@doc, segment), method: :patch, class: 'line-break-form' do |f| %>
 							<%= f.check_box :line_break_after, checked: segment.line_break_after, id: "segment_line_break_after_#{index}",
 								aria: { label: "Line break after segment ##{index}" } %>
 						<% end %>

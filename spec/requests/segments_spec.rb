@@ -58,13 +58,13 @@ RSpec.describe 'The segments page', type: :request do
 
         expect(response.body).to include('<th>Line break</th>', 'id="segment_line_break_after_0"')
         expect(response.body).not_to include('id="segment_line_break_after_1"')
-        expect(response.body).to include(%(class="line-break-form" action="/docs/#{doc.id}/segments/#{hello.id}"))
+        expect(response.body).to include(%(class="line-break-form" action="/docs/#{doc.id}/segments/#{hello.id}/line_break"))
       end
     end
 
-    describe 'PATCH /docs/:doc_id/segments/:id with a line break' do
+    describe 'PATCH /docs/:doc_id/segments/:id/line_break' do
       it "puts a line break after the segment into the doc's body, then goes back to the list" do
-        patch "/docs/#{doc.id}/segments/#{hello.id}", params: { segment: { line_break_after: '1' } }
+        patch "/docs/#{doc.id}/segments/#{hello.id}/line_break", params: { segment: { line_break_after: '1' } }
 
         expect(response).to redirect_to("/docs/#{doc.id}/segments")
         expect(media_transcript.reload.segments.first.line_break_after).to be(true)
@@ -75,7 +75,7 @@ RSpec.describe 'The segments page', type: :request do
       it 'goes back to the list with the error, not opening the dialog, when the line break is not saved' do
         allow_any_instance_of(MediaTranscript).to receive(:set_segment_line_break_after).and_raise(ArgumentError, 'Line break failed.')
 
-        patch "/docs/#{doc.id}/segments/#{hello.id}", params: { segment: { line_break_after: '1' } }
+        patch "/docs/#{doc.id}/segments/#{hello.id}/line_break", params: { segment: { line_break_after: '1' } }
 
         expect(response).to redirect_to("/docs/#{doc.id}/segments")
         follow_redirect!
@@ -84,7 +84,7 @@ RSpec.describe 'The segments page', type: :request do
       end
 
       it 'goes back to the list with the error for a segment no line break can follow, e.g. the last one' do
-        patch "/docs/#{doc.id}/segments/#{world.id}", params: { segment: { line_break_after: '1' } }
+        patch "/docs/#{doc.id}/segments/#{world.id}/line_break", params: { segment: { line_break_after: '1' } }
 
         expect(response).to redirect_to("/docs/#{doc.id}/segments")
         expect(flash[:alert]).to eq('No line break can follow this segment.')
@@ -93,7 +93,7 @@ RSpec.describe 'The segments page', type: :request do
       end
 
       it 'goes back to the list with the error for a null line break, leaving the body as it was' do
-        patch "/docs/#{doc.id}/segments/#{hello.id}", params: { segment: { line_break_after: nil } }, as: :json
+        patch "/docs/#{doc.id}/segments/#{hello.id}/line_break", params: { segment: { line_break_after: nil } }, as: :json
 
         expect(response).to redirect_to("/docs/#{doc.id}/segments")
         expect(flash[:alert]).to include('line break after is not included in the list')
@@ -102,8 +102,8 @@ RSpec.describe 'The segments page', type: :request do
       end
 
       it 'puts a space back when the checkbox is unchecked' do
-        patch "/docs/#{doc.id}/segments/#{hello.id}", params: { segment: { line_break_after: '1' } }
-        patch "/docs/#{doc.id}/segments/#{hello.id}", params: { segment: { line_break_after: '0' } }
+        patch "/docs/#{doc.id}/segments/#{hello.id}/line_break", params: { segment: { line_break_after: '1' } }
+        patch "/docs/#{doc.id}/segments/#{hello.id}/line_break", params: { segment: { line_break_after: '0' } }
 
         expect(media_transcript.reload.segments.first.line_break_after).to be(false)
         expect(doc.reload.body).to eq('Hello world')
@@ -245,6 +245,13 @@ RSpec.describe 'The segments page', type: :request do
 
     it 'forbids the update' do
       patch "/docs/#{doc.id}/segments/#{world.id}", params: { segment: { text: 'there' } }
+
+      expect(response).to have_http_status(:forbidden)
+      expect(doc.reload.body).to eq('Hello world')
+    end
+
+    it 'forbids the line break' do
+      patch "/docs/#{doc.id}/segments/#{hello.id}/line_break", params: { segment: { line_break_after: '1' } }
 
       expect(response).to have_http_status(:forbidden)
       expect(doc.reload.body).to eq('Hello world')
