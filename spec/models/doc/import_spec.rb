@@ -76,7 +76,7 @@ RSpec.describe Doc, 'document import', type: :model do
 
     it 'returns the existing document when the database reports a uniqueness conflict' do
       existing = Doc.store_hdoc!(hdoc)
-      allow(Doc).to receive(:store_hdoc!).with(hdoc).and_raise(ActiveRecord::RecordNotUnique, 'duplicate key value violates unique constraint')
+      allow(Doc).to receive(:create!).and_raise(ActiveRecord::RecordNotUnique, 'duplicate key value violates unique constraint')
 
       expect(Doc.store_hdoc(hdoc)).to eq(existing)
     end
