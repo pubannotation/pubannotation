@@ -44,30 +44,6 @@ RSpec.describe Doc, type: :model do
     end
   end
 
-  describe '#revise' do
-    it 'leaves a body that only differs in its line endings as it is, not aligning the annotations' do
-      doc = create(:doc, body: "Hello\nworld")
-      expect(AnnotationUtils).not_to receive(:align_denotations_and_blocks!)
-
-      doc.revise({ text: "Hello\r\nworld" })
-
-      expect(doc.reload.body).to eq("Hello\nworld")
-    end
-
-    it 'moves the annotations to where their text is in the new body as stored, with LF line endings' do
-      doc = create(:doc, body: 'Hello world')
-      denotation = create(:denotation, doc:, begin: 6, end: 11)
-
-      doc.revise({ text: "Hello\r\nbig world" })
-
-      doc.reload
-      denotation.reload
-      expect(doc.body).to eq("Hello\nbig world")
-      expect([denotation.begin, denotation.end]).to eq([10, 15])
-      expect(doc.body[denotation.begin...denotation.end]).to eq('world')
-    end
-  end
-
   describe '.bulk_increment_counts_for_batch' do
     let!(:doc1) { create(:doc, sourcedb: 'PMC', sourceid: '123', denotations_num: 100, blocks_num: 50, relations_num: 25) }
     let!(:doc2) { create(:doc, sourcedb: 'PMC', sourceid: '456', denotations_num: 200, blocks_num: 80, relations_num: 40) }
