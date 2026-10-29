@@ -4,6 +4,7 @@ class Doc < ActiveRecord::Base
 	include Doc::Revision
 	include Doc::Media
 	include Doc::TextOperations
+	include Doc::TextStructure
 	include Doc::Serialization
 	include Doc::Rdf
 	include Doc::Search
@@ -162,46 +163,6 @@ class Doc < ActiveRecord::Base
 		end
 	end
 
-	def store_divisions(hdivisions)
-		return [] if hdivisions.nil?
-
-		divisions = hdivisions.map do |hdiv|
-			Division.new(
-				{
-					doc_id: self.id,
-					begin: hdiv[:span][:begin],
-					end: hdiv[:span][:end],
-					label: hdiv[:label]
-				}
-			)
-		end
-
-		r = Division.import divisions
-		raise "Failed to save the divisions." unless r.failed_instances.empty?
-
-		divisions
-	end
-
-	def store_typesettings(htypesettings)
-		return [] if htypesettings.nil?
-
-		typesettings = htypesettings.map do |hts|
-			Typesetting.new(
-				{
-					doc_id: self.id,
-					begin: hts[:span][:begin],
-					end: hts[:span][:end],
-					style: hts[:style]
-				}
-			)
-		end
-
-		r = Typesetting.import typesettings
-		raise "Failed to save the typesettings." unless r.failed_instances.empty?
-
-		typesettings
-	end
-
 	# returns relations count which belongs to project and doc
 	def project_relations_num(project_id)
 		ActiveRecord::Base.connection.select_value "SELECT relations_num FROM project_docs WHERE project_id=#{project_id} AND doc_id=#{id}"
@@ -310,32 +271,6 @@ class Doc < ActiveRecord::Base
 		attrivutes.in_project(project_id).among_entities(base_ids).pluck(:hid)
 	end
 
-	def get_divisions(span = nil, context_size = nil)
-		if span.present?
-			context_size ||= 0
-			b = span[:begin] - context_size
-			e = span[:end] + context_size
-			b = 0 if b < 0
-			e = body.length if e > body.length
-			divisions.select{|t| t.begin >= b && t.end < e}.map{|t| t.begin -= b; t.end -= b; t.to_hash}
-		else
-			divisions.map{|t| t.to_hash}
-		end
-	end
-
-	def get_typesettings(span = nil, context_size = nil)
-		if span.present?
-			context_size ||= 0
-			b = span[:begin] - context_size
-			e = span[:end] + context_size
-			b = 0 if b < 0
-			e = body.length if e > body.length
-			typesettings.select{|t| t.begin >= b && t.end < e}.map{|t| t.begin -= b; t.end -= b; t.to_hash}
-		else
-			typesettings.map{|t| t.to_hash}
-		end
-	end
-
 	# ToDo: del me in favor of the identical one in the ProjectDoc class
 	def hannotations(projects, span, context_size,
 									 terms: nil, predicates: nil,
@@ -424,10 +359,6 @@ class Doc < ActiveRecord::Base
 	def self.delete_orphan_docs_of_user_sourcedb
 		d_num = ActiveRecord::Base.connection.delete("DELETE FROM docs WHERE sourcedb LIKE '%#{Doc::UserSourcedbSeparator}%' AND NOT EXISTS (SELECT 1 FROM project_docs WHERE project_docs.doc_id = docs.id)")
 	end
-
-	def update_all_references_in_paragraphs = paragraphs.each { _1.update_references denotations }
-
-	def update_all_references_in_sentences = sentences.each { _1.update_references denotations }
 
 	private
 
