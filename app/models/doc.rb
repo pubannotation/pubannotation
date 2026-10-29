@@ -515,11 +515,6 @@ class Doc < ActiveRecord::Base
 		docs_count_per_sourcedb
 	end
 
-	def self.docs_count(current_user)
-		docs_count_per_sourcedb = Doc.count_per_sourcedb(current_user)
-		docs_count_per_sourcedb.values.inject(0){|sum, v| sum + v}
-	end
-
 	def self.dummy(repeat_times)
 		repeat_times.times do |t|
 			create({sourcedb: 'FFIK', body: "body is #{ t }", sourceid: t.to_s})
