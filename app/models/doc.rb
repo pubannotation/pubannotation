@@ -143,20 +143,6 @@ class Doc < ActiveRecord::Base
 		end
 	end
 
-	# Queue ES project membership operations (called by association callbacks)
-	def queue_es_project_add(project)
-		Elasticsearch::IndexQueue.add_project_membership(doc_id: id, project_id: project.id)
-	end
-
-	def queue_es_project_remove(project)
-		Elasticsearch::IndexQueue.remove_project_membership(doc_id: id, project_id: project.id)
-	end
-
-	# Legacy method for compatibility - now delegates to queue
-	def update_es_doc(project)
-		queue_es_project_add(project)
-	end
-
 	def increment_docs_projects_counter(project)
 		Doc.increment_counter(:projects_num, self.id)
 	end

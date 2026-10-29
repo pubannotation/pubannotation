@@ -21,6 +21,20 @@ module Doc::ElasticsearchIndexable
     after_commit :queue_es_delete, on: :destroy
   end
 
+  # Queue ES project membership operations (called by association callbacks)
+  def queue_es_project_add(project)
+    Elasticsearch::IndexQueue.add_project_membership(doc_id: id, project_id: project.id)
+  end
+
+  def queue_es_project_remove(project)
+    Elasticsearch::IndexQueue.remove_project_membership(doc_id: id, project_id: project.id)
+  end
+
+  # Legacy method for compatibility - now delegates to queue
+  def update_es_doc(project)
+    queue_es_project_add(project)
+  end
+
   # Instance methods for manual ES operations
 
   # Queue this document for indexing
