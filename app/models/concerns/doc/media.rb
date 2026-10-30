@@ -7,12 +7,26 @@ module Doc::Media
     belongs_to :medium, optional: true
     has_one :media_transcript, dependent: :destroy
 
-    before_validation :flatten_speech_body, if: -> { medium&.transcribable? && will_save_change_to_body? && !body_following_transcript? }
-
     validate :media_reference_immutable, on: :update
     validate :body_immutable_when_transcribed_by_whisper, on: :update
     validate :body_has_speech, if: -> { medium&.transcribable? }
     after_update :sync_media_transcript_with_body, if: :saved_change_to_body?
+  end
+
+  class_methods do
+    # A body written by hand for a doc with `medium`. An audio/video doc's body is what was said, joined from its
+    # segments (see MediaTranscript#speech_text), so it's spaced as a segment's text is; any other is left as it is.
+    def written_body(medium, text)
+      medium&.transcribable? ? TextNormalizable.normalize_inline_text(text) : text
+    end
+  end
+
+  # Sets the body to `text` written by hand, as .written_body has it. Left as it is when unchanged, as the edit
+  # form submits it back with other changes, so a line break its segments set isn't put on one line.
+  def assign_written_body(text)
+    return if Doc.normalize_value_for(:body, text) == body
+
+    self.body = Doc.written_body(medium, text)
   end
 
   # Whether `current_user` can edit the segments of this doc's media transcript.
@@ -64,13 +78,6 @@ module Doc::Media
   # already as the transcript has it, e.g. with the line breaks its segments set.
   def body_following_transcript?
     media_transcript&.text == body
-  end
-
-  # An audio/video doc's body is what was said, joined from its segments (see MediaTranscript#speech_text),
-  # so one written by hand is spaced as a segment's text is. One following the transcript is left as it
-  # has it.
-  def flatten_speech_body
-    self.body = TextNormalizable.normalize_inline_text(body)
   end
 
   # An audio/video doc's body is what was said, to be highlighted as it's played, so it can't be only a

@@ -41,50 +41,54 @@ RSpec.describe Doc, type: :model do
     end
   end
 
-  describe 'the body of a doc with audio or video' do
+  describe '.written_body' do
     let(:medium) { create(:medium, media_type: :audio, content_type: 'audio/mpeg') }
 
-    it 'turns line breaks into spaces and runs of spaces into one' do
-      doc = create(:doc, body: "Hello\r\nworld\nand  so   on", medium:)
-
-      expect(doc.body).to eq('Hello world and so on')
-    end
-
-    it 'turns tabs into spaces and leaves nothing around it, as a segment has its text' do
-      doc = create(:doc, body: "\tHello\tworld \n", medium:)
-
-      expect(doc.body).to eq('Hello world')
-    end
-
-    it 'does the same as the body changes' do
-      doc = create(:doc, body: 'Hello world', medium:)
-
-      doc.update!(body: "Goodbye\r\n world")
-
-      expect(doc.reload.body).to eq('Goodbye world')
-    end
-
-    it 'leaves a body stored on several lines as it is when only other attributes change' do
-      doc = create(:doc, body: 'Hello world', medium:)
-      # Stored on several lines as before bodies were put on one line; SQL, which normalizes don't reach.
-      Doc.where(id: doc.id).update_all(['body = ?', "Hello\nworld"])
-
-      doc.reload.update!(source: 'https://example.com/changed')
-
-      expect(doc.reload.body).to eq("Hello\nworld")
+    it 'puts the body of a doc with audio or video on one line, as a segment has its text' do
+      expect(Doc.written_body(medium, "\tHello\r\nworld\nand  so   on \n")).to eq('Hello world and so on')
     end
 
     it 'leaves the body of a doc with no medium as it is' do
-      doc = create(:doc, body: "Hello\nworld  again", medium: nil)
-
-      expect(doc.body).to eq("Hello\nworld  again")
+      expect(Doc.written_body(nil, "Hello\nworld  again")).to eq("Hello\nworld  again")
     end
 
     it 'leaves the body of a doc with an image as it is' do
       image = create(:medium, media_type: :image, content_type: 'image/png')
-      doc = create(:doc, body: "A\ncaption", medium: image)
 
-      expect(doc.body).to eq("A\ncaption")
+      expect(Doc.written_body(image, "A\ncaption")).to eq("A\ncaption")
+    end
+  end
+
+  describe '#assign_written_body' do
+    let(:medium) { create(:medium, media_type: :audio, content_type: 'audio/mpeg') }
+
+    it 'sets the body as .written_body has it for its medium' do
+      doc = create(:doc, body: 'Hello world', medium:)
+
+      doc.assign_written_body("Goodbye\r\n world")
+
+      expect(doc.body).to eq('Goodbye world')
+    end
+
+    it 'leaves the body as it is when given unchanged, line breaks submitted as CRLF included' do
+      doc = create(:doc, body: "Hello\nworld", medium:)
+
+      doc.assign_written_body("Hello\r\nworld")
+
+      expect(doc.body).to eq("Hello\nworld")
+      expect(doc).not_to be_body_changed
+    end
+  end
+
+  describe 'saving the body of a doc with audio or video' do
+    let(:medium) { create(:medium, media_type: :audio, content_type: 'audio/mpeg') }
+
+    it 'leaves it as given, e.g. with the line breaks its transcript sets' do
+      doc = create(:doc, body: 'Hello world', medium:)
+
+      doc.update!(body: "Hello\nworld")
+
+      expect(doc.reload.body).to eq("Hello\nworld")
     end
   end
 
