@@ -54,6 +54,17 @@ module Doc::Media
     media_transcript&.segmented?
   end
 
+  # media_transcript's speech segment spans, fit to this Doc's body: segments can run past a body
+  # edited after they were transcribed, so those past its end are dropped and the one running
+  # past it is cut.
+  def speech_segment_spans
+    return [] unless media_transcript
+
+    media_transcript.speech_segment_spans.filter_map do |span|
+      span.merge(end: [span[:end], body.length].min) if span[:begin] < body.length
+    end
+  end
+
   private
 
   def media_reference_immutable
