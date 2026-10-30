@@ -172,7 +172,7 @@ class AnnotationsController < ApplicationController
 			hdoc[:divisions] = params[:divisions] if params[:divisions].present?
 			hdoc[:typesettings] = params[:typesettings] if params[:typesettings].present?
 
-			hdoc = Doc.hdoc_normalize!(hdoc, current_user, current_user.root?)
+			hdoc = DocumentImportNormalizer.normalize!(hdoc, current_user, current_user.root?)
 			_doc = Doc.store_hdoc!(hdoc)
 			project.add_doc!(_doc)
 		end

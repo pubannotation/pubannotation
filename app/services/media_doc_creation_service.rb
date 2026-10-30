@@ -1,7 +1,7 @@
 class MediaDocCreationService
   # media_transcript is expected to already be persisted (with doc: nil) by the caller.
   def self.call(project, medium, user, attributes, media_transcript)
-    hdoc = Doc.hdoc_normalize!(
+    hdoc = DocumentImportNormalizer.normalize!(
       {
         **attributes,
         username: user.username,
@@ -14,7 +14,7 @@ class MediaDocCreationService
 
     # Doc.create! directly, rather than Doc.store_hdoc!, since store_hdoc! opens its own
     # isolation: :read_committed transaction — which raises if opened while already inside the
-    # transaction below. hdoc never has :divisions/:typesettings here (hdoc_normalize! doesn't
+    # transaction below. hdoc never has :divisions/:typesettings here (normalize! doesn't
     # add them), so store_hdoc!'s handling of those is not needed either.
     doc = nil
     ActiveRecord::Base.transaction do

@@ -37,7 +37,7 @@ RSpec.describe UploadDocsJob, type: :job do
         allow_any_instance_of(UploadDocsJob).to receive(:prepare_upload_files).and_return(upload_dir)
         allow_any_instance_of(UploadDocsJob).to receive(:remove_upload_files)
 
-        allow(Doc).to receive(:hdoc_normalize!) { |hdoc, _user, _root| hdoc }
+        allow(DocumentImportNormalizer).to receive(:normalize!) { |hdoc, _user, _root| hdoc }
         doc = create(:doc, sourcedb: 'TestDB', sourceid: 'doc1')
         allow(Doc).to receive(:store_hdoc!).and_return(doc)
 
@@ -58,7 +58,7 @@ RSpec.describe UploadDocsJob, type: :job do
         allow_any_instance_of(UploadDocsJob).to receive(:prepare_upload_files).and_return(upload_dir)
         allow_any_instance_of(UploadDocsJob).to receive(:remove_upload_files)
 
-        allow(Doc).to receive(:hdoc_normalize!) { |hdoc, _user, _root| hdoc }
+        allow(DocumentImportNormalizer).to receive(:normalize!) { |hdoc, _user, _root| hdoc }
         doc1 = create(:doc, sourcedb: 'TestDB', sourceid: 'doc1')
         doc2 = create(:doc, sourcedb: 'TestDB', sourceid: 'doc2')
         allow(Doc).to receive(:store_hdoc!).and_return(doc1, doc2)
@@ -92,7 +92,7 @@ RSpec.describe UploadDocsJob, type: :job do
         allow_any_instance_of(UploadDocsJob).to receive(:prepare_upload_files).and_return(upload_dir)
         allow_any_instance_of(UploadDocsJob).to receive(:remove_upload_files)
 
-        allow(Doc).to receive(:hdoc_normalize!) { |hdoc, _user, _root| hdoc }
+        allow(DocumentImportNormalizer).to receive(:normalize!) { |hdoc, _user, _root| hdoc }
         doc1 = create(:doc, sourcedb: 'TestDB', sourceid: 'doc1')
         allow(Doc).to receive(:store_hdoc!).and_return(doc1)
 
@@ -119,7 +119,7 @@ RSpec.describe UploadDocsJob, type: :job do
         allow_any_instance_of(UploadDocsJob).to receive(:prepare_upload_files).and_return(upload_dir)
         allow_any_instance_of(UploadDocsJob).to receive(:remove_upload_files)
 
-        allow(Doc).to receive(:hdoc_normalize!) { |hdoc, _user, _root| hdoc }
+        allow(DocumentImportNormalizer).to receive(:normalize!) { |hdoc, _user, _root| hdoc }
 
         expect(Elasticsearch::IndexQueue).not_to receive(:add_project_memberships)
         expect(Elasticsearch::IndexQueue).not_to receive(:schedule_processing)

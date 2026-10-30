@@ -15,7 +15,7 @@ class DocGenerationsController < ApplicationController
     raise Exceptions::TooManyBackgroundJobsError, "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless @project.jobs.count < 10
 
     attributes = doc_attributes
-    Doc.validate_sourcedb!(attributes[:sourcedb], current_user.root?)
+    DocumentImportNormalizer.validate_sourcedb!(attributes[:sourcedb], current_user.root?)
 
     active_job = DocGenerationFromMediaJob.perform_later(@project, medium, current_user, attributes, caption_model(medium))
     job = Job.find_by(active_job_id: active_job.job_id)

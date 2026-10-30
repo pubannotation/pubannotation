@@ -44,7 +44,7 @@ class UploadDocsJob < ApplicationJob
 							}
 					end
 
-					hdoc = Doc.hdoc_normalize!(hdoc, username, options[:root] == true)
+					hdoc = DocumentImportNormalizer.normalize!(hdoc, username, options[:root] == true)
 					same_doc = Doc.find_by sourcedb: hdoc[:sourcedb], sourceid: hdoc[:sourceid]
 					if same_doc.present?
 						if mode == :update
