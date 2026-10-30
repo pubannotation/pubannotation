@@ -345,7 +345,7 @@ class DocsController < ApplicationController
 				@doc = DocumentImporter.store_hdoc!(hdoc)
 				@project.add_doc!(@doc)
 				if medium&.transcribable?
-					media_transcript = @doc.create_media_transcript_from_body!
+					media_transcript = MediaTranscript.create_from_doc!(@doc)
 					media_transcript.create_segment_blocks!(@project)
 				end
 			end

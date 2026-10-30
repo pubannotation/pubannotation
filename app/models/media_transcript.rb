@@ -34,6 +34,20 @@ class MediaTranscript < ApplicationRecord
   before_update :rebuild_text, if: :segments_changing?
   after_update :sync_doc_body, if: -> { doc && saved_change_to_text? }
 
+  # A manually registered audio/video document has one segment covering the whole medium.
+  def self.create_from_doc!(doc)
+    medium = doc.medium
+    raise ArgumentError, "Specified media can't get a transcript." unless medium&.transcribable?
+
+    # Explicit text preserves a body that looks like a Whisper non-speech label.
+    create!(
+      medium: medium,
+      doc: doc,
+      text: doc.body,
+      segments: [Segment.new(sort_order: 0, text: doc.body, start_ms: 0, end_ms: medium.duration_ms)]
+    )
+  end
+
   # Replaces the segments with `new_segments`, each with its sort_order, once saved.
   def replace_segments(new_segments)
     segments.each(&:mark_for_destruction)

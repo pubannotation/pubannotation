@@ -3,6 +3,37 @@
 require 'rails_helper'
 
 RSpec.describe MediaTranscript, type: :model do
+  describe '.create_from_doc!' do
+    def medium_with_file(media_type, content_type, fixture)
+      create(:medium, media_type:, content_type:).tap do |medium|
+        medium.file.attach(io: File.open(Rails.root.join('spec', 'fixtures', 'files', fixture)), filename: fixture, content_type:)
+      end
+    end
+
+    before { allow(AudioAnalyzer).to receive(:new).and_return(instance_double(AudioAnalyzer, duration: 4.98)) }
+
+    { audio: ['audio/mpeg', 'test_audio.mp3'], video: ['video/mp4', 'test_video.mp4'] }.each do |media_type, (content_type, fixture)|
+      it "gives a doc with #{media_type} a transcript with its body as one segment spanning the media's duration" do
+        medium = medium_with_file(media_type, content_type, fixture)
+        doc = create(:doc, body: 'Hello world', medium:)
+
+        media_transcript = described_class.create_from_doc!(doc)
+
+        expect(media_transcript).to be_persisted
+        expect(doc.reload.media_transcript).to eq(media_transcript)
+        expect(media_transcript.medium).to eq(medium)
+        expect(media_transcript.text).to eq('Hello world')
+        expect(media_transcript.segments).to match([have_attributes(text: 'Hello world', start_ms: 0, end_ms: 4_980)])
+      end
+    end
+
+    it 'raises for a doc with an image' do
+      doc = create(:doc, body: 'A caption.', medium: medium_with_file(:image, 'image/png', 'test_image.png'))
+
+      expect { described_class.create_from_doc!(doc) }.to raise_error(ArgumentError, /can't get a transcript/)
+    end
+  end
+
   describe 'validations' do
     it 'is valid with valid attributes' do
       expect(build(:media_transcript)).to be_valid
