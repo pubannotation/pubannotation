@@ -130,17 +130,6 @@ class MediaTranscript < ApplicationRecord
     segment.speech? && segment != last_speech_segment
   end
 
-  # Sets whether a line break, rather than a space, follows `segment` in the doc's body. On save, text and the
-  # doc's body are rebuilt to follow, and it fails for a segment since replaced, as for #set_segment_text,
-  # or one no line break can follow (see #line_break_settable_after?).
-  def set_segment_line_break_after(segment, line_break_after)
-    current = current_segments.find { it == segment }
-    raise ActiveRecord::RecordNotFound, "No segment with id #{segment.id}." unless current
-    raise ArgumentError, 'No line break can follow this segment.' unless line_break_settable_after?(current)
-
-    current.line_break_after = line_break_after
-  end
-
   # Changes `segment` by `attributes`, its text and/or whether a line break follows it, and saves it, rebuilding
   # text and the doc's body. Reloads and locks itself first, so a concurrent edit of another segment isn't
   # overwritten.
@@ -164,6 +153,17 @@ class MediaTranscript < ApplicationRecord
   end
 
   private
+
+  # Sets whether a line break, rather than a space, follows `segment` in the doc's body. On save, text and the
+  # doc's body are rebuilt to follow, and it fails for a segment since replaced, as for #set_segment_text,
+  # or one no line break can follow (see #line_break_settable_after?).
+  def set_segment_line_break_after(segment, line_break_after)
+    current = current_segments.find { it == segment }
+    raise ActiveRecord::RecordNotFound, "No segment with id #{segment.id}." unless current
+    raise ArgumentError, 'No line break can follow this segment.' unless line_break_settable_after?(current)
+
+    current.line_break_after = line_break_after
+  end
 
   # The segments as they'll be once saved: without those marked for destruction.
   def current_segments

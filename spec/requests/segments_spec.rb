@@ -73,7 +73,7 @@ RSpec.describe 'The segments page', type: :request do
       end
 
       it 'goes back to the list with the error, not opening the dialog, when the line break is not saved' do
-        allow_any_instance_of(MediaTranscript).to receive(:set_segment_line_break_after).and_raise(ArgumentError, 'Line break failed.')
+        allow_any_instance_of(MediaTranscript).to receive(:update_segment!).and_raise(ArgumentError, 'Line break failed.')
 
         patch "/docs/#{doc.id}/segments/#{hello.id}", params: { segment: { line_break_after: '1' } }
 

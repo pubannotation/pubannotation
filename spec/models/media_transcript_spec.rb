@@ -538,8 +538,7 @@ RSpec.describe MediaTranscript, type: :model do
     let!(:media_transcript) { create(:media_transcript, medium:, doc:, text: 'Hello world') }
 
     it "puts a line break set after a segment into the text and the doc's body, keeping the segments apart" do
-      media_transcript.set_segment_line_break_after(media_transcript.segments.first, true)
-      media_transcript.save!
+      media_transcript.update_segment!(media_transcript.segments.first, { line_break_after: true })
 
       media_transcript.reload
       expect(media_transcript.text).to eq("Hello\nworld")
@@ -548,10 +547,8 @@ RSpec.describe MediaTranscript, type: :model do
     end
 
     it 'puts a space back when the line break is unset' do
-      media_transcript.set_segment_line_break_after(media_transcript.segments.first, true)
-      media_transcript.save!
-      media_transcript.set_segment_line_break_after(media_transcript.segments.first, false)
-      media_transcript.save!
+      media_transcript.update_segment!(media_transcript.segments.first, { line_break_after: true })
+      media_transcript.update_segment!(media_transcript.segments.first, { line_break_after: false })
 
       expect(doc.reload.body).to eq('Hello world')
     end
@@ -559,12 +556,12 @@ RSpec.describe MediaTranscript, type: :model do
     it "raises for a segment not among its own, e.g. another transcript's" do
       other_segment = create(:segment)
 
-      expect { media_transcript.set_segment_line_break_after(other_segment, true) }
+      expect { media_transcript.update_segment!(other_segment, { line_break_after: true }) }
         .to raise_error(ActiveRecord::RecordNotFound, /No segment with id #{other_segment.id}/)
     end
 
     it 'raises for a segment no line break can follow, e.g. the last one, leaving it unchanged' do
-      expect { media_transcript.set_segment_line_break_after(media_transcript.segments.last, true) }
+      expect { media_transcript.update_segment!(media_transcript.segments.last, { line_break_after: true }) }
         .to raise_error(ArgumentError, 'No line break can follow this segment.')
       expect(media_transcript.segments.last).not_to be_changed
     end
@@ -575,8 +572,7 @@ RSpec.describe MediaTranscript, type: :model do
       end
 
       it "puts it into the doc's body, which is locked against other edits" do
-        media_transcript.set_segment_line_break_after(media_transcript.segments.first, true)
-        media_transcript.save!
+        media_transcript.update_segment!(media_transcript.segments.first, { line_break_after: true })
 
         expect(doc.reload.body).to eq("Hello\nworld")
       end
