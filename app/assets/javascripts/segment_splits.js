@@ -69,11 +69,13 @@ class SegmentSplits {
   }
 
   // Merges the segment at `index` with the next one: from its start to the next one's end, their texts joined
-  // with a space, as a doc's body joins its segments.
+  // with a space, as a doc's body joins its segments, and with the line break, if any, after the next one.
   mergeSegments(index) {
     const segment = this.segments[index];
     const next = this.segments[index + 1];
-    this.segments.splice(index, 2, { ...segment, text: `${segment.text} ${next.text}`, end_ms: next.end_ms });
+
+    this.segments.splice(index, 2,
+      { ...segment, text: `${segment.text} ${next.text}`, end_ms: next.end_ms, line_break_after: next.line_break_after });
   }
 
   render() {
