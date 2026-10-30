@@ -4,7 +4,6 @@ class Doc < ActiveRecord::Base
   include Doc::Revision
   include Doc::Media
   include Doc::TextStructure
-  include Doc::Rdf
   include Doc::ElasticsearchIndexable
   include TermSearchConcern
   include PaginateConcern

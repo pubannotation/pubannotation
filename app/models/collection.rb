@@ -130,9 +130,9 @@ class Collection < ActiveRecord::Base
 				doc = Doc.find(doc_id)
 
 				doc_spans_trig = if i == 0
-					doc.get_spans_rdf(project_ids, {with_prefixes: true})
+					DocRdfExporter.new(doc).get_spans_rdf(project_ids, {with_prefixes: true})
 				else
-					doc.get_spans_rdf(project_ids, {with_prefixes: false})
+					DocRdfExporter.new(doc).get_spans_rdf(project_ids, {with_prefixes: false})
 				end
 
 				f.write("\n") unless i == 0

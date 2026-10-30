@@ -37,7 +37,7 @@ RSpec.describe Project, '#create_spans_RDF' do
     it 'yields sequential indices starting from 0' do
       3.times { create_project_doc(project) }
 
-      allow_any_instance_of(Doc).to receive(:get_denotations_hash_all).and_return({ denotations: [], target: 'http://example.org' })
+      allow_any_instance_of(DocRdfExporter).to receive(:get_denotations_hash_all).and_return({ denotations: [], target: 'http://example.org' })
 
       yielded_indices = []
       project.create_spans_RDF(nil, rdf_loc) do |i, _doc, _message|
@@ -52,7 +52,7 @@ RSpec.describe Project, '#create_spans_RDF' do
     it 'yields index, doc, and nil for each doc' do
       docs = 3.times.map { create_project_doc(project) }
 
-      allow_any_instance_of(Doc).to receive(:get_denotations_hash_all).and_return({ denotations: [], target: 'http://example.org' })
+      allow_any_instance_of(DocRdfExporter).to receive(:get_denotations_hash_all).and_return({ denotations: [], target: 'http://example.org' })
 
       yielded = []
       project.create_spans_RDF(nil, rdf_loc) do |i, doc, message|
@@ -72,7 +72,7 @@ RSpec.describe Project, '#create_spans_RDF' do
     it 'yields error message and continues when block given' do
       create_project_doc(project)
 
-      allow_any_instance_of(Doc).to receive(:get_denotations_hash_all).and_raise(RuntimeError, 'span error')
+      allow_any_instance_of(DocRdfExporter).to receive(:get_denotations_hash_all).and_raise(RuntimeError, 'span error')
 
       yielded = []
       project.create_spans_RDF(nil, rdf_loc) do |i, _doc, message|
@@ -87,7 +87,7 @@ RSpec.describe Project, '#create_spans_RDF' do
       2.times { create_project_doc(project) }
 
       call_count = 0
-      allow_any_instance_of(Doc).to receive(:get_denotations_hash_all) do
+      allow_any_instance_of(DocRdfExporter).to receive(:get_denotations_hash_all) do
         call_count += 1
         raise RuntimeError, 'error' if call_count == 1
         { denotations: [], target: 'http://example.org' }
@@ -106,7 +106,7 @@ RSpec.describe Project, '#create_spans_RDF' do
     it 'writes a trig file with prefixes and graph blocks' do
       create_project_doc(project)
 
-      allow_any_instance_of(Doc).to receive(:get_denotations_hash_all).and_return({ denotations: [], target: 'http://example.org' })
+      allow_any_instance_of(DocRdfExporter).to receive(:get_denotations_hash_all).and_return({ denotations: [], target: 'http://example.org' })
       allow(rdfizer).to receive(:rdfize).and_return("@prefix ex: <http://example.org/> .\n")
 
       project.create_spans_RDF(nil, rdf_loc)

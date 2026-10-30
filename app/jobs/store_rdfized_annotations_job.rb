@@ -18,7 +18,7 @@ class StoreRdfizedAnnotationsJob < ApplicationJob
 		rdfizer_spans = TAO::RDFizer.new(:spans)
 
 		graph_uri_project = project.graph_uri
-		graph_uri_doc_spans = Doc.graph_uri + '/spans'
+		graph_uri_doc_spans = DocRdfExporter.graph_uri + '/spans'
 
 		sd.clear_db(db, graph_uri_project)
 
@@ -60,9 +60,10 @@ class StoreRdfizedAnnotationsJob < ApplicationJob
 
 				# rdfize and store spans
 				unless skip_span_indexing
-					doc_last_indexed_at = doc.last_indexed_at(sd)
+					exporter = DocRdfExporter.new(doc)
+					doc_last_indexed_at = RdfIndexStatus.last_indexed_at(exporter.graph_uri, sd)
 					if doc_last_indexed_at.nil? || doc.denotations.where("denotations.project_id = ? AND denotations.updated_at > ?", project.id, doc_last_indexed_at).exists?
-						spans = doc.get_denotations_hash_all
+						spans = exporter.get_denotations_hash_all
 						num_spans_in_current_doc = spans.length
 
 						if (num_spans_in_span_queue > 0) && ((num_spans_in_span_queue + num_spans_in_current_doc) >= size_batch_spans)
@@ -88,7 +89,7 @@ class StoreRdfizedAnnotationsJob < ApplicationJob
 								num_spans_in_span_queue = 0
 							end
 						else
-							spans_indexed_queue[doc.graph_uri] = spans
+							spans_indexed_queue[exporter.graph_uri] = spans
 							num_spans_in_span_queue += num_spans_in_current_doc
 					  end
 					end

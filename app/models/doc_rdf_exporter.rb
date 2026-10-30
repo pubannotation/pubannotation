@@ -1,29 +1,18 @@
 # frozen_string_literal: true
 
-module Doc::Rdf
-  extend ActiveSupport::Concern
+class DocRdfExporter
+  def initialize(doc)
+    @doc = doc
+  end
 
-  class_methods do
-    def graph_uri
-      "https://pubannotation.org/docs"
-    end
+  delegate :sourcedb, :sourceid, :body, :denotations, :blocks, to: :@doc
+
+  def self.graph_uri
+    "https://pubannotation.org/docs"
   end
 
   def graph_uri
     Rails.application.routes.url_helpers.doc_sourcedb_sourceid_show_url(sourcedb, sourceid, only_path: false)
-  end
-
-  def last_indexed_at(endpoint = nil)
-    if endpoint.nil?
-      endpoint = stardog(Rails.application.config.ep_url, user: Rails.application.config.ep_user, password: Rails.application.config.ep_password)
-    end
-    db = Rails.application.config.ep_database
-    result = endpoint.query(db, "select ?o where {<#{graph_uri}> <http://www.w3.org/ns/prov#generatedAtTime> ?o}")
-    begin
-      DateTime.parse(result.body["results"]["bindings"].first["o"]["value"])
-    rescue
-      nil
-    end
   end
 
   # the first argument, project_id, may be a single id or an array of ids

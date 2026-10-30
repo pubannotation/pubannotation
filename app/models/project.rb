@@ -356,10 +356,11 @@ class Project < ActiveRecord::Base
     File.open(loc + spans_rdf_filename, "w") do |f|
       i = 0
       docs.find_each do |doc|
-        graph_uri_doc = doc.graph_uri
-        graph_uri_doc_spans = doc.graph_uri + '/spans'
+        exporter = DocRdfExporter.new(doc)
+        graph_uri_doc = exporter.graph_uri
+        graph_uri_doc_spans = graph_uri_doc + '/spans'
 
-        doc_spans = doc.get_denotations_hash_all(in_collection)
+        doc_spans = exporter.get_denotations_hash_all(in_collection)
 
         if i == 0
           prefixes_ttl = rdfizer_spans.rdfize([doc_spans], { only_prefixes: true })
