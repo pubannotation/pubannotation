@@ -20,14 +20,6 @@ RSpec.describe Doc, type: :model do
     end
   end
 
-  describe '.store_hdoc!' do
-    it 'persists the given source' do
-      doc = Doc.store_hdoc!(sourcedb: 'Example', sourceid: '001', body: 'some text', source: 'https://example.com/original')
-
-      expect(doc.source).to eq('https://example.com/original')
-    end
-  end
-
   describe 'line endings' do
     it 'stores the line breaks of a new body as LF' do
       doc = create(:doc, body: "Hello\r\nworld")

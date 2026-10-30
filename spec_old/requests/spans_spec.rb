@@ -118,7 +118,7 @@ RSpec.describe "Spans", type: :request do
   describe "POST /docs/sourcedb/:sourcedb/sourceid/:sourceid/spans/find_location" do
     context 'when document is not found and cannot be fetched' do
       before do
-        allow(Doc).to receive(:sequence_and_store_doc!).and_raise(StandardError, "Document not found")
+        allow(DocumentImporter).to receive(:sequence_and_store_doc!).and_raise(StandardError, "Document not found")
       end
 
       it "returns 422 response" do

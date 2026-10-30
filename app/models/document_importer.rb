@@ -1,17 +1,7 @@
 # frozen_string_literal: true
 
-module Doc::Import
-  extend ActiveSupport::Concern
-
-  class_methods do
-    def parse_filename(_filename)
-      parts = _filename.split('-')
-      raise ArgumentError, "The filename of a txt file has to be in the form of 'sourcedb-sourceid': #{_filename}" unless parts.length > 1
-      sourceid = parts.pop
-      sourcedb = parts.join('-')
-      [sourcedb, sourceid]
-    end
-
+class DocumentImporter
+  class << self
     def store_hdoc!(hdoc)
       hdoc[:text] = hdoc[:body] if !hdoc[:text] && hdoc[:body]
 

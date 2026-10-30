@@ -5,6 +5,11 @@ require 'rails_helper'
 RSpec.describe DocumentImportNormalizer do
   let(:user) { create(:user) }
 
+  it 'parses filenames using the final hyphen as the source ID separator' do
+    expect(DocumentImportNormalizer.parse_filename('my-source-123')).to eq(['my-source', '123'])
+    expect { DocumentImportNormalizer.parse_filename('invalid') }.to raise_error(ArgumentError, /sourcedb-sourceid/)
+  end
+
   it 'normalizes text and personalizes the source database in place' do
     hdoc = { text: 'Hello', sourcedb: 'Example', sourceid: '123' }
 

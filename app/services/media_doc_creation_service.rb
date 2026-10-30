@@ -12,7 +12,7 @@ class MediaDocCreationService
       user.root?
     )
 
-    # Doc.create! directly, rather than Doc.store_hdoc!, since store_hdoc! opens its own
+    # Doc.create! directly, rather than DocumentImporter.store_hdoc!, since store_hdoc! opens its own
     # isolation: :read_committed transaction — which raises if opened while already inside the
     # transaction below. hdoc never has :divisions/:typesettings here (normalize! doesn't
     # add them), so store_hdoc!'s handling of those is not needed either.

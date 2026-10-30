@@ -34,7 +34,7 @@ class UploadDocsJob < ApplicationJob
 							sourcedb, sourceid = if options.has_key? :sourcedb
 								[options[:sourcedb], options[:sourceid]]
 							else
-								Doc.parse_filename(File.basename(filepath, ext))
+								DocumentImportNormalizer.parse_filename(File.basename(filepath, ext))
 							end
 
 							{
@@ -57,7 +57,7 @@ class UploadDocsJob < ApplicationJob
 							@added_doc_ids << same_doc.id
 						end
 					else
-						doc = Doc.store_hdoc!(hdoc)
+						doc = DocumentImporter.store_hdoc!(hdoc)
 						project.add_doc!(doc)
 						@added_doc_ids << doc.id
 					end

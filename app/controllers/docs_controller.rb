@@ -172,7 +172,7 @@ class DocsController < ApplicationController
 			docs = Doc.where(sourcedb:sourcedb, sourceid:sourceid)
 
 			unless docs.present?
-				docs, messages = Doc.sequence_and_store_docs(sourcedb, [sourceid])
+				docs, messages = DocumentImporter.sequence_and_store_docs(sourcedb, [sourceid])
 				raise "Could not find the document, #{sourcedb}:#{sourceid}. The document may not be in the Open Access Subset of PMC, or PMC is not responding now." unless docs.present?
 			end
 
@@ -342,7 +342,7 @@ class DocsController < ApplicationController
 			hdoc[:body] = Doc.written_body(medium, hdoc[:body])
 			# isolation matches store_hdoc!'s own transaction, which raises if joined with a different one.
 			ActiveRecord::Base.transaction(isolation: :read_committed) do
-				@doc = Doc.store_hdoc!(hdoc)
+				@doc = DocumentImporter.store_hdoc!(hdoc)
 				@project.add_doc!(@doc)
 				if medium&.transcribable?
 					media_transcript = @doc.create_media_transcript_from_body!
@@ -383,7 +383,7 @@ class DocsController < ApplicationController
 			}
 
 			if ext == '.txt'
-				sourcedb, sourceid = Doc.parse_filename(File.basename(filename, ext))
+				sourcedb, sourceid = DocumentImportNormalizer.parse_filename(File.basename(filename, ext))
 				options[:sourcedb] = sourcedb
 				options[:sourceid] = sourceid
 			end
@@ -499,7 +499,7 @@ class DocsController < ApplicationController
 			if docspecs.length == 1
 				docspec = docspecs.first
 			    doc = Doc.find_by(sourcedb: docspec[:sourcedb], sourceid: docspec[:sourceid]) \
-			            || Doc.sequence_and_store_doc!(docspec[:sourcedb], docspec[:sourceid])
+			            || DocumentImporter.sequence_and_store_doc!(docspec[:sourcedb], docspec[:sourceid])
 			    project.add_doc!(doc)
 				"#{docspec[:sourcedb]}:#{docspec[:sourceid]} - added."
 			else

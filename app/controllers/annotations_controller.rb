@@ -160,7 +160,7 @@ class AnnotationsController < ApplicationController
 		##########
 		doc = if params[:sourcedb] && params[:sourceid]
 		    _doc = Doc.find_by(sourcedb: params[:sourcedb], sourceid: params[:sourceid]) \
-		            || Doc.sequence_and_store_doc!(params[:sourcedb], params[:sourceid])
+		            || DocumentImporter.sequence_and_store_doc!(params[:sourcedb], params[:sourceid])
 			project.add_doc!(_doc) unless project.has_doc?(_doc)
 			_doc
 		else
@@ -173,7 +173,7 @@ class AnnotationsController < ApplicationController
 			hdoc[:typesettings] = params[:typesettings] if params[:typesettings].present?
 
 			hdoc = DocumentImportNormalizer.normalize!(hdoc, current_user, current_user.root?)
-			_doc = Doc.store_hdoc!(hdoc)
+			_doc = DocumentImporter.store_hdoc!(hdoc)
 			project.add_doc!(_doc)
 		end
 
@@ -240,7 +240,7 @@ class AnnotationsController < ApplicationController
 
 			annotations = AnnotationUtils.normalize!(annotations)
 			doc = Doc.find_by(sourcedb: params[:sourcedb], sourceid: params[:sourceid]) \
-							|| Doc.sequence_and_store_doc!(params[:sourcedb], params[:sourceid])
+							|| DocumentImporter.sequence_and_store_doc!(params[:sourcedb], params[:sourceid])
 
 			AnnotationUtils.prepare_annotations!(annotations, doc)
 

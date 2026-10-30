@@ -82,7 +82,7 @@ class SpansController < ApplicationController
 
     # Find or fetch the document
     doc = Doc.find_by sourcedb:params[:sourcedb], sourceid:params[:sourceid] \
-            || Doc.sequence_and_store_doc!(params[:sourcedb], params[:sourceid])
+            || DocumentImporter.sequence_and_store_doc!(params[:sourcedb], params[:sourceid])
 
     # Use TextAlignment to find the text in the document
     aligner = TextAlignment::TextAlignment.new(doc.body)

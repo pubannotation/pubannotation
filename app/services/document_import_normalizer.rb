@@ -2,6 +2,14 @@
 
 class DocumentImportNormalizer
   class << self
+    def parse_filename(_filename)
+      parts = _filename.split('-')
+      raise ArgumentError, "The filename of a txt file has to be in the form of 'sourcedb-sourceid': #{_filename}" unless parts.length > 1
+      sourceid = parts.pop
+      sourcedb = parts.join('-')
+      [sourcedb, sourceid]
+    end
+
     def normalize!(hdoc, current_user, no_personalize = false)
       raise SecurityError, "You have to be logged in to create a document." unless current_user.present?
 

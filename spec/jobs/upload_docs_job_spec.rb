@@ -39,7 +39,7 @@ RSpec.describe UploadDocsJob, type: :job do
 
         allow(DocumentImportNormalizer).to receive(:normalize!) { |hdoc, _user, _root| hdoc }
         doc = create(:doc, sourcedb: 'TestDB', sourceid: 'doc1')
-        allow(Doc).to receive(:store_hdoc!).and_return(doc)
+        allow(DocumentImporter).to receive(:store_hdoc!).and_return(doc)
 
         expect(Elasticsearch::IndexQueue).to receive(:add_project_memberships).with(
           doc_ids: [doc.id],
@@ -61,7 +61,7 @@ RSpec.describe UploadDocsJob, type: :job do
         allow(DocumentImportNormalizer).to receive(:normalize!) { |hdoc, _user, _root| hdoc }
         doc1 = create(:doc, sourcedb: 'TestDB', sourceid: 'doc1')
         doc2 = create(:doc, sourcedb: 'TestDB', sourceid: 'doc2')
-        allow(Doc).to receive(:store_hdoc!).and_return(doc1, doc2)
+        allow(DocumentImporter).to receive(:store_hdoc!).and_return(doc1, doc2)
 
         added_ids = nil
         allow(Elasticsearch::IndexQueue).to receive(:add_project_memberships) { |args| added_ids = args[:doc_ids] }
@@ -94,7 +94,7 @@ RSpec.describe UploadDocsJob, type: :job do
 
         allow(DocumentImportNormalizer).to receive(:normalize!) { |hdoc, _user, _root| hdoc }
         doc1 = create(:doc, sourcedb: 'TestDB', sourceid: 'doc1')
-        allow(Doc).to receive(:store_hdoc!).and_return(doc1)
+        allow(DocumentImporter).to receive(:store_hdoc!).and_return(doc1)
 
         # Suspend after first doc is processed
         call_count = 0

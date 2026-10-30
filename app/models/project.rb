@@ -503,7 +503,7 @@ class Project < ActiveRecord::Base
     sourceids_to_sequence = sourceids_not_found_exact - sourceids_existing_personalized
 
     if sourceids_to_sequence.present?
-      docs_sequenced, messages = Doc.sequence_and_store_docs(sourcedb, sourceids_to_sequence)
+      docs_sequenced, messages = DocumentImporter.sequence_and_store_docs(sourcedb, sourceids_to_sequence)
       sourceids_sequenced = docs_sequenced.map{|doc| doc.sourceid}
       sourceids_sequence_failed = sourceids_to_sequence - sourceids_sequenced
 
