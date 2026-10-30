@@ -10,6 +10,15 @@ RSpec.describe Doc, 'text operations', type: :model do
       expect(doc.get_text).to eq('0123456789')
     end
 
+    it 'reads the current body after an earlier text operation' do
+      expect(doc.get_text).to eq('0123456789')
+
+      doc.body = 'updated body'
+
+      expect(doc.get_text).to eq('updated body')
+      expect(doc.text({ begin: 0, end: 7 })).to eq('updated')
+    end
+
     it 'uses an exclusive end for the selected span' do
       expect(doc.get_text({ begin: 3, end: 6 })).to eq('345')
     end

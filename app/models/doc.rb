@@ -3,7 +3,6 @@ class Doc < ActiveRecord::Base
   include Doc::Import
   include Doc::Revision
   include Doc::Media
-  include Doc::TextOperations
   include Doc::TextStructure
   include Doc::Serialization
   include Doc::Rdf
@@ -15,7 +14,9 @@ class Doc < ActiveRecord::Base
 
   UserSourcedbSeparator = '@'
 
-  attr_accessor :username, :text_aligner
+  attr_accessor :username, :text_aligner, :original_body
+
+  delegate :get_text, :get_slices, :span, :text, to: :document_text
 
   has_many :divisions, dependent: :destroy
   # Paragraph is a kind of division which has label 'p'.
@@ -59,6 +60,11 @@ class Doc < ActiveRecord::Base
   def decrement_docs_projects_counter(project)
     Doc.decrement_counter(:projects_num, self.id)
     self.reload
+  end
+
+  def set_ascii_body
+    self.original_body = body
+    self.body = document_text.to_ascii
   end
 
   def spec = { sourcedb:, sourceid: }
@@ -148,5 +154,11 @@ class Doc < ActiveRecord::Base
 
   def self.delete_orphan_docs_of_user_sourcedb
     d_num = ActiveRecord::Base.connection.delete("DELETE FROM docs WHERE sourcedb LIKE '%#{Doc::UserSourcedbSeparator}%' AND NOT EXISTS (SELECT 1 FROM project_docs WHERE project_docs.doc_id = docs.id)")
+  end
+
+  private
+
+  def document_text
+    DocumentText.new(body)
   end
 end

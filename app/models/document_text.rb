@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-module Doc::TextOperations
-  extend ActiveSupport::Concern
-
-  attr_accessor :original_body
+class DocumentText
+  def initialize(body)
+    @body = body
+  end
 
   def get_slices(max_size, span = nil)
     text = get_text(span)
@@ -59,11 +59,6 @@ module Doc::TextOperations
     [prev_text, span, next_text].compact.join('')
   end
 
-  def set_ascii_body
-    self.original_body = self.body
-    self.body = get_ascii_text(self.body)
-  end
-
   def get_text(span = nil, context_size = nil)
     if span.present?
       b, e = 0, 0
@@ -78,11 +73,8 @@ module Doc::TextOperations
     end
   end
 
-  private
-
-  def get_ascii_text(text)
-    rewritetext = Utfrewrite.utf8_to_ascii(text)
-    #rewritetext = text
+  def to_ascii
+    rewritetext = Utfrewrite.utf8_to_ascii(body)
 
     # escape non-ascii characters
     coder = HTMLEntities.new
@@ -129,4 +121,8 @@ module Doc::TextOperations
 
     asciitext
   end
+
+  private
+
+  attr_reader :body
 end
