@@ -13,6 +13,7 @@
 	}
 
 	document.getElementById('split-here').addEventListener('click', splitAtPoint);
+	document.getElementById('merge-with-next').addEventListener('click', mergeWithNext);
 
 	// Splits the pointed segment at the playback time, or shows why it can't.
 	function splitAtPoint() {
@@ -28,8 +29,11 @@
 	// split, if it can't.
 	function splitSegment(index, offset, ms) {
 		const segment = segments[index];
+		// Spaces at the split go, as the segments' boundary stands for them.
+		const before = segment.text.slice(0, offset).trimEnd();
+		const after = segment.text.slice(offset).trimStart();
 
-		if (offset <= 0 || offset >= segment.text.length) {
+		if (before === '' || after === '') {
 			return 'Point inside the text, not at its start or end.';
 		}
 		if (ms <= segment.start_ms || ms >= segment.end_ms) {
@@ -37,8 +41,26 @@
 		}
 
 		segments.splice(index, 1,
-			{ ...segment, text: segment.text.slice(0, offset), end_ms: ms, line_break_after: false },
-			{ ...segment, text: segment.text.slice(offset), start_ms: ms });
+			{ ...segment, text: before, end_ms: ms, line_break_after: false },
+			{ ...segment, text: after, start_ms: ms });
+	}
+
+	// Merges the pointed segment with the next one.
+	function mergeWithNext() {
+		mergeSegments(point.index);
+
+		point = null;
+		render();
+	}
+
+	// Merges the segment at `index` with the next one: from its start to the next one's end, their texts joined
+	// with a space, as a doc's body joins its segments, and with the line break, if any, after the next one.
+	function mergeSegments(index) {
+		const segment = segments[index];
+		const next = segments[index + 1];
+
+		segments.splice(index, 2,
+			{ ...segment, text: `${segment.text} ${next.text}`, end_ms: next.end_ms, line_break_after: next.line_break_after });
 	}
 
 	function render() {
@@ -62,6 +84,8 @@
 		text.addEventListener('click', () => pointAt(text, index));
 
 		const row = element('div', 'split-segment');
+		// Selected when pointed in, to be split or merged with the next one.
+		row.classList.toggle('selected', point?.index === index);
 		row.append(time, ' ', text);
 		return row;
 	}
@@ -83,12 +107,13 @@
 		return range.toString().length;
 	}
 
-	// Where it's pointed to split, if it is, enabling Split here.
+	// Where it's pointed to split, if it is, enabling Split here, and Merge with next unless it's the last one.
 	function showPoint() {
 		document.getElementById('split-here').disabled = !point;
+		document.getElementById('merge-with-next').disabled = !point || point.index >= segments.length - 1;
 		document.getElementById('split-point').textContent = point
 			? `Segment #${point.index}, before character ${point.offset}`
-			: "Click in a segment's text to point where to split it.";
+			: "Click in a segment's text to point where to split it, or to select it to merge with the next one.";
 	}
 
 	// The playback time Split here would split at.
