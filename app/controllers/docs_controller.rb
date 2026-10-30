@@ -339,7 +339,7 @@ class DocsController < ApplicationController
 			end
 
 			hdoc = DocumentImportNormalizer.normalize!(hdoc, current_user, current_user.root?)
-			hdoc[:body] = Doc.written_body(medium, hdoc[:body])
+			hdoc[:body] = medium.written_doc_body(hdoc[:body]) if medium
 			# isolation matches store_hdoc!'s own transaction, which raises if joined with a different one.
 			ActiveRecord::Base.transaction(isolation: :read_committed) do
 				@doc = DocumentImporter.store_hdoc!(hdoc)

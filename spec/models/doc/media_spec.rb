@@ -41,33 +41,23 @@ RSpec.describe Doc, type: :model do
     end
   end
 
-  describe '.written_body' do
-    let(:medium) { create(:medium, media_type: :audio, content_type: 'audio/mpeg') }
-
-    it 'puts the body of a doc with audio or video on one line, as a segment has its text' do
-      expect(Doc.written_body(medium, "\tHello\r\nworld\nand  so   on \n")).to eq('Hello world and so on')
-    end
-
-    it 'leaves the body of a doc with no medium as it is' do
-      expect(Doc.written_body(nil, "Hello\nworld  again")).to eq("Hello\nworld  again")
-    end
-
-    it 'leaves the body of a doc with an image as it is' do
-      image = create(:medium, media_type: :image, content_type: 'image/png')
-
-      expect(Doc.written_body(image, "A\ncaption")).to eq("A\ncaption")
-    end
-  end
-
   describe '#assign_written_body' do
     let(:medium) { create(:medium, media_type: :audio, content_type: 'audio/mpeg') }
 
-    it 'sets the body as .written_body has it for its medium' do
+    it 'sets the body as the medium formats it' do
       doc = create(:doc, body: 'Hello world', medium:)
 
       doc.assign_written_body("Goodbye\r\n world")
 
       expect(doc.body).to eq('Goodbye world')
+    end
+
+    it 'leaves line breaks and repeated spaces when there is no medium' do
+      doc = create(:doc, body: 'Original', medium: nil)
+
+      doc.assign_written_body("Hello\nworld  again")
+
+      expect(doc.body).to eq("Hello\nworld  again")
     end
 
     it 'leaves the body as it is when given unchanged, line breaks submitted as CRLF included' do

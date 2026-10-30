@@ -27,6 +27,11 @@ class Medium < ApplicationRecord
     audio? || video?
   end
 
+  # Audio and video bodies written by hand follow the spacing of segment text.
+  def written_doc_body(text)
+    transcribable? ? TextNormalizable.normalize_inline_text(text) : text
+  end
+
   # The playing time of its audio/video file, in milliseconds.
   def duration_ms
     file.open { |opened| (AudioAnalyzer.new(opened.path).duration * 1000).round }

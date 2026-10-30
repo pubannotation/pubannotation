@@ -84,6 +84,20 @@ RSpec.describe Medium, type: :model do
     end
   end
 
+  describe '#written_doc_body' do
+    [:audio, :video].each do |media_type|
+      it "normalizes whitespace for #{media_type}" do
+        medium = build(:medium, media_type: media_type)
+        expect(medium.written_doc_body("\tHello\r\nworld\nand  so   on \n")).to eq('Hello world and so on')
+      end
+    end
+
+    it 'leaves image captions as written' do
+      medium = build(:medium, media_type: :image)
+      expect(medium.written_doc_body("A\ncaption  here")).to eq("A\ncaption  here")
+    end
+  end
+
   describe '#duration_ms' do
     it 'is the playing time of its file, rounded to milliseconds' do
       medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')

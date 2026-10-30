@@ -13,19 +13,10 @@ module Doc::Media
     after_update :sync_media_transcript_with_body, if: :saved_change_to_body?
   end
 
-  class_methods do
-    # A body written by hand for a doc with `medium`. An audio/video doc's body is what was said, joined from its
-    # segments (see MediaTranscript#speech_text), so it's spaced as a segment's text is; any other is left as it is.
-    def written_body(medium, text)
-      medium&.transcribable? ? TextNormalizable.normalize_inline_text(text) : text
-    end
-  end
-
-  # Sets the body to `text` written by hand, as .written_body has it. Left as it is when unchanged, as the edit
-  # form submits it back with other changes, so a line break its segments set isn't put on one line.
+  # Preserve an unchanged body, including line breaks set by its segments.
   def assign_written_body(text)
     self.body = text
-    self.body = Doc.written_body(medium, body) if body_changed?
+    self.body = medium.written_doc_body(body) if body_changed? && medium
   end
 
   # Whether `current_user` can edit the segments of this doc's media transcript.
