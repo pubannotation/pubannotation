@@ -339,6 +339,7 @@ class DocsController < ApplicationController
 			end
 
 			hdoc = Doc.hdoc_normalize!(hdoc, current_user, current_user.root?)
+			hdoc[:body] = Doc.written_body(medium, hdoc[:body])
 			# isolation matches store_hdoc!'s own transaction, which raises if joined with a different one.
 			ActiveRecord::Base.transaction(isolation: :read_committed) do
 				@doc = Doc.store_hdoc!(hdoc)
@@ -426,7 +427,8 @@ class DocsController < ApplicationController
 		@doc = Doc.find_by(id: params[:id])
 
 		attributes = doc_params
-		is_success = @doc.update(attributes.except(:text).merge(body: attributes[:text]))
+		@doc.assign_written_body(attributes[:text])
+		is_success = @doc.update(attributes.except(:text))
 
 		respond_to do |format|
 			if is_success

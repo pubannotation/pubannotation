@@ -7,12 +7,25 @@ module Doc::Media
     belongs_to :medium, optional: true
     has_one :media_transcript, dependent: :destroy
 
-    before_validation :flatten_speech_body, if: -> { medium&.transcribable? && will_save_change_to_body? }
-
     validate :media_reference_immutable, on: :update
     validate :body_immutable_when_transcribed_by_whisper, on: :update
     validate :body_has_speech, if: -> { medium&.transcribable? }
     after_update :sync_media_transcript_with_body, if: :saved_change_to_body?
+  end
+
+  class_methods do
+    # A body written by hand for a doc with `medium`. An audio/video doc's body is what was said, joined from its
+    # segments (see MediaTranscript#speech_text), so it's spaced as a segment's text is; any other is left as it is.
+    def written_body(medium, text)
+      medium&.transcribable? ? TextNormalizable.normalize_inline_text(text) : text
+    end
+  end
+
+  # Sets the body to `text` written by hand, as .written_body has it. Left as it is when unchanged, as the edit
+  # form submits it back with other changes, so a line break its segments set isn't put on one line.
+  def assign_written_body(text)
+    self.body = text
+    self.body = Doc.written_body(medium, body) if body_changed?
   end
 
   # Whether `current_user` can edit the segments of this doc's media transcript.
@@ -55,16 +68,15 @@ module Doc::Media
 
     return unless media_transcript
     return unless media_transcript.transcribed_by_whisper?
-    # The body following the transcript, once its segments changed (see MediaTranscript#sync_doc_body).
-    return if media_transcript.text == body
+    return if body_following_transcript?
 
     errors.add(:base, 'Body cannot be changed directly for a document transcribed by Whisper; edit its segments instead')
   end
 
-  # An audio/video doc's body is what was said, joined from its segments with a space (see
-  # MediaTranscript#speech_text), so one written by hand is spaced as a segment's text is.
-  def flatten_speech_body
-    self.body = TextNormalizable.normalize_inline_text(body)
+  # The body following the transcript, once its segments changed (see MediaTranscript#sync_doc_body), so
+  # already as the transcript has it, e.g. with the line breaks its segments set.
+  def body_following_transcript?
+    media_transcript&.text == body
   end
 
   # An audio/video doc's body is what was said, to be highlighted as it's played, so it can't be only a

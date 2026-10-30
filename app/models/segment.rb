@@ -7,12 +7,20 @@ class Segment < ApplicationRecord
 
   # May be blank, as Whisper can transcribe a segment as nothing (which isn't speech).
   validates :text, exclusion: { in: [nil], message: "can't be nil" }
+  # A blank value, e.g. null in JSON or "", casts to nil, which the column doesn't take.
+  validates :line_break_after, inclusion: { in: [true, false] }
   # Each checked further only once present, so a missing one is reported just as blank.
   validates :sort_order, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 0, allow_nil: true }
   validates :start_ms, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 0, allow_nil: true }
   validates :end_ms, presence: true, numericality: { only_integer: true, allow_nil: true },
                      comparison: { greater_than_or_equal_to: :start_ms, allow_nil: true, if: :start_ms }
   validate :start_not_before_previous_end
+
+  # What separates it from the next speech segment in the doc's body: a line break if it has one after
+  # it, or else a space.
+  def separator_after
+    line_break_after ? "\n" : ' '
+  end
 
   # Whether it's actual speech, rather than a non-speech label such as "(music)".
   def speech?

@@ -19,6 +19,13 @@ RSpec.describe Segment, type: :model do
       expect(segment.errors[:text]).to include("can't be nil")
     end
 
+    it 'requires line_break_after to be true or false, not nil, which a blank value casts to' do
+      segment = build(:segment, line_break_after: '')
+
+      expect(segment).not_to be_valid
+      expect(segment.errors[:line_break_after]).to include('is not included in the list')
+    end
+
     it 'requires a non-negative integer sort order' do
       expect(build(:segment, sort_order: -1)).not_to be_valid
       expect(build(:segment, sort_order: 1.5)).not_to be_valid
@@ -103,6 +110,16 @@ RSpec.describe Segment, type: :model do
   describe 'line_break_after' do
     it 'defaults to false' do
       expect(create(:segment).line_break_after).to be(false)
+    end
+  end
+
+  describe '#separator_after' do
+    it 'is a space' do
+      expect(build(:segment).separator_after).to eq(' ')
+    end
+
+    it 'is a line break with one after it' do
+      expect(build(:segment, line_break_after: true).separator_after).to eq("\n")
     end
   end
 

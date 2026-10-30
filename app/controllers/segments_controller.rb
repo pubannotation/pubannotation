@@ -13,26 +13,29 @@ class SegmentsController < ApplicationController
   end
 
   # PATCH /docs/:doc_id/segments/:id
+  # Takes the segment's text (from the dialog) or whether a line break follows it (from its checkbox).
   def update
-    @text = segment_text_param
-    # Reloads and locks the transcript, so a concurrent edit of another segment isn't overwritten.
-    @media_transcript.with_lock do
-      @media_transcript.set_segment_text(@segment, @text)
-      @media_transcript.save!
-    end
+    attributes = segment_params
+    @text = attributes[:text]
+    @media_transcript.update_segment!(@segment, attributes)
 
-    redirect_to doc_segments_path(@doc), notice: 'Segment text was successfully updated.'
+    redirect_to doc_segments_path(@doc), notice: 'Segment was successfully updated.'
   rescue ArgumentError, ActiveRecord::RecordInvalid => e
-    # Reopens the dialog with the entered text and the error, for it to be fixed and saved again.
-    @error = e.message
-    @media_transcript.reload
-    render :index, status: :unprocessable_content
+    if attributes.key?(:text)
+      # Reopens the dialog with the entered text and the error, for it to be fixed and saved again.
+      @error = e.message
+      @media_transcript.reload
+      render :index, status: :unprocessable_content
+    else
+      # A checkbox's change has nothing to fix in a dialog, so it goes back to the list with the error.
+      redirect_to doc_segments_path(@doc), alert: e.message
+    end
   end
 
   private
 
-  def segment_text_param
-    params.expect(segment: [:text])[:text]
+  def segment_params
+    params.expect(segment: %i[text line_break_after])
   end
 
   def set_media_transcript

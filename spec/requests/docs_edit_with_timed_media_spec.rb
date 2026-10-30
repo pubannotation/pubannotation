@@ -55,6 +55,25 @@ RSpec.describe 'Editing a doc with a media transcript', type: :request do
     end
   end
 
+  context 'when the doc has a line break its segments set' do
+    let(:doc) { create(:doc, body: "Hello\nworld", medium:) }
+
+    before do
+      MediaTranscript.create!(medium:, doc:, generation_model: 'whisper:ggml-base.en', segments: [
+        build(:segment, :without_transcript, sort_order: 0, text: 'Hello', start_ms: 0, end_ms: 400, line_break_after: true),
+        build(:segment, :without_transcript, sort_order: 1, text: 'world', start_ms: 500, end_ms: 1000)
+      ])
+    end
+
+    it 'keeps it as changes to the other fields are submitted with the unchanged text, as the form sends it' do
+      put doc_path(doc, format: :json), params: { doc: { text: "Hello\r\nworld", source: 'https://example.com/changed' } }
+
+      expect(response).to have_http_status(:no_content)
+      expect(doc.reload.body).to eq("Hello\nworld")
+      expect(doc.source).to eq('https://example.com/changed')
+    end
+  end
+
   context 'when the doc has a single-segment media transcript not from Whisper, e.g. registered manually' do
     let!(:media_transcript) do
       MediaTranscript.create!(medium:, doc:, segments: [build(:segment, :without_transcript, sort_order: 0, text: 'Hello world', start_ms: 0, end_ms: 1000)])

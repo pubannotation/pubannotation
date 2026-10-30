@@ -52,13 +52,17 @@ class MediaTranscript < ApplicationRecord
     current_segments.any?
   end
 
+  # The speech segments' text, each separated from the next by its separator_after (a space, or a line
+  # break if it has one after it).
   def speech_text
-    speech_segments.map(&:text).join(' ')
+    *leading, last = speech_segments
+    leading.map { |segment| segment.text + segment.separator_after }.join + last&.text.to_s
   end
 
-  # Each speech segment's char offset ({begin:, end:}) into what #speech_text builds from them (a
-  # single space between consecutive speech segments, regardless of non-speech segments between
-  # them in `segments`), in the same order as #speech_segments, paired with its start_ms.
+  # Each speech segment's char offset ({begin:, end:}) into what #speech_text builds from them (one
+  # separating char, a space or a line break, between consecutive speech segments, regardless of
+  # non-speech segments between them in `segments`), in the same order as #speech_segments, paired with
+  # its start_ms.
   def speech_segment_spans
     char_position = 0
 
@@ -120,6 +124,23 @@ class MediaTranscript < ApplicationRecord
     current.text = stripped_text
   end
 
+  # Whether a line break can follow `segment` in the doc's body: a speech segment's can, but the last
+  # one's, which nothing follows.
+  def line_break_settable_after?(segment)
+    segment.speech? && segment != last_speech_segment
+  end
+
+  # Changes `segment` by `attributes`, its text and/or whether a line break follows it, and saves it, rebuilding
+  # text and the doc's body. Reloads and locks itself first, so a concurrent edit of another segment isn't
+  # overwritten.
+  def update_segment!(segment, attributes)
+    with_lock do
+      set_segment_text(segment, attributes[:text]) if attributes.key?(:text)
+      set_segment_line_break_after(segment, attributes[:line_break_after]) if attributes.key?(:line_break_after)
+      save!
+    end
+  end
+
   # Replaces the whole text, merging the segments, if any, into one spanning them all.
   def replace_text!(new_text)
     # An image caption has no segments.
@@ -133,9 +154,26 @@ class MediaTranscript < ApplicationRecord
 
   private
 
+  # Sets whether a line break, rather than a space, follows `segment` in the doc's body. On save, text and the
+  # doc's body are rebuilt to follow, and it fails for a segment since replaced, as for #set_segment_text,
+  # or one no line break can follow (see #line_break_settable_after?).
+  def set_segment_line_break_after(segment, line_break_after)
+    current = current_segments.find { it == segment }
+    raise ActiveRecord::RecordNotFound, "No segment with id #{segment.id}." unless current
+    raise ArgumentError, 'No line break can follow this segment.' unless line_break_settable_after?(current)
+
+    current.line_break_after = line_break_after
+  end
+
   # The segments as they'll be once saved: without those marked for destruction.
   def current_segments
     segments.reject(&:marked_for_destruction?)
+  end
+
+  # The last speech segment, searched from the end so each row of the segment list doesn't scan them all.
+  # to_a, as the association's reverse_each (Enumerable's) would collect them all first.
+  def last_speech_segment
+    segments.to_a.reverse_each.find(&:speech?)
   end
 
   def segments_changing?
