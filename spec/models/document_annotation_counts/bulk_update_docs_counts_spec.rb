@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe DocumentAnnotationCounts, '.bulk_update_docs_counts', type: :model do
+RSpec.describe DocumentAnnotationCounter, '.bulk_update_docs_counts', type: :model do
   let!(:project1) { create(:project) }
   let!(:project2) { create(:project) }
 
@@ -28,7 +28,7 @@ RSpec.describe DocumentAnnotationCounts, '.bulk_update_docs_counts', type: :mode
 
   describe 'updating all docs' do
     it 'updates counts for all docs in the database' do
-      DocumentAnnotationCounts.bulk_update_docs_counts
+      DocumentAnnotationCounter.bulk_update_docs_counts
 
       doc1.reload
       expect(doc1.denotations_num).to eq(3)
@@ -54,7 +54,7 @@ RSpec.describe DocumentAnnotationCounts, '.bulk_update_docs_counts', type: :mode
       doc3.update_columns(denotations_num: 999, blocks_num: 999)
 
       # Update only doc1 and doc2
-      DocumentAnnotationCounts.bulk_update_docs_counts([doc1.id, doc2.id])
+      DocumentAnnotationCounter.bulk_update_docs_counts([doc1.id, doc2.id])
 
       doc1.reload
       expect(doc1.denotations_num).to eq(3)
@@ -70,18 +70,18 @@ RSpec.describe DocumentAnnotationCounts, '.bulk_update_docs_counts', type: :mode
 
   describe 'edge cases' do
     it 'handles empty doc_ids array gracefully' do
-      expect { DocumentAnnotationCounts.bulk_update_docs_counts([]) }.not_to raise_error
+      expect { DocumentAnnotationCounter.bulk_update_docs_counts([]) }.not_to raise_error
     end
 
     it 'handles nil doc_ids (updates all)' do
-      DocumentAnnotationCounts.bulk_update_docs_counts(nil)
+      DocumentAnnotationCounter.bulk_update_docs_counts(nil)
 
       doc1.reload
       expect(doc1.denotations_num).to eq(3)
     end
 
     it 'handles docs with no annotations' do
-      DocumentAnnotationCounts.bulk_update_docs_counts([doc3.id])
+      DocumentAnnotationCounter.bulk_update_docs_counts([doc3.id])
 
       doc3.reload
       expect(doc3.denotations_num).to eq(0)
@@ -97,7 +97,7 @@ RSpec.describe DocumentAnnotationCounts, '.bulk_update_docs_counts', type: :mode
       create(:project_doc, project: project3, doc: doc2)
       create_list(:denotation, 10, project: project3, doc: doc2)
 
-      DocumentAnnotationCounts.bulk_update_docs_counts([doc2.id])
+      DocumentAnnotationCounter.bulk_update_docs_counts([doc2.id])
 
       doc2.reload
       expect(doc2.denotations_num).to eq(15)  # 5 + 10
@@ -108,7 +108,7 @@ RSpec.describe DocumentAnnotationCounts, '.bulk_update_docs_counts', type: :mode
       Denotation.where(doc: doc1).delete_all
       Block.where(doc: doc1).delete_all
 
-      DocumentAnnotationCounts.bulk_update_docs_counts([doc1.id])
+      DocumentAnnotationCounter.bulk_update_docs_counts([doc1.id])
 
       doc1.reload
       expect(doc1.denotations_num).to eq(0)

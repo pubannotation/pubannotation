@@ -20,6 +20,18 @@ RSpec.describe Project, '#update_numbers_for_flagged_docs (integration)', type: 
   let!(:target_pd2) { create(:project_doc, project: target_project, doc: doc2, flag: false) }
   let!(:target_pd3) { create(:project_doc, project: target_project, doc: doc3, flag: true) }
 
+  def recount_document_annotations(project = nil)
+    if project
+      ids = project.docs.pluck(:id)
+      return if ids.empty?
+      DocumentAnnotationCounter.bulk_update_docs_counts(ids)
+      ProjectDoc.bulk_update_counts(project_id: project.id)
+    else
+      DocumentAnnotationCounter.bulk_update_docs_counts
+      ProjectDoc.bulk_update_counts
+    end
+  end
+
   before do
     # Source project annotations
     create_list(:denotation, 5, project: source_project, doc: doc1)
@@ -36,7 +48,7 @@ RSpec.describe Project, '#update_numbers_for_flagged_docs (integration)', type: 
     create_list(:denotation, 3, project: target_project, doc: doc2)
 
     # Initialize all counters
-    DocumentAnnotationCounts.update_numbers
+    recount_document_annotations
     ProjectDoc.bulk_update_counts
     source_project.clean
     target_project.clean

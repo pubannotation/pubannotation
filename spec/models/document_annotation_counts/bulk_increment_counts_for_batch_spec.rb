@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe DocumentAnnotationCounts, type: :model do
+RSpec.describe DocumentAnnotationCountUpdater, type: :model do
   describe '.bulk_increment_counts_for_batch' do
     let!(:doc1) { create(:doc, sourcedb: 'PMC', sourceid: '123', denotations_num: 100, blocks_num: 50, relations_num: 25) }
     let!(:doc2) { create(:doc, sourcedb: 'PMC', sourceid: '456', denotations_num: 200, blocks_num: 80, relations_num: 40) }
@@ -15,7 +15,7 @@ RSpec.describe DocumentAnnotationCounts, type: :model do
           doc2.id => { denotations: 20, blocks: 5, relations: 2 }
         }
 
-        DocumentAnnotationCounts.bulk_increment_counts_for_batch(doc_deltas)
+        DocumentAnnotationCountUpdater.bulk_increment_counts_for_batch(doc_deltas)
 
         doc1.reload
         expect(doc1.denotations_num).to eq(130)  # 100 + 30
@@ -37,7 +37,7 @@ RSpec.describe DocumentAnnotationCounts, type: :model do
           doc1.id => { denotations: -30, blocks: -10, relations: -5 }
         }
 
-        DocumentAnnotationCounts.bulk_increment_counts_for_batch(doc_deltas)
+        DocumentAnnotationCountUpdater.bulk_increment_counts_for_batch(doc_deltas)
 
         doc1.reload
         expect(doc1.denotations_num).to eq(70)   # 100 + (-30)
@@ -51,7 +51,7 @@ RSpec.describe DocumentAnnotationCounts, type: :model do
           doc1.id => { denotations: -100, blocks: -50, relations: -25 }
         }
 
-        DocumentAnnotationCounts.bulk_increment_counts_for_batch(doc_deltas)
+        DocumentAnnotationCountUpdater.bulk_increment_counts_for_batch(doc_deltas)
 
         doc1.reload
         expect(doc1.denotations_num).to eq(0)    # 100 + (-100)
@@ -66,7 +66,7 @@ RSpec.describe DocumentAnnotationCounts, type: :model do
           doc1.id => { denotations: 0, blocks: 0, relations: 0 }
         }
 
-        DocumentAnnotationCounts.bulk_increment_counts_for_batch(doc_deltas)
+        DocumentAnnotationCountUpdater.bulk_increment_counts_for_batch(doc_deltas)
 
         doc1.reload
         expect(doc1.denotations_num).to eq(100)  # unchanged
@@ -95,7 +95,7 @@ RSpec.describe DocumentAnnotationCounts, type: :model do
           shared_doc.id => { denotations: 10, blocks: 5, relations: 2 }  # net delta
         }
 
-        DocumentAnnotationCounts.bulk_increment_counts_for_batch(doc_deltas)
+        DocumentAnnotationCountUpdater.bulk_increment_counts_for_batch(doc_deltas)
 
         shared_doc.reload
         expect(shared_doc.denotations_num).to eq(110)  # 100 + 10
@@ -111,7 +111,7 @@ RSpec.describe DocumentAnnotationCounts, type: :model do
           shared_doc.id => { denotations: -50, blocks: -30, relations: -15 }
         }
 
-        DocumentAnnotationCounts.bulk_increment_counts_for_batch(doc_deltas)
+        DocumentAnnotationCountUpdater.bulk_increment_counts_for_batch(doc_deltas)
 
         shared_doc.reload
         expect(shared_doc.denotations_num).to eq(50)   # 100 - 50
@@ -127,7 +127,7 @@ RSpec.describe DocumentAnnotationCounts, type: :model do
           doc3.id => { denotations: 15, blocks: 8, relations: 4 }
         }
 
-        DocumentAnnotationCounts.bulk_increment_counts_for_batch(doc_deltas)
+        DocumentAnnotationCountUpdater.bulk_increment_counts_for_batch(doc_deltas)
 
         doc3.reload
         expect(doc3.denotations_num).to eq(15)
@@ -139,7 +139,7 @@ RSpec.describe DocumentAnnotationCounts, type: :model do
     context 'edge cases' do
       it 'handles empty doc_deltas gracefully' do
         expect {
-          DocumentAnnotationCounts.bulk_increment_counts_for_batch({})
+          DocumentAnnotationCountUpdater.bulk_increment_counts_for_batch({})
         }.not_to raise_error
 
         # Counters should remain unchanged
@@ -154,7 +154,7 @@ RSpec.describe DocumentAnnotationCounts, type: :model do
           doc3.id => { denotations: 30, blocks: 15, relations: 8 }
         }
 
-        DocumentAnnotationCounts.bulk_increment_counts_for_batch(doc_deltas)
+        DocumentAnnotationCountUpdater.bulk_increment_counts_for_batch(doc_deltas)
 
         doc1.reload
         doc2.reload
@@ -170,7 +170,7 @@ RSpec.describe DocumentAnnotationCounts, type: :model do
           doc1.id => { denotations: 50, blocks: 25, relations: 10 }
         }
 
-        DocumentAnnotationCounts.bulk_increment_counts_for_batch(doc_deltas)
+        DocumentAnnotationCountUpdater.bulk_increment_counts_for_batch(doc_deltas)
 
         doc1.reload
         expect(doc1.denotations_num).to eq(150)
