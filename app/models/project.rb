@@ -982,7 +982,7 @@ class Project < ActiveRecord::Base
     # Update project_doc and doc counts
     ProjectDoc.bulk_update_counts(project_id: id)
     doc_ids = project_docs.pluck(:doc_id).uniq
-    Doc.bulk_update_docs_counts(doc_ids: doc_ids) if doc_ids.any?
+    DocumentAnnotationCounts.bulk_update_docs_counts(doc_ids) if doc_ids.any?
   end
 
   def pretreatment_annotations!(annotations, options)
@@ -1136,7 +1136,7 @@ class Project < ActiveRecord::Base
 
     # Update docs for flagged docs using shared method (only for THIS project's flagged docs)
     doc_ids = ProjectDoc.where(project_id: id, flag: true).pluck(:doc_id).uniq
-    Doc.bulk_update_docs_counts(doc_ids: doc_ids) if doc_ids.any?
+    DocumentAnnotationCounts.bulk_update_docs_counts(doc_ids) if doc_ids.any?
 
     ActiveRecord::Base.connection.update <<~SQL.squish
       UPDATE projects
@@ -1240,7 +1240,7 @@ class Project < ActiveRecord::Base
 
         # update annotation counts for each doc using shared method
         doc_ids = project_docs.pluck(:doc_id)
-        Doc.bulk_update_docs_counts(doc_ids: doc_ids) if doc_ids.any?
+        DocumentAnnotationCounts.bulk_update_docs_counts(doc_ids) if doc_ids.any?
 
         update_annotations_updated_at
         update_updated_at

@@ -28,7 +28,7 @@ RSpec.describe Project, '#delete_annotations (integration)', type: :model do
     create_list(:block, 4, project: other_project, doc: doc3)
 
     # Initialize counters
-    Doc.update_numbers
+    DocumentAnnotationCounts.update_numbers
     ProjectDoc.bulk_update_counts
   end
 
@@ -157,7 +157,7 @@ RSpec.describe Project, '#delete_annotations (integration)', type: :model do
 
       other_project.reload
       # Note: other_project's counts won't be updated by project.delete_annotations
-      # They would need other_project.reload or Doc.update_numbers to be called
+      # They would need other_project.reload or DocumentAnnotationCounts.update_numbers to be called
     end
   end
 end

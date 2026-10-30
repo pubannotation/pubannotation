@@ -36,7 +36,7 @@ RSpec.describe Project, '#update_numbers_for_flagged_docs (integration)', type: 
     create_list(:denotation, 3, project: target_project, doc: doc2)
 
     # Initialize all counters
-    Doc.update_numbers
+    DocumentAnnotationCounts.update_numbers
     ProjectDoc.bulk_update_counts
     source_project.clean
     target_project.clean

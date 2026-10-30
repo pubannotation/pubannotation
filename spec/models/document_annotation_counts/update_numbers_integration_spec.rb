@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe Doc, '.update_numbers (integration)', type: :model do
+RSpec.describe DocumentAnnotationCounts, '.update_numbers (integration)', type: :model do
   let!(:project1) { create(:project) }
   let!(:project2) { create(:project) }
 
@@ -31,7 +31,7 @@ RSpec.describe Doc, '.update_numbers (integration)', type: :model do
 
   describe 'updating for a specific project' do
     it 'updates both docs and project_docs tables correctly' do
-      Doc.update_numbers(project1)
+      DocumentAnnotationCounts.update_numbers(project1)
 
       # Check project_docs for project1
       pd1.reload
@@ -59,7 +59,7 @@ RSpec.describe Doc, '.update_numbers (integration)', type: :model do
       Doc.update_all(denotations_num: 999, blocks_num: 999, projects_num: 999)
       ProjectDoc.update_all(denotations_num: 999, blocks_num: 999)
 
-      Doc.update_numbers(project1)
+      DocumentAnnotationCounts.update_numbers(project1)
 
       # doc1 and doc2 belong to project1, should be updated
       doc1.reload
@@ -76,7 +76,7 @@ RSpec.describe Doc, '.update_numbers (integration)', type: :model do
 
   describe 'updating all docs' do
     it 'updates both docs and project_docs for all records' do
-      Doc.update_numbers  # No project specified = update all
+      DocumentAnnotationCounts.update_numbers  # No project specified = update all
 
       # Check all project_docs
       pd1.reload
@@ -110,7 +110,7 @@ RSpec.describe Doc, '.update_numbers (integration)', type: :model do
 
   describe 'consistency between docs and project_docs' do
     it 'ensures doc counts equal sum of project_doc counts' do
-      Doc.update_numbers
+      DocumentAnnotationCounts.update_numbers
 
       # Verify doc1 count = sum of its project_docs
       doc1.reload
@@ -132,7 +132,7 @@ RSpec.describe Doc, '.update_numbers (integration)', type: :model do
   describe 'after annotation changes' do
     it 'reflects new annotations after update_numbers is called' do
       # Initial update
-      Doc.update_numbers(project1)
+      DocumentAnnotationCounts.update_numbers(project1)
 
       doc1.reload
       initial_count = doc1.denotations_num
@@ -142,7 +142,7 @@ RSpec.describe Doc, '.update_numbers (integration)', type: :model do
       create_list(:denotation, 10, project: project1, doc: doc1)
 
       # Update again
-      Doc.update_numbers(project1)
+      DocumentAnnotationCounts.update_numbers(project1)
 
       doc1.reload
       expect(doc1.denotations_num).to eq(22)  # 12 + 10
@@ -152,12 +152,12 @@ RSpec.describe Doc, '.update_numbers (integration)', type: :model do
     end
 
     it 'reflects deletions after update_numbers is called' do
-      Doc.update_numbers(project1)
+      DocumentAnnotationCounts.update_numbers(project1)
 
       # Delete some annotations
       Denotation.where(project: project1, doc: doc1).limit(3).delete_all
 
-      Doc.update_numbers(project1)
+      DocumentAnnotationCounts.update_numbers(project1)
 
       doc1.reload
       expect(doc1.denotations_num).to eq(9)  # 12 - 3

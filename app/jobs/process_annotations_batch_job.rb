@@ -136,7 +136,7 @@ class ProcessAnnotationsBatchJob < ApplicationJob
           )
 
           # Update docs (cross-project aggregates) - use net deltas
-          Doc.bulk_increment_counts_for_batch(doc_deltas: docs_net_deltas)
+          DocumentAnnotationCounts.bulk_increment_counts_for_batch(docs_net_deltas)
 
           # Skip project-level counters here - will be updated from database at end
           # in StoreAnnotationsCollectionUploadJob#update_final_project_stats

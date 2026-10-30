@@ -6,7 +6,7 @@ class UpdateNumbersForDocsJob < ApplicationJob
 	def perform(admin_project)
 		prepare_progress_record(2)
 
-		Doc.update_numbers
+		DocumentAnnotationCounts.update_numbers
 		@job&.update_attribute(:num_dones, 1)
 
 		Project.all.each{|project| project.docs_stat_update}

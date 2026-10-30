@@ -17,7 +17,7 @@ RSpec.describe 'Annotation Workflow (End-to-End)', type: :model do
       create_list(:denotation, 3, project: project, doc: doc2)
 
       # Step 2: Update counters
-      Doc.update_numbers(project)
+      DocumentAnnotationCounts.update_numbers(project)
 
       # Step 3: Verify all tables are consistent
       doc1.reload
@@ -46,7 +46,7 @@ RSpec.describe 'Annotation Workflow (End-to-End)', type: :model do
       # Setup: Create and initialize
       create_list(:denotation, 10, project: project, doc: doc1)
       create_list(:block, 5, project: project, doc: doc1)
-      Doc.update_numbers(project)
+      DocumentAnnotationCounts.update_numbers(project)
 
       doc1.reload
       expect(doc1.denotations_num).to eq(10)
@@ -55,7 +55,7 @@ RSpec.describe 'Annotation Workflow (End-to-End)', type: :model do
       Denotation.where(project: project, doc: doc1).limit(6).delete_all
 
       # Step 2: Update counters
-      Doc.update_numbers(project)
+      DocumentAnnotationCounts.update_numbers(project)
 
       # Step 3: Verify consistency
       doc1.reload
@@ -69,7 +69,7 @@ RSpec.describe 'Annotation Workflow (End-to-End)', type: :model do
       # Setup
       create_list(:denotation, 10, project: project, doc: doc1)
       create_list(:block, 5, project: project, doc: doc1)
-      Doc.update_numbers(project)
+      DocumentAnnotationCounts.update_numbers(project)
 
       # Step 1: Delete all annotations for project
       project.delete_annotations
@@ -106,7 +106,7 @@ RSpec.describe 'Annotation Workflow (End-to-End)', type: :model do
       create_list(:denotation, 3, project: project1, doc: doc2)
 
       # Step 2: Update counters for all
-      Doc.update_numbers
+      DocumentAnnotationCounts.update_numbers
 
       # Step 3: Verify doc1 has sum from both projects
       doc1.reload
@@ -150,7 +150,7 @@ RSpec.describe 'Annotation Workflow (End-to-End)', type: :model do
       create_list(:block, 5, project: source_project, doc: doc1)
       create_list(:denotation, 3, project: source_project, doc: doc2)
 
-      Doc.update_numbers(source_project)
+      DocumentAnnotationCounts.update_numbers(source_project)
       source_project.clean
     end
 
@@ -186,7 +186,7 @@ RSpec.describe 'Annotation Workflow (End-to-End)', type: :model do
       target_pd1 = create(:project_doc, project: target_project, doc: doc1, flag: true)
       create_list(:denotation, 20, project: target_project, doc: doc1)
 
-      Doc.update_numbers(target_project)
+      DocumentAnnotationCounts.update_numbers(target_project)
       target_pd1.reload
       expect(target_pd1.denotations_num).to eq(20)
 
@@ -246,21 +246,21 @@ RSpec.describe 'Annotation Workflow (End-to-End)', type: :model do
     it 'maintains consistency through create → update → create → update → delete → update' do
       # Operation 1: Create some annotations
       create_list(:denotation, 5, project: project, doc: doc)
-      Doc.update_numbers(project)
+      DocumentAnnotationCounts.update_numbers(project)
 
       doc.reload
       expect(doc.denotations_num).to eq(5)
 
       # Operation 2: Create more annotations
       create_list(:denotation, 3, project: project, doc: doc)
-      Doc.update_numbers(project)
+      DocumentAnnotationCounts.update_numbers(project)
 
       doc.reload
       expect(doc.denotations_num).to eq(8)
 
       # Operation 3: Delete some
       Denotation.where(project: project, doc: doc).limit(4).delete_all
-      Doc.update_numbers(project)
+      DocumentAnnotationCounts.update_numbers(project)
 
       doc.reload
       expect(doc.denotations_num).to eq(4)
@@ -284,7 +284,7 @@ RSpec.describe 'Annotation Workflow (End-to-End)', type: :model do
       pd = create(:project_doc, project: project, doc: doc)
 
       # Update counters with no annotations
-      Doc.update_numbers(project)
+      DocumentAnnotationCounts.update_numbers(project)
 
       doc.reload
       pd.reload
@@ -306,7 +306,7 @@ RSpec.describe 'Annotation Workflow (End-to-End)', type: :model do
       create_list(:denotation, 5, project: project, doc: doc)
 
       # This should handle gracefully
-      Doc.update_numbers(project)
+      DocumentAnnotationCounts.update_numbers(project)
 
       doc.reload
       expect(doc.denotations_num).to eq(5)
