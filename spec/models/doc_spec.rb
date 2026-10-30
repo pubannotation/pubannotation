@@ -36,7 +36,7 @@ RSpec.describe Doc, type: :model do
     end
   end
 
-  describe '#get_relations_count with span' do
+  describe 'relation counts with span' do
     let(:project) { create(:project) }
     let(:doc) { create(:doc) }
     let!(:project_doc) { create(:project_doc, project: project, doc: doc) }
@@ -125,7 +125,7 @@ RSpec.describe Doc, type: :model do
 
       it 'counts across all projects when project_id is nil' do
         # Both projects contribute one in-span relation each.
-        expect(doc.get_relations_count(begin: 0, end: 50)).to eq(2)
+        expect(Relation.in_doc(doc.id).with_denotations_in_span({ begin: 0, end: 50 }).count).to eq(2)
       end
     end
 
