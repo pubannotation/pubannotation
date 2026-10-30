@@ -24,7 +24,8 @@
 	}
 
 	// Splits the segment at `index` into two at `offset` into its text and at `ms`, the earlier one ending and
-	// the later one starting there. Returns why it can't be split, if it can't.
+	// the later one starting there, a line break after it following the later one. Returns why it can't be
+	// split, if it can't.
 	function splitSegment(index, offset, ms) {
 		const segment = segments[index];
 
@@ -36,7 +37,7 @@
 		}
 
 		segments.splice(index, 1,
-			{ ...segment, text: segment.text.slice(0, offset), end_ms: ms },
+			{ ...segment, text: segment.text.slice(0, offset), end_ms: ms, line_break_after: false },
 			{ ...segment, text: segment.text.slice(offset), start_ms: ms });
 	}
 
