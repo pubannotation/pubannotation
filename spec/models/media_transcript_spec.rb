@@ -335,6 +335,22 @@ RSpec.describe MediaTranscript, type: :model do
     end
   end
 
+  describe '#allows_doc_body?' do
+    it 'accepts only the transcript text when transcribed by Whisper' do
+      transcript = build(:media_transcript, generation_model: 'whisper:ggml-base.en', text: 'Hello world')
+
+      expect(transcript.allows_doc_body?('Hello world')).to be(true)
+      expect(transcript.allows_doc_body?('Changed body')).to be(false)
+    end
+
+    it 'accepts matching and changed text when not transcribed by Whisper' do
+      transcript = build(:media_transcript, generation_model: nil, text: 'Hello world')
+
+      expect(transcript.allows_doc_body?('Hello world')).to be(true)
+      expect(transcript.allows_doc_body?('Changed body')).to be(true)
+    end
+  end
+
   describe '#transcribed_by_whisper?' do
     it 'is true for a Whisper model' do
       expect(build(:media_transcript, generation_model: 'whisper:ggml-base.en').transcribed_by_whisper?).to be(true)

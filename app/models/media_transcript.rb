@@ -123,6 +123,11 @@ class MediaTranscript < ApplicationRecord
     generation_model.to_s.start_with?('whisper:')
   end
 
+  # Whisper documents can change their body only to follow this transcript.
+  def allows_doc_body?(body)
+    !transcribed_by_whisper? || text == body
+  end
+
   # Replaces the text of `segment`, leaving its start_ms/end_ms as they are. On save, text and the doc's body
   # are rebuilt to follow (see #rebuild_text and #sync_doc_body). Changed through the same segment among
   # these ones, which may have been reloaded since `segment` was loaded (e.g. as the transcript was locked),

@@ -51,16 +51,9 @@ module Doc::Media
     return unless will_save_change_to_body?
 
     return unless media_transcript
-    return unless media_transcript.transcribed_by_whisper?
-    return if body_following_transcript?
+    return if media_transcript.allows_doc_body?(body)
 
     errors.add(:base, 'Body cannot be changed directly for a document transcribed by Whisper; edit its segments instead')
-  end
-
-  # The body following the transcript, once its segments changed (see MediaTranscript#sync_doc_body), so
-  # already as the transcript has it, e.g. with the line breaks its segments set.
-  def body_following_transcript?
-    media_transcript&.text == body
   end
 
   # An audio/video doc's body is what was said, to be highlighted as it's played, so it can't be only a
