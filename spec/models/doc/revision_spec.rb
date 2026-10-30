@@ -56,29 +56,48 @@ RSpec.describe Doc, 'revision', type: :model do
     end
   end
 
-  describe '#revise atomicity' do
-    let(:doc) { create(:doc, body: 'Hello world') }
+  describe '.uptodate' do
+    let(:doc) { create(:doc, sourcedb: 'PMC', sourceid: '123', body: 'Hello world') }
+    let(:hdoc) { { text: 'Hello big world' } }
 
-    it 'revises supplied text without fetching it' do
+    it 'revises from a supplied document without fetching it' do
       expect(DocumentFetcher).not_to receive(:fetch)
 
-      expect(doc.revise({ text: 'Hello big world' })).to eq([])
+      expect(Doc.uptodate(doc, hdoc)).to eq([])
       expect(doc.reload.body).to eq('Hello big world')
     end
 
-    ['Hello world', 'Hello big world'].each do |text|
-      it "rolls back body and structure replacement when saving fails for #{text.inspect}" do
-        division = doc.divisions.create!(begin: 0, end: 5, label: 'p')
-        typesetting = doc.typesettings.create!(begin: 0, end: 5, style: 'bold')
-        allow(doc).to receive(:store_typesettings).and_raise('Storage failed')
+    it 'fetches the document from its source when no replacement is supplied' do
+      expect(DocumentFetcher).to receive(:fetch).with('PMC', ['123']).and_return([[hdoc], []])
 
-        expect { doc.revise({ text: text, divisions: [] }) }.to raise_error('Storage failed')
+      expect(Doc.uptodate(doc)).to eq([])
+      expect(doc.reload.body).to eq('Hello big world')
+    end
 
-        doc.reload
-        expect(doc.body).to eq('Hello world')
-        expect(doc.divisions).to eq([division])
-        expect(doc.typesettings).to eq([typesetting])
-      end
+    it 'reports the source error without revising when no document is returned' do
+      allow(DocumentFetcher).to receive(:fetch).with('PMC', ['123']).and_return([[], [{ body: 'Not found' }]])
+
+      expect { Doc.uptodate(doc) }.to raise_error(RuntimeError, 'Could not sequence the document, PMC:123: Not found')
+      expect(doc.reload.body).to eq('Hello world')
+    end
+
+    it 'rejects multiple fetched documents even when there are no source messages' do
+      allow(DocumentFetcher).to receive(:fetch).with('PMC', ['123']).and_return([[hdoc, hdoc], []])
+
+      expect { Doc.uptodate(doc) }.to raise_error(RuntimeError, 'Could not sequence the document, PMC:123')
+      expect(doc.reload.body).to eq('Hello world')
+    end
+
+    it 'rolls back structure replacement if saving the revised structures fails' do
+      division = doc.divisions.create!(begin: 0, end: 5, label: 'p')
+      typesetting = doc.typesettings.create!(begin: 0, end: 5, style: 'bold')
+      allow(doc).to receive(:store_typesettings).and_raise('Storage failed')
+
+      expect { Doc.uptodate(doc, { text: 'Hello world', divisions: [] }) }.to raise_error('Storage failed')
+
+      doc.reload
+      expect(doc.divisions).to eq([division])
+      expect(doc.typesettings).to eq([typesetting])
     end
   end
 end
