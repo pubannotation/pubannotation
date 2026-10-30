@@ -155,6 +155,11 @@ class MediaTranscript < ApplicationRecord
     end
   end
 
+  # Avoid replacing segments when the document is following this transcript.
+  def sync_text!(new_text)
+    replace_text!(new_text) unless text == new_text
+  end
+
   # Replaces the whole text, merging the segments, if any, into one spanning them all.
   def replace_text!(new_text)
     # An image caption has no segments.

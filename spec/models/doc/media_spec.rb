@@ -144,6 +144,18 @@ RSpec.describe Doc, type: :model do
       expect(media_transcript.text).to eq('Changed body')
     end
 
+    it 'rolls back the document and transcript when synchronizing the body fails' do
+      transcript = MediaTranscript.create!(medium:, doc:, segments: one_segment)
+      segment_ids = transcript.segments.pluck(:id)
+      allow_any_instance_of(MediaTranscript).to receive(:replace_text!).and_raise('Transcript update failed')
+
+      expect { doc.reload.update!(body: 'Changed body') }.to raise_error('Transcript update failed')
+
+      expect(doc.reload.body).to eq('Hello world')
+      expect(transcript.reload.text).to eq('Hello world')
+      expect(transcript.segments.pluck(:id)).to eq(segment_ids)
+    end
+
     it 'puts a body stored with CRLF, and its transcript, on one line as it gets saved again' do
       media_transcript = MediaTranscript.create!(medium:, doc:, text: "Hello\r\nworld",
                                                  segments: [build(:segment, :without_transcript, sort_order: 0, text: "Hello\r\nworld", start_ms: 0, end_ms: 1000)])

@@ -70,9 +70,6 @@ module Doc::Media
   end
 
   def sync_media_transcript_with_body
-    # Already in step when the body followed the transcript, e.g. after its segments changed.
-    return if media_transcript.nil? || media_transcript.text == body
-
-    media_transcript.replace_text!(body)
+    media_transcript&.sync_text!(body)
   end
 end
