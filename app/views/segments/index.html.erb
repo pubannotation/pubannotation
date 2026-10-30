@@ -4,6 +4,7 @@
 
 <% if @editable -%>
 	<p>Editing a segment's text rebuilds the document's text from the segments. The annotations after it are not moved.</p>
+	<p><%= link_to 'Split segments', edit_doc_segment_split_path(@doc), class: 'button' %></p>
 <% end -%>
 
 <table>
