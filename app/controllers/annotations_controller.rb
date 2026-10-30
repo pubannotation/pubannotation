@@ -36,7 +36,7 @@ class AnnotationsController < ApplicationController
 		terms = params[:terms].present? ? to_array(params[:terms]) : nil
 		predicates = params[:predicates].present? ? to_array(params[:predicates]) : nil
 		is_bag_denotations = params[:discontinuous_span].present? && params[:discontinuous_span] == 'bag'
-		@annotations = @doc.hannotations(project, @span, context_size, terms:, predicates:, is_bag_denotations:)
+		@annotations = DocPresenter.new(@doc).hannotations(project, @span, context_size, terms:, predicates:, is_bag_denotations:)
 
 		respond_to do |format|
 			format.html {render 'index'}
@@ -71,7 +71,7 @@ class AnnotationsController < ApplicationController
 
 		@options = {sort: true}
 		@options[:discontinuous_span] = params[:discontinuous_span].to_sym if params.has_key? :discontinuous_span
-		@annotations = @doc.hannotations(@project, @span, context_size, is_sort: true, is_bag_denotations: @options[:discontinuous_span] == :bag)
+		@annotations = DocPresenter.new(@doc).hannotations(@project, @span, context_size, is_sort: true, is_bag_denotations: @options[:discontinuous_span] == :bag)
 		textae_config = @project ? @project.get_textae_config : nil
 
 		respond_to do |format|
@@ -687,7 +687,7 @@ class AnnotationsController < ApplicationController
 
 		context_size = params[:context_size].to_i
 
-		@annotations = @doc.hannotations(@in_projects, @span, context_size)
+		@annotations = DocPresenter.new(@doc).hannotations(@in_projects, @span, context_size)
 
 		# a temporary solution to avoid rendering problem when there is a wrong typesetting
 		@annotations.delete(:typesettings)
@@ -721,7 +721,7 @@ class AnnotationsController < ApplicationController
 
 		context_size = params[:context_size].present? ? params[:context_size].to_i : 0
 
-		@annotations = @doc.hannotations(@visualize_projects, @span, context_size, is_full: option_full)
+		@annotations = DocPresenter.new(@doc).hannotations(@visualize_projects, @span, context_size, is_full: option_full)
 		@track_annotations = @annotations[:tracks]
 
 		@track_annotations.each {|a| a[:text] = @annotations[:text]}

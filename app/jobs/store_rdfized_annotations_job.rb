@@ -34,7 +34,7 @@ class StoreRdfizedAnnotationsJob < ApplicationJob
 			doc = Doc.find(docid)
 
 			if doc.denotations.where("denotations.project_id" => project.id).exists?
-				hannotations = doc.hannotations(project, nil, nil)
+				hannotations = DocPresenter.new(doc).hannotations(project, nil, nil)
 				num_denotations_in_current_doc = hannotations[:denotations].length
 
 				# rdfize and store annotations

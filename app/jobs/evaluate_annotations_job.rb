@@ -19,8 +19,8 @@ class EvaluateAnnotationsJob < ApplicationJob
 		comparison = []
 		shared_doc_ids.each_with_index do |doc_id, i|
 			doc = Doc.find(doc_id)
-			annotations = doc.hannotations(project, nil, nil)
-			reference_annotations = doc.hannotations(reference_project, nil, nil)
+			annotations = DocPresenter.new(doc).hannotations(project, nil, nil)
+			reference_annotations = DocPresenter.new(doc).hannotations(reference_project, nil, nil)
 			comparison += evaluator.compare(annotations, reference_annotations)
 			@job.update_attribute(:num_dones, i + 1)
 		end

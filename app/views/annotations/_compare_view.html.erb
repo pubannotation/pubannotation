@@ -5,7 +5,7 @@
 	<tr>
 		<td>
 			<div class="textae-editor oneline" control="hidden" style="width:100%">
-				<%= doc.hannotations(@sproject, example[:span], 10).to_json %>
+				<%= DocPresenter.new(doc).hannotations(@sproject, example[:span], 10).to_json %>
 			</div>
 		</td>
 		<td>
@@ -15,7 +15,7 @@
 	<tr>
 		<td>
 			<div class="textae-editor oneline" control="hidden" style="width:100%">
-				<%= doc.hannotations(@rproject, example[:span], 10).to_json %>
+				<%= DocPresenter.new(doc).hannotations(@rproject, example[:span], 10).to_json %>
 			</div>
 		</td>
 		<td>

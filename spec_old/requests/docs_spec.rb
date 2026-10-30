@@ -3,7 +3,7 @@ require 'rails_helper'
 RSpec.describe "Docs", type: :request do
   describe "GET /docs(.:format)" do
     subject { response }
-    let(:existed_doc) { Doc.all.map(&:to_list_hash) }
+    let(:existed_doc) { Doc.all.map { |doc| DocPresenter.new(doc).to_list_hash } }
 
     context 'when no docs' do
       before do
@@ -157,7 +157,7 @@ RSpec.describe "Docs", type: :request do
         it 'returns the doc data' do
           expected_data = Doc.all
                               .order(sourceid: :asc)
-                              .map(&:to_list_hash)
+                              .map { |doc| DocPresenter.new(doc).to_list_hash }
           expect(response.body).to eq(expected_data.to_json)
         end
       end

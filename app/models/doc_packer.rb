@@ -30,7 +30,7 @@ class DocPacker
           end
         end
       rescue RuntimeError => e
-        yield AnnotationRequest.new([doc_package.first_doc.hdoc], error: e)
+        yield AnnotationRequest.new([DocPresenter.new(doc_package.first_doc).hdoc], error: e)
       end
     end
   end

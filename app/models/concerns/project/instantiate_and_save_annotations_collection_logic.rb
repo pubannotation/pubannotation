@@ -16,7 +16,7 @@ module Project::InstantiateAndSaveAnnotationsCollectionLogic
         annotations.each { |a| self.reid_annotations!(a, document) }
       when 'merge'
         annotations.each { |a| self.reid_annotations!(a, document) }
-        base_annotations = document.hannotations(self, nil, nil)
+        base_annotations = DocPresenter.new(document).hannotations(self, nil, nil)
         annotations.each { |a| AnnotationUtils.prepare_annotations_for_merging!(a, base_annotations) }
       end
     end

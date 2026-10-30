@@ -28,7 +28,7 @@ class AnnotationsHash
   end
 
   def to_hash
-    hash = @doc.to_hash(@span, @context_size)
+    hash = DocPresenter.new(@doc).to_hash(@span, @context_size)
 
     if has_track?
       hash[:tracks] = annotations_tracks

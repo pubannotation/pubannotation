@@ -61,21 +61,21 @@ class DocsController < ApplicationController
 			end
 			format.json do
 				docs = if use_elasticsearch
-								 @docs.map { |doc| set_highlight_text doc.to_list_hash, @results_by_doc_id[doc.id]&.highlight&.body }
+								 @docs.map { |doc| set_highlight_text DocPresenter.new(doc).to_list_hash, @results_by_doc_id[doc.id]&.highlight&.body }
 							 else
-								 @docs.map(&:to_list_hash)
+								 @docs.map { |doc| DocPresenter.new(doc).to_list_hash }
 							 end
 
 				send_data docs.to_json, filename: "docs-list-#{per}-#{page}.json", type: :json, disposition: :inline
 			end
 			format.tsv do
 				docs = if use_elasticsearch
-								 @docs.map { |doc| set_highlight_text doc.to_list_hash, @results_by_doc_id[doc.id]&.highlight&.body&.first }
+								 @docs.map { |doc| set_highlight_text DocPresenter.new(doc).to_list_hash, @results_by_doc_id[doc.id]&.highlight&.body&.first }
 							 else
-								 @docs.map(&:to_list_hash)
+								 @docs.map { |doc| DocPresenter.new(doc).to_list_hash }
 							 end
 
-				send_data Doc.hash_to_tsv(docs), filename: "docs-list-#{per}-#{page}.tsv", type: :tsv, disposition: :inline
+				send_data TsvExporter.call(docs), filename: "docs-list-#{per}-#{page}.tsv", type: :tsv, disposition: :inline
 			end
 		end
 	rescue => e
@@ -212,7 +212,7 @@ class DocsController < ApplicationController
 
 		respond_to do |format|
 			format.html
-			format.json {render json: @doc.to_hash(@span)}
+			format.json {render json: DocPresenter.new(@doc).to_hash(@span)}
 			format.txt  {render plain: @doc.get_text(@span)}
 		end
 
@@ -251,7 +251,7 @@ class DocsController < ApplicationController
 
 			respond_to do |format|
 				format.html
-				format.json {render json: @doc.to_hash(@span)}
+				format.json {render json: DocPresenter.new(@doc).to_hash(@span)}
 				format.txt  {render plain: @doc.get_text(@span)}
 			end
 
@@ -295,7 +295,7 @@ class DocsController < ApplicationController
 		end
 		respond_to do |format|
 			format.html # new.html.erb
-			format.json {render json: @doc.to_hash}
+			format.json {render json: DocPresenter.new(@doc).to_hash}
 		end
 	end
 
@@ -352,7 +352,7 @@ class DocsController < ApplicationController
 
 			respond_to do |format|
 				format.html { redirect_to show_project_sourcedb_sourceid_docs_path(@project.name, hdoc[:sourcedb], hdoc[:sourceid]), notice: t('controllers.shared.successfully_created', :model => t('activerecord.models.doc')) }
-				format.json { render json: @doc.to_hash, status: :created, location: @doc }
+				format.json { render json: DocPresenter.new(@doc).to_hash, status: :created, location: @doc }
 			end
 		rescue => e
 			respond_to do |format|

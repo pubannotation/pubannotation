@@ -106,7 +106,7 @@ private
 
 	def obtain_and_store_annotations(project_doc)
 		# project_doc includes doc, thus connection is not necessary to access the doc.
-		annotations = @annotator.obtain_annotations_for_a_doc(project_doc.doc.hdoc)
+		annotations = @annotator.obtain_annotations_for_a_doc(DocPresenter.new(project_doc.doc).hdoc)
 
 		messages = project_doc.save_annotations(annotations, @options)
 		unless messages.empty?

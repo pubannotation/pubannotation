@@ -29,17 +29,17 @@ class CreateAnnotationsTgzJob < ApplicationJob
 						tar.add_file_simple(project.name + '/texts/' + filename + ".txt", 0644, file.bytesize){|t| t.write(file)}
 						if project.denotations_num > 0
 							if blind_p
-								file = doc.to_hash.to_json
+								file = DocPresenter.new(doc).to_hash.to_json
 								tar.add_file_simple(project.name + '/annotations/json/' + filename + ".json", 0644, file.bytesize){|t| t.write(file)}
 							else
-								annotations = doc.hannotations(project, nil, nil)
+								annotations = DocPresenter.new(doc).hannotations(project, nil, nil)
 								file = annotations.to_json
 								tar.add_file_simple(project.name + '/annotations/json/' + filename + ".json", 0644, file.bytesize){|t| t.write(file)}
 								file = AnnotationUtils.hash_to_tsv(annotations, textae_config)
 								tar.add_file_simple(project.name + '/annotations/tsv/' + filename + ".tsv", 0644, file.bytesize){|t| t.write(file)}
 								dic += AnnotationUtils.hash_to_dic_array(annotations)
 								if has_discontinuous_span
-									annotations = doc.hannotations(project, nil, nil, {discontinuous_span: :bag})
+									annotations = DocPresenter.new(doc).hannotations(project, nil, nil, is_bag_denotations: true)
 									file = annotations.to_json
 									tar.add_file_simple(project.name + '/annotations/bag_json/' + filename + ".json", 0644, file.bytesize){|t| t.write(file)}
 									file = AnnotationUtils.hash_to_tsv(annotations, textae_config)

@@ -1,7 +1,12 @@
 # frozen_string_literal: true
 
-module Doc::Serialization
-  extend ActiveSupport::Concern
+class DocPresenter
+  def initialize(doc)
+    @doc = doc
+  end
+
+  delegate :body, :sourcedb, :sourceid, :source,
+           :get_text, :get_divisions, :get_typesettings, to: :@doc
 
   def hdoc
     {
@@ -35,7 +40,7 @@ module Doc::Serialization
                    terms: nil, predicates: nil,
                    is_sort: false, is_full: false, is_bag_denotations: false)
     annotations_hash = if projects.present?
-                         AnnotationsHash.new self,
+                         AnnotationsHash.new @doc,
                            projects,
                            span,
                            context_size,
@@ -46,7 +51,7 @@ module Doc::Serialization
                            is_bag_denotations,
                            projects.respond_to?(:each) # When project is single, return annotations without track.
                        else
-                         AnnotationsHash.new self,
+                         AnnotationsHash.new @doc,
                            nil,
                            span,
                            context_size,
@@ -59,20 +64,5 @@ module Doc::Serialization
                        end
 
     annotations_hash.to_hash
-  end
-
-  class_methods do
-    def hash_to_tsv(docs)
-      return nil unless docs.present?
-      headers = docs.first.keys
-      tsv = CSV.generate(col_sep:"\t") do |csv|
-        # headers
-        csv << headers
-        docs.each do |doc|
-          csv << doc.values
-        end
-      end
-      return tsv
-    end
   end
 end

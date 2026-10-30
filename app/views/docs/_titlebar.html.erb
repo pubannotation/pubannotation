@@ -20,7 +20,7 @@
 
 	<%=
 		if @project.present?
-			# num_projects = (@doc.hannotations(@projects, @span)[:tracks] || []).length
+			# num_projects = (DocPresenter.new(@doc).hannotations(@projects, @span)[:tracks] || []).length
 			num_projects = @doc.get_project_count(@span)
 			title = "Click this button to see all the #{num_projects} projects " + if @span.nil?
 				"that include this document."

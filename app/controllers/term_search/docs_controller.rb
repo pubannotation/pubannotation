@@ -15,7 +15,7 @@ module TermSearch
 
       respond_to do |format|
         format.json { send_doc_data(doc_fields.to_json, 'docs.json', 'application/json') }
-        format.tsv { send_doc_data(Doc.hash_to_tsv(doc_fields), 'docs.tsv', 'text/tab-separated-values') }
+        format.tsv { send_doc_data(TsvExporter.call(doc_fields), 'docs.tsv', 'text/tab-separated-values') }
       end
     rescue => e
       Rails.logger.error e.backtrace.join("\n") if Rails.env.test?

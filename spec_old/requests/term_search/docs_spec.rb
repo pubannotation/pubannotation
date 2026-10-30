@@ -25,7 +25,7 @@ RSpec.describe 'TermSearch::DocsController', type: :request do
 
         expect(json_response).to be_an_instance_of(Array)
         expect(json_response.length).to eq(Doc.all.count)
-        expect(json_response).to include(docs[0].to_list_hash.stringify_keys)
+        expect(json_response).to include(DocPresenter.new(docs[0]).to_list_hash.stringify_keys)
       end
     end
 
@@ -41,7 +41,7 @@ RSpec.describe 'TermSearch::DocsController', type: :request do
       end
 
       it 'returns correct format of docs' do
-        expect(response.body.split("\n")).to include(docs.first.to_list_hash.values.join("\t"))
+        expect(response.body.split("\n")).to include(DocPresenter.new(docs.first).to_list_hash.values.join("\t"))
       end
     end
 
@@ -54,7 +54,7 @@ RSpec.describe 'TermSearch::DocsController', type: :request do
       it 'returns only doc in the project' do
         json_response = JSON.parse(response.body)
         expect(json_response.size).to eq(1)
-        expect(json_response.first).to eq(doc.to_list_hash.stringify_keys)
+        expect(json_response.first).to eq(DocPresenter.new(doc).to_list_hash.stringify_keys)
       end
 
       context 'when project is not found' do
@@ -71,7 +71,7 @@ RSpec.describe 'TermSearch::DocsController', type: :request do
       it 'returns only doc with the term' do
         json_response = JSON.parse(response.body)
         expect(json_response.size).to eq(1)
-        expect(json_response.first).to eq(doc.to_list_hash.stringify_keys)
+        expect(json_response.first).to eq(DocPresenter.new(doc).to_list_hash.stringify_keys)
       end
 
       context 'when term of denotation is specified' do
@@ -82,7 +82,7 @@ RSpec.describe 'TermSearch::DocsController', type: :request do
         it 'returns denotation object is specified as term' do
           json_response = JSON.parse(response.body)
           expect(json_response.size).to eq(1)
-          expect(json_response.first).to eq(doc.to_list_hash.stringify_keys)
+          expect(json_response.first).to eq(DocPresenter.new(doc).to_list_hash.stringify_keys)
         end
       end
 
@@ -92,7 +92,7 @@ RSpec.describe 'TermSearch::DocsController', type: :request do
         it 'returns only doc with the term and predicate' do
           json_response = JSON.parse(response.body)
           expect(json_response.size).to eq(1)
-          expect(json_response.first).to eq(doc.to_list_hash.stringify_keys)
+          expect(json_response.first).to eq(DocPresenter.new(doc).to_list_hash.stringify_keys)
         end
 
         context 'when predicate is missmatched' do
@@ -110,7 +110,7 @@ RSpec.describe 'TermSearch::DocsController', type: :request do
           it 'returns denotation with attribute has specified term' do
             json_response = JSON.parse(response.body)
             expect(json_response.size).to eq(1)
-            expect(json_response.first).to eq(doc.to_list_hash.stringify_keys)
+            expect(json_response.first).to eq(DocPresenter.new(doc).to_list_hash.stringify_keys)
           end
 
           context 'when denotation object is specified as term' do
@@ -119,7 +119,7 @@ RSpec.describe 'TermSearch::DocsController', type: :request do
             it 'returns only doc with the term' do
               json_response = JSON.parse(response.body)
               expect(json_response.size).to eq(1)
-              expect(json_response.first).to eq(doc.to_list_hash.stringify_keys)
+              expect(json_response.first).to eq(DocPresenter.new(doc).to_list_hash.stringify_keys)
             end
           end
         end
@@ -133,7 +133,7 @@ RSpec.describe 'TermSearch::DocsController', type: :request do
         it 'returns only doc with the term' do
           json_response = JSON.parse(response.body)
           expect(json_response.size).to eq(1)
-          expect(json_response.first).to eq(doc.to_list_hash.stringify_keys)
+          expect(json_response.first).to eq(DocPresenter.new(doc).to_list_hash.stringify_keys)
         end
 
         context 'when project is missmatched' do

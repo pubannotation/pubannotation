@@ -28,7 +28,7 @@ module GraphsHelper
 		sourcedb, sourceid, span = parse_span_url(span_url)
 		doc = Doc.where(sourcedb:sourcedb, sourceid:sourceid).first
 		projects = pnames.respond_to?(:each) ? pnames.map{|n| Project.find_by_name(n)} : Project.find_by_name(pnames)
-		annotations = doc.hannotations(projects, span, context_size)
+		annotations = DocPresenter.new(doc).hannotations(projects, span, context_size)
 	end
 
 	def span?(v)

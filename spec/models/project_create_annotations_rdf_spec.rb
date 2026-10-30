@@ -66,7 +66,9 @@ RSpec.describe Project, '#create_annotations_RDF' do
       doc = create_doc_with_denotation(project)
       hannotations_result = { text: 'test', denotations: [] }
 
-      expect(doc).to receive(:hannotations).with(project, nil, nil).once.and_return(hannotations_result)
+      presenter = instance_double(DocPresenter)
+      allow(DocPresenter).to receive(:new).with(doc).and_return(presenter)
+      expect(presenter).to receive(:hannotations).with(project, nil, nil).once.and_return(hannotations_result)
       allow(Doc).to receive(:where).and_return(Doc.where(id: doc.id))
       allow(Doc.where(id: doc.id)).to receive(:index_by).and_return({ doc.id => doc })
 
@@ -77,21 +79,17 @@ RSpec.describe Project, '#create_annotations_RDF' do
       doc1 = create_doc_with_denotation(project)
       doc2 = create_doc_with_denotation(project)
 
-      # doc1 is first: hannotations called once (reused for prefix + rdf)
-      # doc2 is second: hannotations called once (for rdf only)
-      allow_any_instance_of(Doc).to receive(:hannotations).and_return({ text: 'test', denotations: [] })
-
-      call_counts = Hash.new(0)
-      allow(doc1).to receive(:hannotations) { call_counts[doc1.id] += 1; { text: 'test', denotations: [] } }
-      allow(doc2).to receive(:hannotations) { call_counts[doc2.id] += 1; { text: 'test', denotations: [] } }
+      presenter1 = instance_double(DocPresenter)
+      presenter2 = instance_double(DocPresenter)
+      allow(DocPresenter).to receive(:new).with(doc1).and_return(presenter1)
+      allow(DocPresenter).to receive(:new).with(doc2).and_return(presenter2)
+      expect(presenter1).to receive(:hannotations).with(project, nil, nil).once.and_return(text: 'test', denotations: [])
+      expect(presenter2).to receive(:hannotations).with(project, nil, nil).once.and_return(text: 'test', denotations: [])
 
       docs_hash = { doc1.id => doc1, doc2.id => doc2 }
       allow(Doc).to receive(:where).and_return(double(index_by: docs_hash))
 
       project.create_annotations_RDF([doc1.id, doc2.id], rdf_loc)
-
-      expect(call_counts[doc1.id]).to eq(1)
-      expect(call_counts[doc2.id]).to eq(1)
     end
   end
 

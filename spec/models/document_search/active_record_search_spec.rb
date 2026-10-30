@@ -31,7 +31,7 @@ RSpec.describe DocumentSearch, 'Active Record search', type: :model do
 
   it 'exports paginated document identities for an accessible base project without terms' do
     expect(DocumentSearch.search_by_term(project.user, project.name, nil, nil, nil, 1, 10)).to match_array(
-      [first.to_list_hash, second.to_list_hash]
+      [DocPresenter.new(first).to_list_hash, DocPresenter.new(second).to_list_hash]
     )
   end
 end

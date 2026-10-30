@@ -31,7 +31,7 @@ class DocumentSearch
 
       docs.select('sourcedb', 'sourceid')
           .simple_paginate(page, per)
-          .map(&:to_list_hash)
+          .map { |doc| DocPresenter.new(doc).to_list_hash }
     end
 
     # default sort order
