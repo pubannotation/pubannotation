@@ -550,7 +550,13 @@ class DocsController < ApplicationController
 					threshold: params[:threshold]
 				}.compact
 
-				Doc.uptodate(doc)
+				docs, messages = DocumentFetcher.fetch(doc.sourcedb, [doc.sourceid])
+				unless docs.length == 1
+					message = "Could not sequence the document, #{doc.descriptor}"
+					message += ": #{messages.first[:body]}" unless messages.empty?
+					raise message
+				end
+				doc.revise(docs.first)
 				message = "The document #{doc.descriptor} was successfully updated."
 				redirect_to doc_sourcedb_sourceid_show_path(params[:sourcedb], params[:sourceid]), notice: message
 			else

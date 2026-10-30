@@ -1,6 +1,5 @@
 class Doc < ActiveRecord::Base
   include Doc::AnnotationCounts
-  include Doc::Revision
   include Doc::Media
   include Doc::TextStructure
   include Doc::ElasticsearchIndexable
@@ -57,6 +56,41 @@ class Doc < ActiveRecord::Base
   def decrement_docs_projects_counter(project)
     Doc.decrement_counter(:projects_num, self.id)
     self.reload
+  end
+
+  def revise(new_hdoc)
+    transaction do
+      messages = []
+      # As it will be stored, so it's compared, and the annotations aligned to it, with LF line endings.
+      new_body = Doc.normalize_value_for(:body, new_hdoc[:text] || new_hdoc[:body])
+
+      if new_body == self.body
+        unless self.divisions == new_hdoc[:divisions]
+          self.divisions.destroy_all
+          self.store_divisions(new_hdoc[:divisions])
+        end
+
+        unless self.typesettings == new_hdoc[:typesettings]
+          self.typesettings.destroy_all
+          self.store_typesettings(new_hdoc[:typesettings])
+        end
+      else
+        _denotations = self.denotations
+        _blocks = self.blocks
+        messages += AnnotationUtils.align_denotations_and_blocks!(_denotations, _blocks, self.body, new_body)
+
+        self.divisions.destroy_all
+        self.typesettings.destroy_all
+        self.body = new_body
+        self.save!
+        self.store_divisions(new_hdoc[:divisions])
+        self.store_typesettings(new_hdoc[:typesettings])
+        _denotations.each{|d| d.save!}
+        _blocks.each{|b| b.save!}
+      end
+
+      messages
+    end
   end
 
   def set_ascii_body

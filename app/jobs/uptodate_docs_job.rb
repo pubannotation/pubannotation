@@ -38,7 +38,7 @@ class UptodateDocsJob < ApplicationJob
 				hdocs_sequenced = docs
 				hdocs_sequenced.each do |hdoc|
 					doc = Doc.where(sourcedb:sourcedb, sourceid:hdoc[:sourceid]).first
-					Doc.uptodate(doc, hdoc)
+					doc.revise(hdoc)
 					if @job
 						@job.update_attribute(:num_dones, num += 1)
 						check_suspend_flag
