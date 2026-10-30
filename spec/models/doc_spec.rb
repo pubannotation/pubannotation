@@ -66,30 +66,30 @@ RSpec.describe Doc, type: :model do
     }
 
     it 'returns 0 when no relations fall within the span' do
-      expect(doc.get_relations_count(project.id, begin: 50, end: 60)).to eq(0)
+      expect(project.get_relations_count(doc, begin: 50, end: 60)).to eq(0)
     end
 
     it 'counts only relations whose subj and obj are fully inside the span' do
-      expect(doc.get_relations_count(project.id, begin: 0, end: 50)).to eq(1)
+      expect(project.get_relations_count(doc, begin: 0, end: 50)).to eq(1)
     end
 
     it 'excludes relations that straddle the span boundary' do
       # [0,25] contains r_inside but not r_straddle (obj at 90-100) nor r_outside
-      expect(doc.get_relations_count(project.id, begin: 0, end: 25)).to eq(1)
+      expect(project.get_relations_count(doc, begin: 0, end: 25)).to eq(1)
     end
 
     it 'includes all relations when the span covers the whole doc' do
-      expect(doc.get_relations_count(project.id, begin: 0, end: 1000)).to eq(3)
+      expect(project.get_relations_count(doc, begin: 0, end: 1000)).to eq(3)
     end
 
     it 'is inclusive at the span boundaries' do
       # r_inside uses d_0_5 (begin=0) and d_10_20 (end=20).
       # A span exactly matching those bounds must include it.
-      expect(doc.get_relations_count(project.id, begin: 0, end: 20)).to eq(1)
+      expect(project.get_relations_count(doc, begin: 0, end: 20)).to eq(1)
 
       # Shrinking by one in either direction must drop it.
-      expect(doc.get_relations_count(project.id, begin: 1, end: 20)).to eq(0)
-      expect(doc.get_relations_count(project.id, begin: 0, end: 19)).to eq(0)
+      expect(project.get_relations_count(doc, begin: 1, end: 20)).to eq(0)
+      expect(project.get_relations_count(doc, begin: 0, end: 19)).to eq(0)
     end
 
     it 'excludes relations whose subj or obj is not a Denotation' do
@@ -102,7 +102,7 @@ RSpec.describe Doc, type: :model do
              obj_type: 'Denotation', obj_id: d_10_20.id)
 
       # Count for [0, 50] is unchanged — only r_inside still qualifies.
-      expect(doc.get_relations_count(project.id, begin: 0, end: 50)).to eq(1)
+      expect(project.get_relations_count(doc, begin: 0, end: 50)).to eq(1)
     end
 
     context 'when the doc is shared by multiple projects' do
@@ -118,14 +118,14 @@ RSpec.describe Doc, type: :model do
 
       it 'scopes the count to the given project' do
         # Only r_inside belongs to `project` in [0,50].
-        expect(doc.get_relations_count(project.id, begin: 0, end: 50)).to eq(1)
+        expect(project.get_relations_count(doc, begin: 0, end: 50)).to eq(1)
         # Only other_r_inside belongs to `other_project` in [0,50].
-        expect(doc.get_relations_count(other_project.id, begin: 0, end: 50)).to eq(1)
+        expect(other_project.get_relations_count(doc, begin: 0, end: 50)).to eq(1)
       end
 
       it 'counts across all projects when project_id is nil' do
         # Both projects contribute one in-span relation each.
-        expect(doc.get_relations_count(nil, begin: 0, end: 50)).to eq(2)
+        expect(doc.get_relations_count(begin: 0, end: 50)).to eq(2)
       end
     end
 
@@ -135,7 +135,7 @@ RSpec.describe Doc, type: :model do
         queries << payload[:sql] unless payload[:name] == 'SCHEMA' || payload[:sql] =~ /\A(BEGIN|COMMIT|ROLLBACK|SAVEPOINT|RELEASE)/
       end
 
-      doc.get_relations_count(project.id, begin: 0, end: 1000)
+      project.get_relations_count(doc, begin: 0, end: 1000)
 
       ActiveSupport::Notifications.unsubscribe(subscriber)
       expect(queries.size).to eq(1)

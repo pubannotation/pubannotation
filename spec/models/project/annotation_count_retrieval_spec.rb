@@ -17,6 +17,13 @@ RSpec.describe Project, 'annotation counts', type: :model do
     expect([project.get_denotations_count(other), project.get_blocks_count(other), project.get_relations_count(other)]).to eq([nil, nil, nil])
   end
 
+  it 'reads persisted counters even when the association was loaded earlier' do
+    project.project_docs.load
+    membership.update_columns(denotations_num: 7, blocks_num: 8, relations_num: 9)
+
+    expect([project.get_denotations_count(doc), project.get_blocks_count(doc), project.get_relations_count(doc)]).to eq([7, 8, 9])
+  end
+
   it 'counts annotations within the span for the selected project and document' do
     denotation = create(:denotation, project: project, doc: doc, begin: 2, end: 4)
     other = create(:denotation, project: project, doc: doc, begin: 4, end: 6)
