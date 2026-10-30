@@ -6,7 +6,7 @@ module RelationsHelper
 		else 
 			if project.present?
 				if options[:doc].present?
-					options[:doc].project_relations_num(project.id)
+					project.get_relations_count(options[:doc])
 				else 
 					project.relations_num
 				end

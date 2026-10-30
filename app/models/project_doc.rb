@@ -11,16 +11,22 @@ class ProjectDoc < ActiveRecord::Base
   scope :without_denotations, -> { where(denotations_num: 0) }
   scope :with_denotations, -> { where('denotations_num > ?', 0) }
 
-  def self.denotations_count_for(doc_id, project_id)
-    where(doc_id: doc_id, project_id: project_id).pick(:denotations_num)
+  def self.denotations_count_for(doc_id, project_id, span = nil)
+    return where(doc_id: doc_id, project_id: project_id).pick(:denotations_num) if span.nil?
+
+    Denotation.in_doc(doc_id).in_project_and_span(project_id, span).count
   end
 
-  def self.blocks_count_for(doc_id, project_id)
-    where(doc_id: doc_id, project_id: project_id).pick(:blocks_num)
+  def self.blocks_count_for(doc_id, project_id, span = nil)
+    return where(doc_id: doc_id, project_id: project_id).pick(:blocks_num) if span.nil?
+
+    Block.in_doc(doc_id).in_project_and_span(project_id, span).count
   end
 
-  def self.relations_count_for(doc_id, project_id)
-    where(doc_id: doc_id, project_id: project_id).pick(:relations_num)
+  def self.relations_count_for(doc_id, project_id, span = nil)
+    return where(doc_id: doc_id, project_id: project_id).pick(:relations_num) if span.nil?
+
+    Relation.in_doc(doc_id).with_denotations_in_span(span, project_id).count
   end
 
   def annotation_about(span, terms, predicates)

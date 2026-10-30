@@ -168,7 +168,7 @@ class Project < ActiveRecord::Base
     if doc.nil?
       self.denotations_num
     else
-      doc.get_denotations_count(id, span)
+      ProjectDoc.denotations_count_for(doc.id, id, span)
     end
   end
 
@@ -176,7 +176,7 @@ class Project < ActiveRecord::Base
     if doc.nil?
       self.blocks_num
     else
-      doc.get_blocks_count(id, span)
+      ProjectDoc.blocks_count_for(doc.id, id, span)
     end
   end
 
@@ -184,7 +184,7 @@ class Project < ActiveRecord::Base
     if doc.nil?
       self.relations_num
     else
-      doc.get_relations_count(id, span)
+      ProjectDoc.relations_count_for(doc.id, id, span)
     end
   end
 
