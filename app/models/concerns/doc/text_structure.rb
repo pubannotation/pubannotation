@@ -3,44 +3,12 @@
 module Doc::TextStructure
   extend ActiveSupport::Concern
 
-  def store_divisions(hdivisions)
-    return [] if hdivisions.nil?
-
-    divisions = hdivisions.map do |hdiv|
-      Division.new(
-        {
-          doc_id: self.id,
-          begin: hdiv[:span][:begin],
-          end: hdiv[:span][:end],
-          label: hdiv[:label]
-        }
-      )
-    end
-
-    r = Division.import divisions
-    raise "Failed to save the divisions." unless r.failed_instances.empty?
-
-    divisions
+  def store_divisions(items)
+    Division.store_for(self, items)
   end
 
-  def store_typesettings(htypesettings)
-    return [] if htypesettings.nil?
-
-    typesettings = htypesettings.map do |hts|
-      Typesetting.new(
-        {
-          doc_id: self.id,
-          begin: hts[:span][:begin],
-          end: hts[:span][:end],
-          style: hts[:style]
-        }
-      )
-    end
-
-    r = Typesetting.import typesettings
-    raise "Failed to save the typesettings." unless r.failed_instances.empty?
-
-    typesettings
+  def store_typesettings(items)
+    Typesetting.store_for(self, items)
   end
 
   def update_all_references_in_paragraphs = paragraphs.each { _1.update_references denotations }
