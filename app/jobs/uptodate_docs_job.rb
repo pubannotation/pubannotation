@@ -19,7 +19,7 @@ class UptodateDocsJob < ApplicationJob
 			sourceids = project.docs.where(sourcedb:sourcedb).pluck(:sourceid).uniq
 
 			sourceids.each_slice(batch_num).each do |sids|
-				docs, messages = Doc.sequence_docs(sourcedb, sids)
+				docs, messages = DocumentFetcher.fetch(sourcedb, sids)
 				unless messages.empty?
 					messages.each do |m|
 						message = if m.class == String

@@ -44,7 +44,7 @@ module Doc::Revision
       sourceid = doc.sourceid
 
       new_hdoc ||= begin
-        docs, messages = self.sequence_docs(sourcedb, [sourceid])
+        docs, messages = DocumentFetcher.fetch(sourcedb, [sourceid])
         message1 = "Could not sequence the document, #{sourcedb}:#{sourceid}"
         message1 += ": #{messages.first[:body]}" unless messages.empty?
         raise message1 unless docs.length == 1

@@ -53,37 +53,6 @@ module Doc::Import
       end
     end
 
-    def hdoc_valid?(hdoc)
-      return false unless hdoc[:text].present?
-      return false unless hdoc[:sourcedb].present?
-      return false unless hdoc[:sourceid].present?
-      true
-    end
-
-    # Returns [documents, messages].
-    def sequence_docs(sourcedb, sourceids)
-      raise ArgumentError, "sourcedb is empty" unless sourcedb.present?
-      raise ArgumentError, "sourceids is empty" unless sourceids.present?
-
-      begin
-        sequencer = Sequencer.find(sourcedb)
-      rescue ActiveRecord::ActiveRecordError => e
-        raise ArgumentError, "User documents cannot be automatically obtained. Please upload them yourself." if sourcedb.include?('@')
-        raise ArgumentError, "Could not find the sequencer for the sourcedb: [#{sourcedb}]"
-      end
-
-      docs, messages = sequencer.get_docs(sourceids)
-
-      invalid_docs = docs.select{|doc| !hdoc_valid?(doc)}
-      invalid_docs.each do |doc|
-        messages << {sourcedb:sourcedb, sourceid:[doc[:sourceid]], body:"Invalid document entry."}
-      end
-
-      docs -= invalid_docs
-
-      [docs, messages]
-    end
-
     def store_hdoc!(hdoc)
       hdoc[:text] = hdoc[:body] if !hdoc[:text] && hdoc[:body]
 
@@ -134,13 +103,13 @@ module Doc::Import
     end
 
     def sequence_and_store_doc!(sourcedb, sourceid)
-      docs, messages = sequence_docs(sourcedb, [sourceid])
+      docs, messages = DocumentFetcher.fetch(sourcedb, [sourceid])
       raise messages.first[:body] unless docs.present?
       store_hdoc!(docs.first)
     end
 
     def sequence_and_store_docs(sourcedb, sourceids)
-      docs, messages = sequence_docs(sourcedb, sourceids)
+      docs, messages = DocumentFetcher.fetch(sourcedb, sourceids)
       docs_saved, messages2 = store_hdocs(docs)
       [docs_saved, messages + messages2]
     end

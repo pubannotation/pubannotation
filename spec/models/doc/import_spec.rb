@@ -104,45 +104,6 @@ RSpec.describe Doc, 'document import', type: :model do
     end
   end
 
-  describe '.sequence_docs' do
-    before do
-      allow(Sequencer).to receive(:find).with(sourcedb).and_return(sequencer)
-    end
-
-    it 'excludes entries missing required fields and preserves sequencer messages' do
-      invalid = [hdoc.merge(sourceid: '002', text: ''), hdoc.merge(sourceid: '003', sourcedb: ''), hdoc.merge(sourceid: nil)]
-      upstream_message = { sourcedb: sourcedb, sourceid: ['004'], body: 'Gateway error' }
-      allow(sequencer).to receive(:get_docs).with(%w[001 002 003 004]).and_return([[hdoc, *invalid], [upstream_message]])
-
-      docs, messages = Doc.sequence_docs(sourcedb, %w[001 002 003 004])
-
-      expect(docs).to eq([hdoc])
-      expect(messages).to eq([
-        upstream_message,
-        { sourcedb: sourcedb, sourceid: ['002'], body: 'Invalid document entry.' },
-        { sourcedb: sourcedb, sourceid: ['003'], body: 'Invalid document entry.' },
-        { sourcedb: sourcedb, sourceid: [nil], body: 'Invalid document entry.' }
-      ])
-    end
-
-    it 'rejects an empty source database or source ID list' do
-      expect { Doc.sequence_docs('', ['001']) }.to raise_error(ArgumentError, 'sourcedb is empty')
-      expect { Doc.sequence_docs(sourcedb, []) }.to raise_error(ArgumentError, 'sourceids is empty')
-    end
-
-    it 'reports a missing sequencer' do
-      allow(Sequencer).to receive(:find).with(sourcedb).and_raise(ActiveRecord::RecordNotFound)
-
-      expect { Doc.sequence_docs(sourcedb, ['001']) }.to raise_error(ArgumentError, "Could not find the sequencer for the sourcedb: [#{sourcedb}]")
-    end
-
-    it 'explains that personal documents must be uploaded' do
-      allow(Sequencer).to receive(:find).with('Example@alice').and_raise(ActiveRecord::RecordNotFound)
-
-      expect { Doc.sequence_docs('Example@alice', ['001']) }.to raise_error(ArgumentError, 'User documents cannot be automatically obtained. Please upload them yourself.')
-    end
-  end
-
   describe '.sequence_and_store_doc!' do
     before do
       allow(Sequencer).to receive(:find).with(sourcedb).and_return(sequencer)

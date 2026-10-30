@@ -61,28 +61,28 @@ RSpec.describe Doc, 'revision', type: :model do
     let(:hdoc) { { text: 'Hello big world' } }
 
     it 'revises from a supplied document without fetching it' do
-      expect(Doc).not_to receive(:sequence_docs)
+      expect(DocumentFetcher).not_to receive(:fetch)
 
       expect(Doc.uptodate(doc, hdoc)).to eq([])
       expect(doc.reload.body).to eq('Hello big world')
     end
 
     it 'fetches the document from its source when no replacement is supplied' do
-      expect(Doc).to receive(:sequence_docs).with('PMC', ['123']).and_return([[hdoc], []])
+      expect(DocumentFetcher).to receive(:fetch).with('PMC', ['123']).and_return([[hdoc], []])
 
       expect(Doc.uptodate(doc)).to eq([])
       expect(doc.reload.body).to eq('Hello big world')
     end
 
     it 'reports the source error without revising when no document is returned' do
-      allow(Doc).to receive(:sequence_docs).with('PMC', ['123']).and_return([[], [{ body: 'Not found' }]])
+      allow(DocumentFetcher).to receive(:fetch).with('PMC', ['123']).and_return([[], [{ body: 'Not found' }]])
 
       expect { Doc.uptodate(doc) }.to raise_error(RuntimeError, 'Could not sequence the document, PMC:123: Not found')
       expect(doc.reload.body).to eq('Hello world')
     end
 
     it 'rejects multiple fetched documents even when there are no source messages' do
-      allow(Doc).to receive(:sequence_docs).with('PMC', ['123']).and_return([[hdoc, hdoc], []])
+      allow(DocumentFetcher).to receive(:fetch).with('PMC', ['123']).and_return([[hdoc, hdoc], []])
 
       expect { Doc.uptodate(doc) }.to raise_error(RuntimeError, 'Could not sequence the document, PMC:123')
       expect(doc.reload.body).to eq('Hello world')
