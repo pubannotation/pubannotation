@@ -11,6 +11,14 @@
 		checkbox.addEventListener('change', () => checkbox.form.requestSubmit());
 	}
 
+	// Saves the segment with its text replaced by the label marking it as not speech.
+	const noSpeech = document.getElementById('segment-dialog-no-speech');
+	noSpeech.addEventListener('click', () => {
+		const form = dialog.querySelector('form');
+		form.elements['segment[text]'].value = noSpeech.dataset.text;
+		form.requestSubmit();
+	});
+
 	document.getElementById('segment-dialog-cancel').addEventListener('click', () => dialog.close());
 
 	// A click outside the dialog lands on the dialog itself (its backdrop), since its content fills it.
