@@ -24,9 +24,8 @@ module Doc::Media
   # Sets the body to `text` written by hand, as .written_body has it. Left as it is when unchanged, as the edit
   # form submits it back with other changes, so a line break its segments set isn't put on one line.
   def assign_written_body(text)
-    return if Doc.normalize_value_for(:body, text) == body
-
-    self.body = Doc.written_body(medium, text)
+    self.body = text
+    self.body = Doc.written_body(medium, body) if body_changed?
   end
 
   # Whether `current_user` can edit the segments of this doc's media transcript.
