@@ -6,7 +6,7 @@ class DocPresenter
   end
 
   delegate :body, :sourcedb, :sourceid, :source,
-           :get_text, :get_divisions, :get_typesettings, to: :@doc
+           :get_text, :divisions, :typesettings, to: :@doc
 
   def hdoc
     {
@@ -23,8 +23,8 @@ class DocPresenter
       sourceid: sourceid,
       source_url: source,
       text: get_text(span, context_size),
-      divisions: get_divisions(span, context_size),
-      typesettings: get_typesettings(span, context_size)
+      divisions: TextStructurePresenter.new(divisions, body&.length).to_a(span, context_size),
+      typesettings: TextStructurePresenter.new(typesettings, body&.length).to_a(span, context_size)
     }.reject{|k, v| k != :text && (v.nil? || v.empty?)}
   end
 

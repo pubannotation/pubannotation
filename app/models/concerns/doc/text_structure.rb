@@ -43,32 +43,6 @@ module Doc::TextStructure
     typesettings
   end
 
-  def get_divisions(span = nil, context_size = nil)
-    if span.present?
-      context_size ||= 0
-      b = span[:begin] - context_size
-      e = span[:end] + context_size
-      b = 0 if b < 0
-      e = body.length if e > body.length
-      divisions.select{|t| t.begin >= b && t.end < e}.map{|t| t.begin -= b; t.end -= b; t.to_hash}
-    else
-      divisions.map{|t| t.to_hash}
-    end
-  end
-
-  def get_typesettings(span = nil, context_size = nil)
-    if span.present?
-      context_size ||= 0
-      b = span[:begin] - context_size
-      e = span[:end] + context_size
-      b = 0 if b < 0
-      e = body.length if e > body.length
-      typesettings.select{|t| t.begin >= b && t.end < e}.map{|t| t.begin -= b; t.end -= b; t.to_hash}
-    else
-      typesettings.map{|t| t.to_hash}
-    end
-  end
-
   def update_all_references_in_paragraphs = paragraphs.each { _1.update_references denotations }
 
   def update_all_references_in_sentences = sentences.each { _1.update_references denotations }
