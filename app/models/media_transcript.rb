@@ -170,10 +170,10 @@ class MediaTranscript < ApplicationRecord
     segments.reject(&:marked_for_destruction?)
   end
 
-  # The last of #speech_segments, searched from the end so each row of the segment list doesn't scan them all.
+  # The last speech segment, searched from the end so each row of the segment list doesn't scan them all.
   # to_a, as the association's reverse_each (Enumerable's) would collect them all first.
   def last_speech_segment
-    segments.to_a.reverse_each.find { |segment| !segment.marked_for_destruction? && segment.speech? }
+    segments.to_a.reverse_each.find(&:speech?)
   end
 
   def segments_changing?
