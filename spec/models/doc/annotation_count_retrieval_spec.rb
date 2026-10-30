@@ -20,6 +20,25 @@ RSpec.describe Doc, 'annotation count retrieval', type: :model do
     expect(doc.project_relations_num(project_id)).to eq(4)
   end
 
+  it 'returns nil for a project without a document membership' do
+    project = create(:project)
+
+    expect(doc.get_denotations_count(project.id)).to be_nil
+    expect(doc.get_blocks_count(project.id)).to be_nil
+    expect(doc.get_relations_count(project.id)).to be_nil
+    expect(doc.project_relations_num(project.id)).to be_nil
+  end
+
+  it 'reads persisted counters even when the association was loaded earlier' do
+    membership = project_doc
+    doc.project_docs.load
+    membership.update_columns(denotations_num: 7, blocks_num: 8, relations_num: 9)
+
+    expect(doc.get_denotations_count(membership.project_id)).to eq(7)
+    expect(doc.get_blocks_count(membership.project_id)).to eq(8)
+    expect(doc.get_relations_count(membership.project_id)).to eq(9)
+  end
+
   [:denotation, :block].each do |kind|
     it "counts #{kind}s in the span with an optional project filter" do
       project_id = project_doc.project_id

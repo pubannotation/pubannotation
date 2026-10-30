@@ -5,19 +5,14 @@ module Doc::AnnotationCounts
 
   # returns relations count which belongs to project and doc
   def project_relations_num(project_id)
-    ActiveRecord::Base.connection.select_value "SELECT relations_num FROM project_docs WHERE project_id=#{project_id} AND doc_id=#{id}"
+    ProjectDoc.relations_count_for(id, project_id)
   end
 
   def get_denotations_count(project_id = nil, span = nil)
     if project_id.nil? && span.nil?
       denotations_num
     elsif span.nil?
-      ActiveRecord::Base.connection.select_value <<~SQL.squish
-        SELECT denotations_num
-        FROM project_docs
-        WHERE project_id=#{project_id}
-        AND doc_id=#{id}
-      SQL
+      ProjectDoc.denotations_count_for(id, project_id)
     else
       denotations.in_project_and_span(project_id, span).count
     end
@@ -27,12 +22,7 @@ module Doc::AnnotationCounts
     if project_id.nil? && span.nil?
       blocks_num
     elsif span.nil?
-      ActiveRecord::Base.connection.select_value <<~SQL.squish
-        SELECT blocks_num
-        FROM project_docs
-        WHERE project_id=#{project_id}
-        AND doc_id=#{id}
-      SQL
+      ProjectDoc.blocks_count_for(id, project_id)
     else
       blocks.in_project_and_span(project_id, span).count
     end
@@ -42,12 +32,7 @@ module Doc::AnnotationCounts
     if project_id.nil? && span.nil?
       relations_num
     elsif span.nil?
-      ActiveRecord::Base.connection.select_value <<~SQL.squish
-        SELECT relations_num
-        FROM project_docs
-        WHERE project_id=#{project_id}
-        AND doc_id=#{id}
-      SQL
+      ProjectDoc.relations_count_for(id, project_id)
     else
       scope = relations
         .joins("INNER JOIN denotations AS subj_d ON subj_d.id = relations.subj_id AND relations.subj_type = 'Denotation'")
