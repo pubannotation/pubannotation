@@ -40,25 +40,4 @@ module Doc::ElasticsearchIndexable
     Elasticsearch::IndexQueue.delete_doc(id)
   end
 
-  # Index this document immediately (synchronous)
-  def index_to_es!
-    bulk_body = build_index_body
-    ELASTICSEARCH_CLIENT.bulk(body: bulk_body, refresh: true)
-  end
-
-  private
-
-  def build_index_body
-    [
-      { index: { _index: ELASTICSEARCH_INDEX_ALIAS, _id: id.to_s, routing: id.to_s } },
-      {
-        doc_project_join: { name: 'doc' },
-        sourcedb: sourcedb,
-        sourceid: sourceid,
-        body: body,
-        created_at: created_at&.iso8601,
-        updated_at: updated_at&.iso8601
-      }
-    ]
-  end
 end

@@ -264,7 +264,7 @@ namespace :elasticsearch do
     raise "Document not found: #{doc_id}" unless doc
 
     puts "Indexing document #{doc_id} (#{doc.sourcedb}:#{doc.sourceid})..."
-    doc.index_to_es!
+    DocumentElasticsearchIndexer.index!(doc)
     puts "Done."
   end
 
