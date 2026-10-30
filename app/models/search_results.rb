@@ -9,7 +9,7 @@
 # - Pagination via Kaminari-compatible methods
 #
 # Usage:
-#   results = Doc.search_by_elasticsearch('cancer', project, nil, 1, 10)
+#   results = DocumentSearch.search_by_elasticsearch('cancer', project, nil, 1, 10)
 #   results.records  # => ActiveRecord::Relation of Doc objects
 #   results.total    # => Integer total count
 #   results[0].highlight.body  # => Array of highlighted snippets

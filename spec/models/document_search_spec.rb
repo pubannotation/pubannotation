@@ -21,7 +21,7 @@ RSpec.describe DocumentSearch do
       body: hash_including(knn: hash_including(query_vector: embedding))
     ).ordered.and_return({ 'hits' => { 'hits' => [semantic_hit] } })
 
-    results = Doc.hybrid_search('tumor', page: 1, per: 5)
+    results = DocumentSearch.hybrid_search('tumor', page: 1, per: 5)
 
     expect(results).to have_attributes(model_class: Doc, total: 2, page: 1, per: 5)
     expect(results.map(&:id)).to eq([1, 2])
@@ -44,7 +44,7 @@ RSpec.describe DocumentSearch do
       { '_id' => '2', '_source' => { 'body' => 'tumor suppressor' } }
     ] } })
 
-    results = Doc.knn_search('tumor', sourcedb: 'PMC', page: 2, per: 5)
+    results = DocumentSearch.knn_search('tumor', sourcedb: 'PMC', page: 2, per: 5)
 
     expect(results).to have_attributes(model_class: Doc, total: 6, page: 2, per: 5)
     expect(results.first.highlight.body).to eq(['<em>tumor</em> suppressor'])

@@ -275,7 +275,7 @@ namespace :elasticsearch do
     puts "Searching for: #{query}"
     puts ""
 
-    results = Doc.search_by_elasticsearch(query, nil, nil, 1, 5)
+    results = DocumentSearch.search_by_elasticsearch(query, nil, nil, 1, 5)
 
     puts "Total results: #{results.total}"
     puts "Showing top 5:"

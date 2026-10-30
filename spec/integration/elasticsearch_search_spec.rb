@@ -18,28 +18,28 @@ RSpec.describe 'Elasticsearch Search Integration', :elasticsearch do
     end
 
     it 'finds documents matching keyword query' do
-      results = Doc.search_by_elasticsearch('tumor', nil, nil, 1, 10)
+      results = DocumentSearch.search_by_elasticsearch('tumor', nil, nil, 1, 10)
 
       expect(results.total).to eq(1)
       expect(results.first.id.to_i).to eq(doc1.id)
     end
 
     it 'returns empty results for non-matching query' do
-      results = Doc.search_by_elasticsearch('nonexistentterm12345', nil, nil, 1, 10)
+      results = DocumentSearch.search_by_elasticsearch('nonexistentterm12345', nil, nil, 1, 10)
 
       expect(results.total).to eq(0)
     end
 
     it 'filters by sourcedb' do
       # Search with a common term and filter by sourcedb
-      results = Doc.search_by_elasticsearch('protein cancer', nil, 'PubMed', 1, 10)
+      results = DocumentSearch.search_by_elasticsearch('protein cancer', nil, 'PubMed', 1, 10)
 
       expect(results.total).to be >= 1
       expect(results.map(&:sourcedb).uniq).to all(eq('PubMed'))
     end
 
     it 'provides highlighting for matches' do
-      results = Doc.search_by_elasticsearch('breast cancer', nil, nil, 1, 10)
+      results = DocumentSearch.search_by_elasticsearch('breast cancer', nil, nil, 1, 10)
 
       expect(results.total).to be >= 1
       expect(results.first.highlight.body).to be_present
@@ -53,8 +53,8 @@ RSpec.describe 'Elasticsearch Search Integration', :elasticsearch do
       end
       ElasticsearchTestHelper.refresh_index
 
-      page1 = Doc.search_by_elasticsearch('protein', nil, nil, 1, 5)
-      page2 = Doc.search_by_elasticsearch('protein', nil, nil, 2, 5)
+      page1 = DocumentSearch.search_by_elasticsearch('protein', nil, nil, 1, 5)
+      page2 = DocumentSearch.search_by_elasticsearch('protein', nil, nil, 2, 5)
 
       expect(page1.size).to eq(5)
       expect(page2.size).to be >= 1
@@ -77,14 +77,14 @@ RSpec.describe 'Elasticsearch Search Integration', :elasticsearch do
     end
 
     it 'filters results by project' do
-      results = Doc.search_by_elasticsearch('genes', project, nil, 1, 10)
+      results = DocumentSearch.search_by_elasticsearch('genes', project, nil, 1, 10)
 
       expect(results.total).to eq(1)
       expect(results.first.id.to_i).to eq(doc_in_project.id)
     end
 
     it 'returns all matching docs when no project filter' do
-      results = Doc.search_by_elasticsearch('genes', nil, nil, 1, 10)
+      results = DocumentSearch.search_by_elasticsearch('genes', nil, nil, 1, 10)
 
       expect(results.total).to eq(2)
     end
@@ -109,7 +109,7 @@ RSpec.describe 'Elasticsearch Search Integration', :elasticsearch do
     end
 
     it 'performs hybrid search combining BM25 and kNN' do
-      results = Doc.hybrid_search('p53 tumor suppressor', page: 1, per: 10)
+      results = DocumentSearch.hybrid_search('p53 tumor suppressor', page: 1, per: 10)
 
       expect(results).to be_present
       expect(results.total).to be >= 1
@@ -118,7 +118,7 @@ RSpec.describe 'Elasticsearch Search Integration', :elasticsearch do
     it 'falls back to BM25 when embedding service fails' do
       allow(EmbeddingService).to receive(:generate).and_return(nil)
 
-      results = Doc.hybrid_search('tumor', page: 1, per: 10)
+      results = DocumentSearch.hybrid_search('tumor', page: 1, per: 10)
 
       expect(results).to be_present
     end
@@ -135,7 +135,7 @@ RSpec.describe 'Elasticsearch Search Integration', :elasticsearch do
     it 'falls back to BM25 when embedding service fails' do
       allow(EmbeddingService).to receive(:generate).and_return(nil)
 
-      results = Doc.hybrid_search('tumor', page: 1, per: 10)
+      results = DocumentSearch.hybrid_search('tumor', page: 1, per: 10)
 
       expect(results).to be_present
     end

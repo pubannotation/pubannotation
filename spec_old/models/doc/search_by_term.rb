@@ -9,7 +9,7 @@ RSpec.describe Doc, type: :model do
     let(:projects) { nil }
     let(:page) { 1 }
     let(:per) { 10 }
-    subject { Doc.search_by_term user, base_project_name, terms, predicates, projects, page, per }
+    subject { DocumentSearch.search_by_term user, base_project_name, terms, predicates, projects, page, per }
 
     it 'returns an array' do
       expect(subject).to be_a(Array)

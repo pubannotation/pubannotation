@@ -50,7 +50,7 @@ namespace :search do
     # Hybrid Search (client-side RRF)
     puts "\n### Hybrid Search (BM25 + kNN with RRF) ###"
     hybrid_start = Time.current
-    hybrid_results = Doc.hybrid_search(query, page: 1, per: 10)
+    hybrid_results = DocumentSearch.hybrid_search(query, page: 1, per: 10)
     hybrid_time = Time.current - hybrid_start
 
     puts "Time: #{(hybrid_time * 1000).round(1)}ms"

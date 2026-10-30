@@ -26,7 +26,7 @@ RSpec.describe 'Embedding Workflow Integration', :elasticsearch do
       query_embedding = Array.new(768) { |i| Math.sin(i * 0.1) }
       allow(EmbeddingService).to receive(:generate).and_return(query_embedding)
 
-      results = Doc.hybrid_search('tumor suppressor', page: 1, per: 10)
+      results = DocumentSearch.hybrid_search('tumor suppressor', page: 1, per: 10)
 
       expect(results).to be_present
       expect(results.map(&:id)).to include(cancer_doc.id)
@@ -35,7 +35,7 @@ RSpec.describe 'Embedding Workflow Integration', :elasticsearch do
     it 'combines keyword and semantic relevance' do
       allow(EmbeddingService).to receive(:generate).and_return(sample_embedding)
 
-      results = Doc.hybrid_search('cancer', page: 1, per: 10)
+      results = DocumentSearch.hybrid_search('cancer', page: 1, per: 10)
 
       expect(results.total).to be >= 1
     end
@@ -129,21 +129,21 @@ RSpec.describe 'Embedding Workflow Integration', :elasticsearch do
     end
 
     it 'supports BM25 search across all documents' do
-      results = Doc.search_by_elasticsearch('cancer', nil, nil, 1, 10)
+      results = DocumentSearch.search_by_elasticsearch('cancer', nil, nil, 1, 10)
 
       expect(results.total).to eq(2)
       expect(results.map { |r| r.id.to_i }).to contain_exactly(doc1.id, doc2.id)
     end
 
     it 'supports filtered search within project' do
-      results = Doc.search_by_elasticsearch('cancer', project, nil, 1, 10)
+      results = DocumentSearch.search_by_elasticsearch('cancer', project, nil, 1, 10)
 
       expect(results.total).to eq(2)
     end
 
     it 'supports filtered search by sourcedb' do
       # Search for a term in doc3 (PMC) and filter by sourcedb
-      results = Doc.search_by_elasticsearch('weather climate', nil, 'PMC', 1, 10)
+      results = DocumentSearch.search_by_elasticsearch('weather climate', nil, 'PMC', 1, 10)
 
       expect(results.total).to eq(1)
       expect(results.first.id.to_i).to eq(doc3.id)
@@ -155,7 +155,7 @@ RSpec.describe 'Embedding Workflow Integration', :elasticsearch do
         allow(EmbeddingService).to receive(:generate)
           .and_return(Array.new(768) { |i| Math.sin(i * 0.1) })
 
-        results = Doc.hybrid_search('lung cancer EGFR', project: project, page: 1, per: 10)
+        results = DocumentSearch.hybrid_search('lung cancer EGFR', project: project, page: 1, per: 10)
 
         expect(results).to be_present
         expect(results.map(&:id)).to include(doc1.id)
@@ -165,7 +165,7 @@ RSpec.describe 'Embedding Workflow Integration', :elasticsearch do
         allow(EmbeddingService).to receive(:generate)
           .and_return(Array.new(768) { |i| Math.sin(i * 0.1) })
 
-        results = Doc.hybrid_search('cancer treatment', page: 1, per: 10)
+        results = DocumentSearch.hybrid_search('cancer treatment', page: 1, per: 10)
 
         cancer_doc_positions = results.map(&:id).take(2)
         expect(cancer_doc_positions).not_to include(doc3.id)

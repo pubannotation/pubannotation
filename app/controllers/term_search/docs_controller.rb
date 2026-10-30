@@ -5,7 +5,7 @@ module TermSearch
     include ArrayParameterConcern
 
     def index
-      doc_fields = Doc.search_by_term current_user,
+      doc_fields = DocumentSearch.search_by_term current_user,
                                       params[:base_project],
                                       to_array(params[:terms]),
                                       to_array(params[:predicates]),

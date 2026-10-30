@@ -8,7 +8,7 @@ class TermSearchController < ApplicationController
     @query = Query.new query_params
     evidence_blocks = case @query.block_type
     in 'doc'
-      Doc.search_by_term current_user,
+      DocumentSearch.search_by_term current_user,
                          @query.base_project,
                          to_array(@query.terms),
                          to_array(@query.predicates),

@@ -33,7 +33,7 @@ class DocsController < ApplicationController
 		use_semantic = params[:semantic] == 'true'  # Opt-in for performance
 
 		if use_elasticsearch
-			@search_results = Doc.search_by_elasticsearch params[:keywords].strip.downcase,
+			@search_results = DocumentSearch.search_by_elasticsearch params[:keywords].strip.downcase,
 																									 @project,
 																									 @sourcedb,
 																									 page,
@@ -43,7 +43,7 @@ class DocsController < ApplicationController
 			@search_count = @search_results.total
 			@docs = @search_results.records
 		else
-			@docs = Doc.search_by_active_record page, per, @project, @sourcedb,
+			@docs = DocumentSearch.search_by_active_record page, per, @project, @sourcedb,
 																					params[:sort_key], params[:sort_direction], params[:randomize]
 		end
 
@@ -116,11 +116,11 @@ class DocsController < ApplicationController
 
 		results = case method
 		when 'bm25'
-			Doc.search_by_elasticsearch(query_normalized, nil, sourcedb, 1, per, semantic: false)
+			DocumentSearch.search_by_elasticsearch(query_normalized, nil, sourcedb, 1, per, semantic: false)
 		when 'knn'
-			Doc.knn_search(query_normalized, sourcedb: sourcedb, page: 1, per: per)
+			DocumentSearch.knn_search(query_normalized, sourcedb: sourcedb, page: 1, per: per)
 		when 'rrf'
-			Doc.hybrid_search(query_normalized, sourcedb: sourcedb, page: 1, per: per)
+			DocumentSearch.hybrid_search(query_normalized, sourcedb: sourcedb, page: 1, per: per)
 		end
 
 		output = results.results.map do |r|
