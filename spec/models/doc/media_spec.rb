@@ -220,14 +220,14 @@ RSpec.describe Doc, type: :model do
     end
   end
 
-  describe '#segment_listable_by?' do
+  describe '#segments_available?' do
     let(:medium) { create(:medium, media_type: :audio, content_type: 'audio/mpeg') }
     let(:doc) { create(:doc, body: 'Hello world', medium:) }
 
-    it 'is true with segments, even for a user who cannot update the doc' do
+    it 'is true when the transcript has segments' do
       create(:media_transcript, medium:, doc:, text: 'Hello world')
 
-      expect(doc.reload.segment_listable_by?(create(:user))).to be(true)
+      expect(doc.reload.segments_available?).to be(true)
     end
 
     it 'is false with no segments, e.g. an image caption' do
@@ -235,11 +235,11 @@ RSpec.describe Doc, type: :model do
       image_doc = create(:doc, body: 'A caption.', medium: image)
       create(:media_transcript, medium: image, doc: image_doc, text: 'A caption.', segments: [])
 
-      expect(image_doc.reload.segment_listable_by?(create(:user))).to be(false)
+      expect(image_doc.reload.segments_available?).to be(false)
     end
 
     it 'is false with no media transcript' do
-      expect(doc.segment_listable_by?(create(:user))).to be_falsey
+      expect(doc.segments_available?).to be_falsey
     end
   end
 end

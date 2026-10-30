@@ -30,11 +30,11 @@ module Doc::Media
 
   # Whether `current_user` can edit the segments of this doc's media transcript.
   def segment_editable_by?(current_user)
-    segment_listable_by?(current_user) && updatable_for?(current_user)
+    segments_available? && updatable_for?(current_user)
   end
 
-  # Anyone can, given segments; access to media, while it's being tried out, is checked by the controller.
-  def segment_listable_by?(current_user)
+  # Whether the transcript has segments; media access is checked by the controller.
+  def segments_available?
     media_transcript&.segmented?
   end
 
