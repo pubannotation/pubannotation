@@ -51,7 +51,7 @@ RSpec.describe Doc, 'Elasticsearch search', type: :model do
 
   it 'selects hybrid search when semantic search is requested' do
     expected = SearchResults.new(response, Doc, page: 2, per: 5)
-    expect(Doc).to receive(:hybrid_search).with('tumor', project: nil, sourcedb: 'PMC', page: 2, per: 5).and_return(expected)
+    expect(DocumentSearch).to receive(:hybrid_search).with('tumor', project: nil, sourcedb: 'PMC', page: 2, per: 5).and_return(expected)
 
     expect(Doc.search_by_elasticsearch('tumor', nil, 'PMC', 2, 5, semantic: true)).to equal(expected)
   end

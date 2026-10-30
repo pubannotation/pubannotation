@@ -7,10 +7,16 @@ class Doc < ActiveRecord::Base
   include Doc::TextStructure
   include Doc::Serialization
   include Doc::Rdf
-  include Doc::Search
   include Doc::ElasticsearchIndexable
   include TermSearchConcern
   include PaginateConcern
+
+  class << self
+    delegate :search_by_active_record, :search_by_term, :default_sort_order_for,
+             :search_by_elasticsearch, :hybrid_search, :knn_search,
+             :build_search_query, :apply_rrf, :generate_client_highlight,
+             to: :DocumentSearch
+  end
 
   SOURCEDBS = %w[PubMed PMC GrayAnatomy]
 

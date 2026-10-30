@@ -1,12 +1,10 @@
 # frozen_string_literal: true
 
-module Doc::Search
-  extend ActiveSupport::Concern
-
-  class_methods do
+class DocumentSearch
+  class << self
     def search_by_active_record(page, per, project = nil, sourcedb = nil,
                               sort_key = nil, sort_direction = nil, is_randomize = false)
-      docs = all
+      docs = Doc.all
       docs = docs.joins(:projects).where(projects: { id: project.id }) if project.present?
       docs = docs.where(sourcedb: sourcedb) if sourcedb.present?
 
@@ -55,7 +53,7 @@ module Doc::Search
     # @param semantic [Boolean] Use hybrid semantic search
     # @return [SearchResults] Wrapped search results
     def search_by_elasticsearch(keywords, project, sourcedb, page, per, semantic: false)
-      return SearchResults.new({ 'hits' => { 'hits' => [], 'total' => 0 } }, self, page: page, per: per) if keywords.blank?
+      return SearchResults.new({ 'hits' => { 'hits' => [], 'total' => 0 } }, Doc, page: page, per: per) if keywords.blank?
 
       if semantic
         hybrid_search(keywords, project: project, sourcedb: sourcedb, page: page, per: per)
@@ -76,12 +74,12 @@ module Doc::Search
           }
         )
 
-        SearchResults.new(response, self, page: page, per: per)
+        SearchResults.new(response, Doc, page: page, per: per)
       end
     rescue => e
       Rails.logger.error "[ES Search] Error: #{e.message}"
       # Return empty results on ES errors to avoid breaking the UI
-      SearchResults.new({ 'hits' => { 'hits' => [], 'total' => 0 } }, self, page: page, per: per)
+      SearchResults.new({ 'hits' => { 'hits' => [], 'total' => 0 } }, Doc, page: page, per: per)
     end
 
     # Build the ES query based on parameters
@@ -200,7 +198,7 @@ module Doc::Search
       # Apply client-side RRF
       merged_response = apply_rrf(bm25_response, knn_response, keywords: keywords, page: page, per: per, k: rrf_k)
 
-      SearchResults.new(merged_response, self, page: page, per: per)
+      SearchResults.new(merged_response, Doc, page: page, per: per)
     end
 
     # Pure kNN semantic search (no BM25)
@@ -245,7 +243,7 @@ module Doc::Search
         hit['highlight'] = generate_client_highlight(hit.dig('_source', 'body'), keywords)
       end
 
-      SearchResults.new(response, self, page: page, per: per)
+      SearchResults.new(response, Doc, page: page, per: per)
     end
 
     # Apply Reciprocal Rank Fusion to merge two search results
