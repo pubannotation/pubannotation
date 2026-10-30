@@ -13,9 +13,10 @@ class TextStructurePresenter
     first = [span[:begin] - context_size, 0].max
     last = [span[:end] + context_size, @text_length].min
     @structures.select { |structure| structure.begin >= first && structure.end < last }.map do |structure|
-      structure.begin -= first
-      structure.end -= first
-      structure.to_hash
+      hash = structure.to_hash
+      hash[:span][:begin] -= first
+      hash[:span][:end] -= first
+      hash
     end
   end
 end
