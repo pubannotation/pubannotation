@@ -34,13 +34,7 @@ module Doc::AnnotationCounts
     elsif span.nil?
       ProjectDoc.relations_count_for(id, project_id)
     else
-      scope = relations
-        .joins("INNER JOIN denotations AS subj_d ON subj_d.id = relations.subj_id AND relations.subj_type = 'Denotation'")
-        .joins("INNER JOIN denotations AS obj_d  ON obj_d.id  = relations.obj_id  AND relations.obj_type  = 'Denotation'")
-        .where('subj_d.begin >= :b AND subj_d."end" <= :e', b: span[:begin], e: span[:end])
-        .where('obj_d.begin  >= :b AND obj_d."end"  <= :e', b: span[:begin], e: span[:end])
-      scope = scope.where(project_id: project_id) if project_id
-      scope.count
+      relations.with_denotations_in_span(span, project_id).count
     end
   end
 end

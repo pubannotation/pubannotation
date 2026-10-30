@@ -38,6 +38,15 @@ class Relation < ActiveRecord::Base
 		self.project.update_updated_at
 	end
 
+  # Both endpoints must be denotations wholly contained in the requested span.
+  scope :with_denotations_in_span, ->(span, project_id = nil) do
+    matching = joins("INNER JOIN denotations AS subj_d ON subj_d.id = relations.subj_id AND relations.subj_type = 'Denotation'")
+      .joins("INNER JOIN denotations AS obj_d ON obj_d.id = relations.obj_id AND relations.obj_type = 'Denotation'")
+      .where('subj_d.begin >= :b AND subj_d."end" <= :e', b: span[:begin], e: span[:end])
+      .where('obj_d.begin >= :b AND obj_d."end" <= :e', b: span[:begin], e: span[:end])
+    project_id ? matching.where(project_id: project_id) : matching
+  end
+
 	scope :among_denotations, -> (denotation_ids) {
 		case denotation_ids
 		when nil
