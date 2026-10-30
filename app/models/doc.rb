@@ -17,14 +17,14 @@ class Doc < ActiveRecord::Base
 
   has_many :divisions, dependent: :destroy
   # Paragraph is a kind of division which has label 'p'.
-  has_many :paragraphs
+  has_many :paragraphs, extend: TextStructureReferenceCollection
 
   has_many :typesettings, dependent: :destroy
 
   has_many :denotations, dependent: :destroy
   has_many :blocks, dependent: :destroy
   # Sentence is a kind of block which has obj 'sentence'.
-  has_many :sentences
+  has_many :sentences, extend: TextStructureReferenceCollection
 
   has_many :relations, dependent: :destroy
   has_many :attrivutes, dependent: :destroy

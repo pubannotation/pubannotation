@@ -11,7 +11,7 @@ module Doc::TextStructure
     Typesetting.store_for(self, items)
   end
 
-  def update_all_references_in_paragraphs = paragraphs.each { _1.update_references denotations }
+  def update_all_references_in_paragraphs = paragraphs.update_references(denotations)
 
-  def update_all_references_in_sentences = sentences.each { _1.update_references denotations }
+  def update_all_references_in_sentences = sentences.update_references(denotations)
 end
