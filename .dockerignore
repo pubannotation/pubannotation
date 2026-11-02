@@ -4,6 +4,9 @@
 !.env.example
 log/*
 tmp/*
+!tmp/uploads/
+tmp/uploads/*
+!tmp/uploads/.keep
 storage/*
 node_modules
 coverage

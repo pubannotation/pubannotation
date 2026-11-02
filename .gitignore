@@ -14,6 +14,9 @@
 # Ignore all logfiles and tempfiles.
 /log/*
 /tmp/*
+!/tmp/uploads/
+/tmp/uploads/*
+!/tmp/uploads/.keep
 /coverage
 
 # Ignore all files for rvm
