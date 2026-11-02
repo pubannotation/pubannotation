@@ -7,7 +7,7 @@ Run the commands below from the repository root unless otherwise noted.
 ## Requirements
 
 Please use it with
-* ruby version 4.0.5,
+* ruby version 4.0.9,
 * PostgreSQL 9.0 or above,
 * Elasticsearch 8.x,
 * [redis](https://redis.io/)
@@ -95,7 +95,7 @@ Open http://localhost:3000. Set `PUBANNOTATION_PORT=3001` before the command if
 port 3000 is already in use. The first build downloads Ruby and the gems and can
 take several minutes.
 
-The development stack includes Ruby 4.0.5, Rails, a Sidekiq worker, PostgreSQL 17,
+The development stack includes Ruby 4.0.9, Rails, a Sidekiq worker, PostgreSQL 17,
 Redis 7.4, Elasticsearch 9 (matching the current Elasticsearch client gem), and
 Ollama 0.34.2.
 Compose waits for the backing services, then prepares the database and search

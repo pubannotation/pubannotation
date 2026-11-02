@@ -1,4 +1,4 @@
-FROM ruby:4.0.5-slim AS whisper-build
+FROM ruby:4.0.9-slim AS whisper-build
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential cmake git ca-certificates \
@@ -7,7 +7,7 @@ RUN git clone --branch v1.7.6 --depth 1 https://github.com/ggml-org/whisper.cpp.
     && cmake -S /whisper.cpp -B /whisper.cpp/build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF \
     && cmake --build /whisper.cpp/build --config Release --target whisper-cli -j 2
 
-FROM ruby:4.0.5-slim
+FROM ruby:4.0.9-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential git libpq-dev libxml2-dev libxslt1-dev libyaml-dev pkg-config \
