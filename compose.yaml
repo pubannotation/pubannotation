@@ -9,12 +9,15 @@ x-app: &app
     ELASTICSEARCH_URL: http://elasticsearch:9200
     OLLAMA_HOST: ollama
     OLLAMA_CAPTION_MODELS: ${OLLAMA_CAPTION_MODELS:-moondream}
+    WHISPER_CLI_PATH: /usr/local/bin/whisper-cli
+    WHISPER_MODEL_PATH: /models/ggml-${WHISPER_MODEL:-base}.bin
     PIDFILE: /tmp/pubannotation-server.pid
   volumes:
     - .:/app
     - app_storage:/app/storage
     - app_logs:/app/log
     - app_tmp:/app/tmp
+    - whisper_models:/models
   stdin_open: true
   tty: true
 
@@ -96,6 +99,24 @@ services:
       elasticsearch:
         condition: service_healthy
 
+  whisper-setup:
+    <<: *app
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -eu
+        model="$${WHISPER_MODEL_PATH##*/}"
+        case "$$model" in
+          ggml-base.bin|ggml-small.bin|ggml-medium.bin|ggml-large-v3.bin|ggml-large-v3-turbo.bin) ;;
+          *) echo "Unsupported Whisper model: $$model" >&2; exit 1 ;;
+        esac
+        if [ ! -s "$$WHISPER_MODEL_PATH" ]; then
+          tmp="$${WHISPER_MODEL_PATH}.tmp"
+          trap 'rm -f "$$tmp"' EXIT
+          curl -fL --retry 3 -o "$$tmp" "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/$$model"
+          mv "$$tmp" "$$WHISPER_MODEL_PATH"
+        fi
+
   web:
     <<: *app
     command: ["bin/rails", "server", "-b", "0.0.0.0", "-p", "3000"]
@@ -115,6 +136,8 @@ services:
         condition: service_completed_successfully
       setup:
         condition: service_completed_successfully
+      whisper-setup:
+        condition: service_completed_successfully
 
 volumes:
   postgres_data:
@@ -124,3 +147,4 @@ volumes:
   app_logs:
   app_tmp:
   ollama_data:
+  whisper_models:

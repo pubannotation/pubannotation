@@ -141,8 +141,17 @@ docker compose exec ollama ollama list
 docker compose exec ollama ollama pull moondream
 ```
 
-whisper.cpp and its model, the embedding service, and Stardog are not included.
-ffmpeg is installed, but transcription and features
+Compose builds whisper.cpp and downloads the multilingual `base` model to the
+`whisper_models` volume before starting the worker. The first download requires
+network access and additional disk space. To use another multilingual model,
+set `WHISPER_MODEL` in `.env` to `small`, `medium`, `large-v3`, or
+`large-v3-turbo`, then run `docker compose up -d`; larger models require more
+disk space and memory. Models are retained in the volume, including across
+`docker compose down`. The download must succeed before the worker can start.
+Check it with `docker compose logs whisper-setup` and verify the CLI with
+`docker compose exec worker whisper-cli --help`.
+
+The embedding service and Stardog are not included. Features
 using those external services require additional configuration. Inside a
 container, `localhost` refers to that container, not the host machine.
 

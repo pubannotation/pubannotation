@@ -32,7 +32,7 @@ class AudioTranscriptionService
     model_path = self.class.model_path
 
     # -np keeps stdout limited to the timestamped segment lines; diagnostics go to stderr.
-    stdout, stderr, status = Open3.capture3(cli_path, '-m', model_path, '-f', @audio_path, '-np')
+    stdout, stderr, status = Open3.capture3(cli_path, '-m', model_path, '-f', @audio_path, '-l', 'auto', '-np')
     raise TranscriptionError, "Whisper transcription failed (status #{status.exitstatus}): #{stderr.strip}" unless status.success?
 
     stdout
