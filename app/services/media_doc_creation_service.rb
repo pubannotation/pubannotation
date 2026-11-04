@@ -27,6 +27,11 @@ class MediaDocCreationService
       )
       media_transcript.update!(doc:)
       project.add_doc!(doc)
+      admin_project = Project.admin_project
+      if admin_project && admin_project.id != project.id
+        admin_project.increment!(:docs_count)
+        admin_project.docs_stat_increment!(doc.sourcedb)
+      end
       media_transcript.create_segment_blocks!(project)
     end
 

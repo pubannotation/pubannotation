@@ -11,6 +11,9 @@ RSpec.describe MediaDocCreationService do
     create(:media_transcript, medium: medium, media_transcription_task: task, text: 'A generated body.')
   end
   let(:attributes) { { source: nil, sourcedb: 'Example', sourceid: '001' } }
+  let(:admin_project) { create(:project, user: user) }
+
+  before { allow(Project).to receive(:admin_project).and_return(admin_project) }
 
   describe '.call' do
     it "creates a doc from the transcript's text, linked to the medium and the project" do
@@ -28,6 +31,29 @@ RSpec.describe MediaDocCreationService do
       doc = described_class.call(project, medium, user, attributes.merge(source: 'https://example.com/original'), media_transcript)
 
       expect(doc.source).to eq('https://example.com/original')
+    end
+
+    it 'updates the global document count and source statistics' do
+      admin_project
+      expect { described_class.call(project, medium, user, attributes, media_transcript) }
+        .to change { admin_project.reload.docs_count }.by(1)
+      expect(admin_project.reload.docs_stat["Example@#{user.username}"]).to eq(1)
+    end
+
+    it 'counts a document added to the admin project only once' do
+      admin_project
+      expect { described_class.call(admin_project, medium, user, attributes, media_transcript) }
+        .to change { admin_project.reload.docs_count }.by(1)
+      expect(admin_project.reload.docs_stat["Example@#{user.username}"]).to eq(1)
+    end
+
+    it 'rolls back global counts if creating segment blocks fails' do
+      admin_project
+      allow(media_transcript).to receive(:create_segment_blocks!).and_raise(StandardError, 'blocks failed')
+      expect { described_class.call(project, medium, user, attributes, media_transcript) }
+        .to raise_error(StandardError, 'blocks failed')
+      expect(admin_project.reload.docs_count).to eq(0)
+      expect(admin_project.docs_stat["Example@#{user.username}"]).to be_nil
     end
 
     it 'links the media_transcript to the created doc' do
