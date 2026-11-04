@@ -427,12 +427,18 @@ class DocsController < ApplicationController
 		@doc = Doc.find_by(id: params[:id])
 
 		attributes = doc_params
+		%w[source sourcedb sourceid].each do |field|
+			attributes[field] = nil if attributes[field] == '' && @doc.public_send(field).nil?
+		end
 		@doc.assign_written_body(attributes[:text])
 		is_success = @doc.update(attributes.except(:text))
 
 		respond_to do |format|
 			if is_success
-				format.html { redirect_to @doc, notice: t('controllers.shared.successfully_updated', :model => t('activerecord.models.doc')) }
+				format.html do
+					notice = t('controllers.shared.successfully_updated', model: t('activerecord.models.doc')) if @doc.saved_changes.except('updated_at').present?
+					redirect_to @doc, notice: notice
+				end
 				format.json { head :no_content }
 			else
 				format.html { render action: "edit" }

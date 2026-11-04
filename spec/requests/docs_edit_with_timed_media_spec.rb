@@ -39,6 +39,22 @@ RSpec.describe 'Editing a doc with a media transcript', type: :request do
       expect(doc.reload.source).to eq('https://example.com/changed')
     end
 
+    it 'does not show an update notice when the submitted values are unchanged' do
+      patch doc_path(doc), params: { doc: { text: doc.body, source: doc.source.to_s, sourcedb: doc.sourcedb.to_s, sourceid: doc.sourceid.to_s, username: root_user.username } }
+
+      expect(response).to redirect_to(doc_path(doc))
+      follow_redirect!
+      expect(response.body).not_to include('document was successfully updated')
+    end
+
+    it 'shows an update notice when a field changes' do
+      patch doc_path(doc), params: { doc: { text: doc.body, source: 'https://example.com/changed' } }
+
+      expect(response).to redirect_to(doc_path(doc))
+      follow_redirect!
+      expect(response.body).to include('document was successfully updated')
+    end
+
     it 're-renders a rejected body change with the stored body in the read-only field' do
       patch doc_path(doc), params: { doc: { text: 'Changed body' } }
 
