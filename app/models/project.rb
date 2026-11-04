@@ -600,7 +600,7 @@ class Project < ActiveRecord::Base
   end
 
   def self.admin_project
-    @admin_project ||= Project.find_by(id: Pubann::Admin::ProjectId)
+    Project.find_by(id: Pubann::Admin::ProjectId)
   end
 
   def self.docs_stat
