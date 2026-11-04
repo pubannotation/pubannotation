@@ -8,7 +8,7 @@
 # dialogue can itself contain parentheses (e.g. "the meeting (which ran long) covered budget").
 class NonSpeechTextMatcher
   KNOWN_LABELS = [
-    'music', 'upbeat music', 'suspenseful music', 'dramatic music',
+    'music', 'soft music', 'upbeat music', 'suspenseful music', 'dramatic music',
     'applause', 'audience applauding', 'clapping',
     'laughter', 'laughing',
     'silence', 'background noise', 'noise', 'static',

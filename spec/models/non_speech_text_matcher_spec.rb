@@ -8,6 +8,10 @@ RSpec.describe NonSpeechTextMatcher do
       expect(described_class.match?('(upbeat music)')).to be true
     end
 
+    it 'matches soft music as a non-speech label' do
+      expect(described_class.match?('(soft music)')).to be true
+    end
+
     it 'matches a known label in square brackets' do
       expect(described_class.match?('[applause]')).to be true
     end
