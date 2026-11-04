@@ -464,14 +464,13 @@ class Project < ActiveRecord::Base
       # Import documents that are not in the DB.
       docs_sequenced, sourceids_sequence_failed, sourceids_existing_personalized, messages = sequence sourcedb, sourceids
 
-      # Tie the documents to the project.
-      num_docs_added = tie_documents sourcedb, sourceids
-
-      # Skip project-level counter update during batch processing to avoid lock contention
-      unless batch_processing
+      # Keep the membership and its counters together even if a batch fails later.
+      num_docs_added = 0
+      self.class.transaction do
+        num_docs_added = tie_documents sourcedb, sourceids
         increment!(:docs_count, num_docs_added)
+        docs_stat_increment!(sourcedb, num_docs_added)
       end
-      docs_stat_increment!(sourcedb, num_docs_added)
 
       total_added += num_docs_added
       total_sequenced += docs_sequenced.length

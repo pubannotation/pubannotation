@@ -29,6 +29,28 @@ RSpec.describe Project do
     end
   end
 
+  it 'counts documents added by batch processing only once' do
+    doc
+    specs = [{ sourcedb: doc.sourcedb, sourceid: doc.sourceid }]
+
+    project.add_docs_from_array(specs, batch_processing: true)
+    project.add_docs_from_array(specs, batch_processing: true)
+
+    expect(project.reload.docs_count).to eq(1)
+    expect(project.docs_stat['Example']).to eq(1)
+    expect(project.docs).to contain_exactly(doc)
+  end
+
+  it 'rolls back batch membership when updating its counts fails' do
+    doc
+    allow(project).to receive(:docs_stat_increment!).and_raise('count failed')
+
+    expect { project.add_docs_from_array([{ sourcedb: doc.sourcedb, sourceid: doc.sourceid }], batch_processing: true) }
+      .to raise_error('count failed')
+    expect(project.reload.docs_count).to eq(0)
+    expect(project.docs).to be_empty
+  end
+
   it 'rolls back project counts when document deletion rolls back' do
     project.add_doc!(doc)
     Doc.transaction do
