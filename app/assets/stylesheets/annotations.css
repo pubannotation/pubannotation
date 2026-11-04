@@ -1,5 +1,15 @@
+.annotations-table-container {
+	max-width: 100%;
+	overflow-x: auto;
+}
+
 table.ann {
 	text-align: center;
+	width: 100%;
+
+	th, td {
+		overflow-wrap: anywhere;
+	}
 
 	tr.denotation {
 		background-color: #f8f8ff;

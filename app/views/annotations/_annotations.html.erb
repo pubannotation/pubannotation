@@ -19,6 +19,7 @@
 				<%= link_to alternative, params.permit(:controller, :action).merge(discontinuous_span: alternative), :class => 'tab inactive_tab' %> model.</p>
 		<% end %>
 
+		<div class="annotations-table-container">
 		<table class="ann">
 			<tr>
 				<% headers.each do |h| -%>
@@ -56,5 +57,6 @@
 				</tr>
 			<% end %>
 		</table>
+		</div>
 	<% end %>
 </section>
