@@ -6,7 +6,19 @@
 	<p>Editing a segment's text rebuilds the document's text from the segments. The annotations after it are not moved.</p>
 <% end -%>
 
-<table>
+<div class="segments-table-container">
+<table class="segments-table">
+	<colgroup>
+		<col class="segment-number">
+		<col class="segment-time">
+		<col class="segment-time">
+		<col>
+		<col class="segment-speech">
+		<% if @editable -%>
+			<col class="segment-line-break">
+			<col class="segment-edit">
+		<% end -%>
+	</colgroup>
 	<tr>
 		<th>#</th>
 		<th>Start</th>
@@ -23,7 +35,7 @@
 			<td><%= index %></td>
 			<td><%= segment_time(segment.start_ms) %></td>
 			<td><%= segment_time(segment.end_ms) %></td>
-			<td><%= segment.text %></td>
+			<td class="segment-text"><%= segment.text %></td>
 			<td class="speech"><%= '✓' if segment.speech? %></td>
 			<% if @editable -%>
 				<td class="line-break">
@@ -43,6 +55,7 @@
 		</tr>
 	<% end -%>
 </table>
+</div>
 
 <%= link_to t('views.shared.back'), doc_sourcedb_sourceid_show_path(@doc.sourcedb, @doc.sourceid) %>
 

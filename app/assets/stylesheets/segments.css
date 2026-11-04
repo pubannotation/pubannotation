@@ -1,3 +1,24 @@
+.segments-table-container {
+	max-width: 100%;
+	overflow-x: auto;
+}
+
+.segments-table {
+	width: 100%;
+	min-width: 650px;
+	table-layout: fixed;
+
+	.segment-number { width: 3em; }
+	.segment-time { width: 6em; }
+	.segment-speech { width: 5em; }
+	.segment-line-break { width: 5em; }
+	.segment-edit { width: 5em; }
+
+	.segment-text {
+		overflow-wrap: anywhere;
+	}
+}
+
 #segment-dialog {
 	/* Padding goes on the content instead, so a click on the dialog itself is one on its backdrop */
 	padding: 0;
