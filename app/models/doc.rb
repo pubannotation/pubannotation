@@ -28,6 +28,7 @@ class Doc < ActiveRecord::Base
   has_many :relations, dependent: :destroy
   has_many :attrivutes, dependent: :destroy
 
+  before_destroy :decrement_project_doc_counts
   has_many :project_docs, dependent: :destroy
   has_many :projects, through: :project_docs,
     after_add: %i[increment_docs_projects_counter queue_es_project_add],
@@ -68,6 +69,14 @@ class Doc < ActiveRecord::Base
     admin_project.docs_stat_decrement!(sourcedb)
   end
   private :decrement_global_doc_counts
+
+  def decrement_project_doc_counts
+    projects.where.not(id: Pubann::Admin::ProjectId).find_each do |project|
+      project.decrement!(:docs_count)
+      project.docs_stat_decrement!(sourcedb)
+    end
+  end
+  private :decrement_project_doc_counts
 
   def set_ascii_body
     self.original_body = body
