@@ -6,9 +6,16 @@
 			<th style="width:5em">Text</th>
 			<td>
 				<% if @doc.persisted? && @doc.media_transcript&.transcribed_by_whisper? %>
+					<div class="doc-text-notice">
+						<strong>This text cannot be edited directly.</strong>
+						<p>It was transcribed by Whisper.
+							<% if segments_listable?(@doc) && @doc.segment_editable_by?(current_user) %>
+								To change it, <%= link_to 'edit the segments', doc_segments_path(@doc) %>.
+							<% end %>
+						</p>
+					</div>
 					<%# readonly (not disabled) so it's still submitted; the stored body, not a rejected edit %>
-					<%= text_area_tag 'doc[text]', @doc.body_in_database, size: "60x10", readonly: true %>
-					<p>The text cannot be changed, since it was transcribed by Whisper.</p>
+					<%= text_area_tag 'doc[text]', @doc.body_in_database, size: "60x10", readonly: true, class: 'doc-text-readonly' %>
 				<% else %>
 					<%= text_area_tag 'doc[text]', @doc.body, size: "60x10" %>
 					<% if @doc.persisted? && @doc.media_transcript&.segments.to_a.size > 1 %>

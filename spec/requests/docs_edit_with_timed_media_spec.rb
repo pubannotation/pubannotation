@@ -28,7 +28,8 @@ RSpec.describe 'Editing a doc with a media transcript', type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to match(/<textarea[^>]*name="doc\[text\]"[^>]*readonly="readonly"/)
-      expect(response.body).to include('The text cannot be changed, since it was transcribed by Whisper.')
+      expect(response.body).to include('This text cannot be edited directly.', 'It was transcribed by Whisper.')
+      expect(response.body).to include(doc_segments_path(doc), 'edit the segments')
     end
 
     it 'still accepts changes to the other fields, submitted with the unchanged text' do

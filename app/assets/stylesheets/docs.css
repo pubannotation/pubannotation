@@ -1,3 +1,19 @@
+.doc-text-notice {
+	background-color: #eef4ff;
+	border-left: 4px solid #3377ff;
+	color: #102b5e;
+	margin-bottom: 0.75em;
+	padding: 0.75em;
+
+	p { margin: 0.3em 0 0; }
+	a { text-decoration: underline; }
+}
+
+textarea.doc-text-readonly {
+	background-color: #f2f4f7;
+	color: #333;
+}
+
 #body {
 	max-height: 300px;
 	overflow-y: auto;
