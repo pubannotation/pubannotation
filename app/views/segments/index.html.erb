@@ -35,7 +35,7 @@
 			<td><%= index %></td>
 			<td><%= segment_time(segment.start_ms) %></td>
 			<td><%= segment_time(segment.end_ms) %></td>
-			<td class="segment-text"><%= segment.text %></td>
+			<td class="segment-text" title="<%= segment.text %>" tabindex="0"><%= segment.text %></td>
 			<td class="speech"><%= '✓' if segment.speech? %></td>
 			<% if @editable -%>
 				<td class="line-break">

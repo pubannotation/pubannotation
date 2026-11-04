@@ -26,6 +26,7 @@ RSpec.describe 'The segments page', type: :request do
 
         expect(response).to have_http_status(:ok)
         expect(response.body).to include('0:00.300', 'Hello', 'world')
+        expect(response.body).to include('<td class="segment-text" title="Hello" tabindex="0">Hello</td>')
       end
 
       it 'checks the Speech column of the speech segments only' do
