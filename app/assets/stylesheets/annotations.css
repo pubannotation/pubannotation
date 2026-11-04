@@ -12,6 +12,11 @@ table.ann {
 		overflow-wrap: anywhere;
 	}
 
+	th:nth-child(2), td:nth-child(2),
+	th:nth-child(3), td:nth-child(3) {
+		white-space: nowrap;
+	}
+
 	tr.denotation {
 		background-color: #f8f8ff;
 	}
