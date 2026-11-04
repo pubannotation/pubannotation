@@ -6,3 +6,7 @@
 - Follow the Tell, Don't Ask principle. Instead of retrieving an object's state and making decisions or performing operations in the caller, implement those decisions and operations as behavior of the object that owns the state. This does not prohibit retrieving state for display or data transfer.
 - Prefer positional arguments over named arguments (keyword arguments in Ruby). Use positional arguments by default when adding methods or changing method signatures. Follow existing API or framework requirements when they require keyword arguments.
 - Implement methods of stateless service classes as class methods.
+
+# Verification
+
+- Use Docker Compose to run tests and verify application behavior.
