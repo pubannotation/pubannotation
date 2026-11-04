@@ -624,7 +624,7 @@ class Project < ActiveRecord::Base
   end
 
   def self.docs_count_decrement!(by = 1)
-    admin_project.increment!(:docs_count, by)
+    admin_project.decrement!(:docs_count, by)
   end
 
   def self.docs_stat_update
@@ -1253,8 +1253,10 @@ class Project < ActiveRecord::Base
     delete_doc_annotations(doc)
     doc.projects.delete(self)
 
-    decrement!(:docs_count)
-    docs_stat_decrement!(doc.sourcedb)
+    unless id == Pubann::Admin::ProjectId
+      decrement!(:docs_count)
+      docs_stat_decrement!(doc.sourcedb)
+    end
 
     doc.destroy if doc.sourcedb.end_with?("#{Doc::UserSourcedbSeparator}#{user.username}") && doc.projects_num == 0
   end

@@ -41,6 +41,8 @@ class Doc < ActiveRecord::Base
   validates :sourceid, presence: true
   validates :sourceid, uniqueness: { scope: :sourcedb }
 
+  after_destroy :decrement_global_doc_counts
+
   scope :same_sourcedb_sourceid, ->(sourcedb, sourceid) {
     where(['sourcedb = ? AND sourceid = ?', sourcedb, sourceid])
   }
@@ -57,6 +59,15 @@ class Doc < ActiveRecord::Base
     Doc.decrement_counter(:projects_num, self.id)
     self.reload
   end
+
+  def decrement_global_doc_counts
+    admin_project = Project.admin_project
+    return unless admin_project
+
+    admin_project.decrement!(:docs_count)
+    admin_project.docs_stat_decrement!(sourcedb)
+  end
+  private :decrement_global_doc_counts
 
   def set_ascii_body
     self.original_body = body
