@@ -8,6 +8,7 @@ table.ann {
 	width: 100%;
 
 	th, td {
+		white-space: normal;
 		overflow-wrap: anywhere;
 	}
 
