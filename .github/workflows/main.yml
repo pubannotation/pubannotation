@@ -47,7 +47,7 @@ jobs:
           stack-version: 9.4.1
           security-enabled: false
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
