@@ -1,5 +1,6 @@
 class ImageCaptionService
   PROMPT = 'Describe the content of this image concisely.'
+  READ_TIMEOUT = 300
 
   # The models users can choose on the doc generation page; the first is the default. None unless
   # OLLAMA_CAPTION_MODELS is set, in which case docs can't be generated from images.
@@ -28,7 +29,7 @@ class ImageCaptionService
     body     = {model: @model, messages: messages, stream: true}.to_json
 
     caption = +''
-    Net::HTTP.start(uri.host, uri.port) do |http|
+    Net::HTTP.start(uri.host, uri.port, read_timeout: READ_TIMEOUT) do |http|
       req = Net::HTTP::Post.new(uri, 'Content-Type' => 'application/json')
       req.body = body
       http.request(req) do |res|

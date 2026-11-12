@@ -51,6 +51,12 @@ RSpec.describe ImageCaptionService do
 
         expect(mock_request).to have_received(:body=).with(a_string_including('"model":"medgemma:4b"'))
       end
+
+      it 'allows time for the model to load and process the image' do
+        described_class.new(image_path, 'moondream').call
+
+        expect(Net::HTTP).to have_received(:start).with(anything, 11434, read_timeout: 300)
+      end
     end
 
     context 'when a JSON line is split across read_body chunks' do
