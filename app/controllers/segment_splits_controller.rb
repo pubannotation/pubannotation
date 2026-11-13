@@ -15,7 +15,7 @@ class SegmentSplitsController < ApplicationController
 
   def set_media_transcript
     @doc = Doc.find(params[:doc_id])
-    return render_status_error(:not_found) unless @doc.segment_listable_by?(current_user)
+    return render_status_error(:not_found) unless @doc.segments_available?
     return render_status_error(:forbidden) unless @doc.segment_editable_by?(current_user)
 
     @media_transcript = @doc.media_transcript
