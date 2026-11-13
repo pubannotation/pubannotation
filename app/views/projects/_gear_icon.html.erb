@@ -1,4 +1,4 @@
-<span class="gear-icon" data-is-reload-necessary="<%= @project.has_unfinished_jobs? %>">
+<span class="gear-icon" data-is-reload-necessary="<%= @project.has_unfinished_jobs? %>" data-unfinished-job-ids="<%= @project.jobs.unfinished.pluck(:id).to_json %>" data-succeeded-job-ids="<%= @project.jobs.finished.where(succeeded: true).pluck(:id).to_json %>">
 	<a href=<%= project_jobs_path(@project.name) %>>
 		<span class = ''><%= icon_job(@project) %></span>
 	</a>

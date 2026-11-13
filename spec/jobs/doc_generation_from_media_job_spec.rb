@@ -19,6 +19,25 @@ RSpec.describe DocGenerationFromMediaJob, type: :job do
       allow(MediaDocCreationService).to receive(:call)
     end
 
+    context 'with a job record' do
+      let(:medium) { create(:medium, user: user, media_type: :image, content_type: 'image/png') }
+      let(:active_job) { described_class.new(project, medium, user, attributes, 'moondream') }
+      let!(:job_record) { create(:job, organization: project, active_job_id: active_job.job_id) }
+
+      it 'records successful completion' do
+        active_job.perform_now
+
+        expect(job_record.reload).to have_attributes(succeeded: true, ended_at: be_present)
+      end
+
+      it 'does not mark a failed job as successful' do
+        allow(text_generation).to receive(:call).and_raise('generation failed')
+        active_job.perform_now
+
+        expect(job_record.reload).to have_attributes(succeeded: nil, ended_at: be_present)
+      end
+    end
+
     context 'with an image medium' do
       let(:medium) { create(:medium, user: user, media_type: :image, content_type: 'image/png') }
       let(:generated_media_transcript) { MediaTranscript.new(medium:, text: 'A generated caption.', segments: []) }

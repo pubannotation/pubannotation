@@ -1,22 +1,32 @@
 document.addEventListener('DOMContentLoaded', () => {
-	if ($('.gear-icon')) {
-		function getGearIconData() {
-			return $('.gear-icon').data('is-reload-necessary');
-		}
+	const wrapper = $('.gear-icon-wrapper');
+	if (!wrapper.length) return;
 
-		function reload() {
-			let hasNotFinished = getGearIconData();
-			if (hasNotFinished) {
-				const separatedPath = location.pathname.split('/');
-				$('.gear-icon-wrapper').load(`/${separatedPath[1]}/${separatedPath[2]}/jobs/latest_gear_icon`);
+	let unfinishedIds = $('.gear-icon').data('unfinished-job-ids') || [];
+	let completedSuccessfully = false;
 
-				hasNotFinished = getGearIconData();
-				if (hasNotFinished) {
-					setTimeout(reload, 3000);
-				}
+	function reload() {
+		if (!$('.gear-icon').data('is-reload-necessary')) return;
+
+		const separatedPath = location.pathname.split('/');
+		wrapper.load(`/${separatedPath[1]}/${separatedPath[2]}/jobs/latest_gear_icon`, function (_response, status) {
+			if (status === 'error') {
+				setTimeout(reload, 3000);
+				return;
 			}
-		}
 
-		reload();
+			const icon = $('.gear-icon');
+			const succeededIds = icon.data('succeeded-job-ids') || [];
+			completedSuccessfully ||= unfinishedIds.some(id => succeededIds.includes(id));
+			unfinishedIds = icon.data('unfinished-job-ids') || [];
+
+			if (icon.data('is-reload-necessary')) {
+				setTimeout(reload, 3000);
+			} else if (completedSuccessfully && $('.project-docs-list').length) {
+				$('.project-docs-list').load(`${location.href} .project-docs-list > *`);
+			}
+		});
 	}
+
+	reload();
 });

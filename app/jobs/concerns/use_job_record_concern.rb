@@ -44,6 +44,7 @@ module UseJobRecordConcern
   end
 
   def after_perform
+    @job&.update_attribute(:succeeded, true)
     @job&.finish!
   end
 
