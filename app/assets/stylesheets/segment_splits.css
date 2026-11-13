@@ -1,0 +1,18 @@
+#split-segments {
+	.split-segment-time {
+		color: #888;
+	}
+
+	.split-segment-text {
+		cursor: text;
+	}
+
+	/* Where the segment is pointed to be split */
+	.split-mark {
+		border-left: 2px solid red;
+	}
+}
+
+#split-error {
+	color: red;
+}

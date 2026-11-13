@@ -19,6 +19,7 @@
 //= require_tree
 //= stub docs
 //= stub segments
+//= stub segment_splits
 
 getURLParameter = function(parameterName){
   var sPageURL = window.location.search.substring(1);
