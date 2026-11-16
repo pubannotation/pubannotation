@@ -1,53 +1,53 @@
 <%= render :partial => 'shared/textae_css_js'-%>
 
 <section>
-	<h1>
-		False negatives
-		(
-		<%= "'#{@element}'-type" unless @element.nil? %>
-		<%= @type %>s
-		)
-		<span class='tab-bar'>
-			<%= link_to 'TSV', params.permit(:controller, :action, :type, :element).merge(format: :tsv), :class => 'tab' -%>
-		</span>
-	</h1>
+  <h1>
+    False negatives
+    (
+    <%= "'#{@element}'-type" unless @element.nil? %>
+    <%= @type %>s
+    )
+    <span class='tab-bar'>
+      <%= link_to 'TSV', params.permit(:controller, :action, :type, :element).merge(format: :tsv), :class => 'tab' -%>
+    </span>
+  </h1>
 
-	<% if @fns_count == 0 %>
-		<p>None</p>
-	<% else %>
-		<% if @fns.empty? %>
-			<p>No more</p>
-		<% else %>
-		<table>
-			<tr>
-				<td style="border-style:none; text-align:left">Total: <%= number_with_delimiter(@fns_count, delimiter: ',') %></td>
-				<td colspan="3" style="border-style:none"></td>
-				<td style="border-style:none; text-align:right">
-				</td>
-			</tr>
-			<tr>
-				<th colspan='2'>Document <%= sort_button_helper(:doc) %></th>
-				<th>text <%= sort_button_helper(:text) %></th>
-				<th>label <%= sort_button_helper(:label) %></th>
-				<th>Show</th>
-			</tr>
-			<% @fns.each do |fn| %>
-				<%
-					sourcedb = fn[:sourcedb]
-					sourceid = fn[:sourceid]
-				%>
-				<tr>
-					<td style="text-align:center"><%= sourcedb %></td>
-					<td style="text-align:right"><%= sourceid %></td>
-					<td style="text-align:center"><%= fn[:reference][:text] %></td>
-					<td style="text-align:center"><%= fn[:reference][:obj] %></td>
-					<td>
-						<%= render partial: 'annotations/compare_view', locals: {pair: fn} -%>
-					</td>
-				</tr>
-			<% end %>
-		</table>
-		<% end %>
-		<%= simple_paginate -%>
-	<% end %>
+  <% if @fns_count == 0 %>
+    <p>None</p>
+  <% else %>
+    <% if @fns.empty? %>
+      <p>No more</p>
+    <% else %>
+    <table>
+      <tr>
+        <td style="border-style:none; text-align:left">Total: <%= number_with_delimiter(@fns_count, delimiter: ',') %></td>
+        <td colspan="3" style="border-style:none"></td>
+        <td style="border-style:none; text-align:right">
+        </td>
+      </tr>
+      <tr>
+        <th colspan='2'>Document <%= sort_button_helper(:doc) %></th>
+        <th>text <%= sort_button_helper(:text) %></th>
+        <th>label <%= sort_button_helper(:label) %></th>
+        <th>Show</th>
+      </tr>
+      <% @fns.each do |fn| %>
+        <%
+          sourcedb = fn[:sourcedb]
+          sourceid = fn[:sourceid]
+        %>
+        <tr>
+          <td style="text-align:center"><%= sourcedb %></td>
+          <td style="text-align:right"><%= sourceid %></td>
+          <td style="text-align:center"><%= fn[:reference][:text] %></td>
+          <td style="text-align:center"><%= fn[:reference][:obj] %></td>
+          <td>
+            <%= render partial: 'annotations/compare_view', locals: {pair: fn} -%>
+          </td>
+        </tr>
+      <% end %>
+    </table>
+    <% end %>
+    <%= simple_paginate -%>
+  <% end %>
 </section>

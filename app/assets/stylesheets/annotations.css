@@ -1,53 +1,53 @@
 .annotations-table-container {
-	max-width: 100%;
-	overflow-x: auto;
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 table.ann {
-	text-align: center;
-	width: 100%;
+  text-align: center;
+  width: 100%;
 
-	th, td {
-		white-space: normal;
-		overflow-wrap: anywhere;
-	}
+  th, td {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
 
-	th:nth-child(2), td:nth-child(2),
-	th:nth-child(3), td:nth-child(3) {
-		white-space: nowrap;
-	}
+  th:nth-child(2), td:nth-child(2),
+  th:nth-child(3), td:nth-child(3) {
+    white-space: nowrap;
+  }
 
-	tr.denotation {
-		background-color: #f8f8ff;
-	}
+  tr.denotation {
+    background-color: #f8f8ff;
+  }
 
-	tr.denotation:hover {
-		background-color: #e8e8ff;			
-	}
-
-
-	tr.relation {
-		background-color: #fff2f2;
-	}
-
-	tr.relation:hover {
-		background-color: #ffe2e2;
-	}
+  tr.denotation:hover {
+    background-color: #e8e8ff;			
+  }
 
 
-	tr.modification {
-		background-color: #f0fff0;
-	}
+  tr.relation {
+    background-color: #fff2f2;
+  }
 
-	tr.modification:hover {
-		background-color: #e0ffe0;
-	}
+  tr.relation:hover {
+    background-color: #ffe2e2;
+  }
 
-	th {
-		text-align: center;
-	}
 
-	th:nth-child(n+6) {
-		background-color: #66aaff;
-	}
+  tr.modification {
+    background-color: #f0fff0;
+  }
+
+  tr.modification:hover {
+    background-color: #e0ffe0;
+  }
+
+  th {
+    text-align: center;
+  }
+
+  th:nth-child(n+6) {
+    background-color: #66aaff;
+  }
 }

@@ -2,72 +2,72 @@
 
 // Loaded with defer only by docs/_content, so the DOM is already parsed when this runs.
 (() => {
-	$('#body').linkToSelectedSpan('#linkSpace');
+  $('#body').linkToSelectedSpan('#linkSpace');
 
-	highlightCurrentSpeechSegment();
-	focusHighlightedSpan();
+  highlightCurrentSpeechSegment();
+  focusHighlightedSpan();
 
-	// Highlight the latest speech segment to have started, keeping it highlighted through the gap
-	// until the next one starts, and clear it once playback ends. Clicking a segment seeks to it.
-	function highlightCurrentSpeechSegment() {
-		const mediaPlayer = document.getElementById('media-player');
-		const speechSegments = document.querySelectorAll('#body .speech-segment');
-		if (!mediaPlayer || speechSegments.length === 0) return;
+  // Highlight the latest speech segment to have started, keeping it highlighted through the gap
+  // until the next one starts, and clear it once playback ends. Clicking a segment seeks to it.
+  function highlightCurrentSpeechSegment() {
+    const mediaPlayer = document.getElementById('media-player');
+    const speechSegments = document.querySelectorAll('#body .speech-segment');
+    if (!mediaPlayer || speechSegments.length === 0) return;
 
-		mediaPlayer.addEventListener('timeupdate', () => {
-			const playingSegment = findPlayingSegment(mediaPlayer.currentTime * 1000);
+    mediaPlayer.addEventListener('timeupdate', () => {
+      const playingSegment = findPlayingSegment(mediaPlayer.currentTime * 1000);
 
-			if (playingSegment) {
-				setCurrentlyPlaying(playingSegment);
-			} else {
-				clearCurrentlyPlaying();
-			}
-		});
+      if (playingSegment) {
+        setCurrentlyPlaying(playingSegment);
+      } else {
+        clearCurrentlyPlaying();
+      }
+    });
 
-		mediaPlayer.addEventListener('ended', clearCurrentlyPlaying);
+    mediaPlayer.addEventListener('ended', clearCurrentlyPlaying);
 
-		// Clicking a segment seeks the media to when it was spoken.
-		for (const segment of speechSegments) {
-			segment.addEventListener('click', () => {
-				mediaPlayer.currentTime = Number(segment.dataset.startMs) / 1000;
-			});
-		}
+    // Clicking a segment seeks the media to when it was spoken.
+    for (const segment of speechSegments) {
+      segment.addEventListener('click', () => {
+        mediaPlayer.currentTime = Number(segment.dataset.startMs) / 1000;
+      });
+    }
 
-		function findPlayingSegment(currentMs) {
-			let previousSegment = null;
+    function findPlayingSegment(currentMs) {
+      let previousSegment = null;
 
-			// Segments are in chronological order: once a segment hasn't started yet, the one before it is
-			// the one playing (or the last one, once all have started; none, before the first one starts).
-			for (const segment of speechSegments) {
-				if (currentMs < Number(segment.dataset.startMs)) break;
-				previousSegment = segment;
-			}
+      // Segments are in chronological order: once a segment hasn't started yet, the one before it is
+      // the one playing (or the last one, once all have started; none, before the first one starts).
+      for (const segment of speechSegments) {
+        if (currentMs < Number(segment.dataset.startMs)) break;
+        previousSegment = segment;
+      }
 
-			return previousSegment;
-		}
+      return previousSegment;
+    }
 
-		function setCurrentlyPlaying(segment) {
-			if (segment.classList.contains('now-playing')) return;
+    function setCurrentlyPlaying(segment) {
+      if (segment.classList.contains('now-playing')) return;
 
-			clearCurrentlyPlaying();
-			segment.classList.add('now-playing');
-		}
+      clearCurrentlyPlaying();
+      segment.classList.add('now-playing');
+    }
 
-		function clearCurrentlyPlaying() {
-			document.querySelector('#body .now-playing')?.classList.remove('now-playing');
-		}
-	}
+    function clearCurrentlyPlaying() {
+      document.querySelector('#body .now-playing')?.classList.remove('now-playing');
+    }
+  }
 
-	// Scroll to and focus on the highlighted span
-	function focusHighlightedSpan() {
-		const highlightedSpan = document.querySelector('#body .highlight');
-		if (!highlightedSpan) return;
+  // Scroll to and focus on the highlighted span
+  function focusHighlightedSpan() {
+    const highlightedSpan = document.querySelector('#body .highlight');
+    if (!highlightedSpan) return;
 
-		// Make the span focusable by adding tabindex
-		highlightedSpan.setAttribute('tabindex', '-1');
-		// Scroll to the element
-		highlightedSpan.scrollIntoView({ behavior: 'smooth', block: 'center' });
-		// Focus on the element, leaving the scrolling to scrollIntoView above
-		highlightedSpan.focus({ preventScroll: true });
-	}
+    // Make the span focusable by adding tabindex
+    highlightedSpan.setAttribute('tabindex', '-1');
+    // Scroll to the element
+    highlightedSpan.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Focus on the element, leaving the scrolling to scrollIntoView above
+    highlightedSpan.focus({ preventScroll: true });
+  }
 })();

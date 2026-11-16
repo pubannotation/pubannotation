@@ -1,161 +1,161 @@
 .doc-text-notice {
-	background-color: #eef4ff;
-	border-left: 4px solid #3377ff;
-	color: #102b5e;
-	margin-bottom: 0.75em;
-	padding: 0.75em;
+  background-color: #eef4ff;
+  border-left: 4px solid #3377ff;
+  color: #102b5e;
+  margin-bottom: 0.75em;
+  padding: 0.75em;
 
-	p { margin: 0.3em 0 0; }
-	a { text-decoration: underline; }
+  p { margin: 0.3em 0 0; }
+  a { text-decoration: underline; }
 }
 
 textarea.doc-text-readonly {
-	background-color: #f2f4f7;
-	color: #333;
+  background-color: #f2f4f7;
+  color: #333;
 }
 
 #body {
-	max-height: 300px;
-	overflow-y: auto;
-	white-space: pre-line;
+  max-height: 300px;
+  overflow-y: auto;
+  white-space: pre-line;
 
-	.speech-segment {
-		cursor: pointer;
-	}
+  .speech-segment {
+    cursor: pointer;
+  }
 
-	.now-playing {
-		background-color: #ff0;
-	}
+  .now-playing {
+    background-color: #ff0;
+  }
 }
 
 .with_hilight {
-	background-color: #dde;
-	color: #aaa;
+  background-color: #dde;
+  color: #aaa;
 }
 
 .highlight {
-	background-color: #fff;
-	color: #000;
+  background-color: #fff;
+  color: #000;
 }
 
 .linkSpace {
-	font-style: italic;
+  font-style: italic;
 }
 
 .linkSpace .message {
-	color: #888888;
+  color: #888888;
 }
 
 #unselected_projects_list,
 #selected_projects_list{
-	padding: 0.5em;
-	border-radius: 5%;
-	width: 95%;
-	float: left;
-	min-height: 3em;
-	position: relative;
-	margin: 0.2em 0;
+  padding: 0.5em;
+  border-radius: 5%;
+  width: 95%;
+  float: left;
+  min-height: 3em;
+  position: relative;
+  margin: 0.2em 0;
 }
 
 #selected_projects_list{
-	list-style: none;
-	.ui-state-highlight { 
-		display: inline;
-		padding: 0 1em;
-		height: 1em;
-	}
-	.project_wrapper{
-		cursor: grab;
-	}
+  list-style: none;
+  .ui-state-highlight { 
+    display: inline;
+    padding: 0 1em;
+    height: 1em;
+  }
+  .project_wrapper{
+    cursor: grab;
+  }
 }
 
 #projects_switches{
-	width: 2em;
-	float:left;
-	text-align:center;
+  width: 2em;
+  float:left;
+  text-align:center;
 }
 
 .project_selector{
-	padding: 3px;
-	cursor: pointer;
+  padding: 3px;
+  cursor: pointer;
 }
 
 .project_select_button{
-	background:linear-gradient(to bottom, #ffffff 5%, #f6f6f6 100%);
-	background-color:#ffffff;
-	border-radius:4px;
-	border:1px solid #dcdcdc;
-	display:inline-block;
-	color:#222266;
-	padding: 0 4px;
-	text-align: center;
-	cursor: pointer;
+  background:linear-gradient(to bottom, #ffffff 5%, #f6f6f6 100%);
+  background-color:#ffffff;
+  border-radius:4px;
+  border:1px solid #dcdcdc;
+  display:inline-block;
+  color:#222266;
+  padding: 0 4px;
+  text-align: center;
+  cursor: pointer;
 }
 
 .projects_wrapper{
-	float:left;
-	a {
-		text-decoration: underline;
-	}
+  float:left;
+  a {
+    text-decoration: underline;
+  }
 }
 
 #annotation_links{
-	clear: both;
-	text-align: right;
+  clear: both;
+  text-align: right;
 }
 
 #projects_switches i {
-	cursor: pointer;
+  cursor: pointer;
 }
 
 .projects_wrapper{
-	position: relative;
-	width: 98%;
+  position: relative;
+  width: 98%;
 }
 
 .project_wrapper{
-	list-style: none;
-	display: inline;
-	margin-right: 2px;
-	display: inline-block;
-	white-space: nowrap;
+  list-style: none;
+  display: inline;
+  margin-right: 2px;
+  display: inline-block;
+  white-space: nowrap;
 }
 
 .disabled_textae_link{
-	cursor: not-allowed;
-	color: #999999;
+  cursor: not-allowed;
+  color: #999999;
 }
 
 .snippet {
-	em {
-		font-style: normal;
-		font-weight: bold;
-	}
+  em {
+    font-style: normal;
+    font-weight: bold;
+  }
 }
 
 .docs_col_sourcedb {
-	width: 7em;
+  width: 7em;
 }
 
 .docs_col_sourceid {
-	width: 7em;
+  width: 7em;
 }
 
 .docs_col_text {
 }
 
 .docs_col_length {
-	width: 6em;
+  width: 6em;
 }
 
 .docs_col_projects_number{
-	width: 5em;
+  width: 5em;
 }
 
 .docs_col_annotations_number{
-	width: 5em;
+  width: 5em;
 }
 
 .docs_col_button{
-	width: 2.5em;
+  width: 2.5em;
 }

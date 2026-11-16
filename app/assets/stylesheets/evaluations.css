@@ -2,10 +2,10 @@
  /* They will automatically be included in application.css. */
 
 table.false-cases {
-	margin: 10px 0;
-	border:0 none;
+  margin: 10px 0;
+  border:0 none;
 
-	th, td {
-		border:0 none;
-	}
+  th, td {
+    border:0 none;
+  }
 }

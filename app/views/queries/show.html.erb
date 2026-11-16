@@ -1,78 +1,78 @@
 <section>
 
-	<% if @organization %>
-		<%=
-			if params[:project_id].present?
-				@project = @organization
-				render :partial => 'projects/titlebar'
-			else
-				@collection = @organization
-				render :partial => 'collections/titlebar'
-			end
-		-%>
-	<% end %>
+  <% if @organization %>
+    <%=
+      if params[:project_id].present?
+        @project = @organization
+        render :partial => 'projects/titlebar'
+      else
+        @collection = @organization
+        render :partial => 'collections/titlebar'
+      end
+    -%>
+  <% end %>
 
 <p id="notice"><%= notice %></p>
 
 <table class="virtical" style="table-layout:fixed; width:100%">
 <tr>
-	<th style="width:10em">Title</th>
-	<td><%= @query.title %></td>
+  <th style="width:10em">Title</th>
+  <td><%= @query.title %></td>
 </tr>
 
 <% if root_user? %>
-	<tr>
-		<th>Category</th>
-		<td><%= @query.category %></td>
-	</tr>
+  <tr>
+    <th>Category</th>
+    <td><%= @query.category %></td>
+  </tr>
 <% end %>
 
 <tr>
-	<th>Sparql</th>
-	<td><pre style="tab-size:2"><%= @query.sparql %></pre></td>
+  <th>Sparql</th>
+  <td><pre style="tab-size:2"><%= @query.sparql %></pre></td>
 </tr>
 
 <tr>
-	<th>Reasoning</th>
-	<td><%= @query.reasoning %></td>
+  <th>Reasoning</th>
+  <td><%= @query.reasoning %></td>
 </tr>
 
 <tr>
-	<th>Comment</th>
-	<td><%= @query.comment %></td>
+  <th>Comment</th>
+  <td><%= @query.comment %></td>
 </tr>
 
 <tr>
-	<th>Show mode</th>
-	<td><%= @query.show_mode %></td>
+  <th>Show mode</th>
+  <td><%= @query.show_mode %></td>
 </tr>
 
 <tr>
-	<th>Annotations to show</th>
-	<td><%= @query.projects %></td>
+  <th>Annotations to show</th>
+  <td><%= @query.projects %></td>
 </tr>
 
 <tr>
-	<th>Priority</th>
-	<td><%= @query.priority %></td>
+  <th>Priority</th>
+  <td><%= @query.priority %></td>
 </tr>
 
 <tr>
-	<th>Active</th>
-	<td><%= @query.active %></td>
+  <th>Active</th>
+  <td><%= @query.active %></td>
 </tr>
 
 <tr>
-	<th>belongs to</th>
-	<td><%= link_to(@query.organization.name, organization_path(@query.organization)) if @query.organization %></td>
+  <th>belongs to</th>
+  <td><%= link_to(@query.organization.name, organization_path(@query.organization)) if @query.organization %></td>
 </tr>
 </table>
 
 <%= link_to "List", organization_queries_path(@query.organization), class: 'button' %>
 
 <% if @query.editable?(current_user) %>
-	<%= link_to 'Edit', edit_organization_query_path(@query), class: 'button' %>
-	<%= link_to 'Delete', organization_query_path(@query), method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
+  <%= link_to 'Edit', edit_organization_query_path(@query), class: 'button' %>
+  <%= link_to 'Delete', organization_query_path(@query), method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
 <% end %>
 
 </section>

@@ -1,13 +1,13 @@
 <%= render :partial => 'annotations/path'-%>
 <section>
-	<%= render :partial => 'docs/titlebar' -%>
-	<section>
-		<%= render :partial => 'annotations/titlebar' -%>
+  <%= render :partial => 'docs/titlebar' -%>
+  <section>
+    <%= render :partial => 'annotations/titlebar' -%>
 
-		<% if @annotations[:tracks].present? -%>
-			<%= render partial: 'annotations', collection: @annotations[:tracks], locals: {doc: @doc, body: @annotations[:text]} -%>
-		<% else -%>
-			<%= t('controllers.shared.not_exists', model: t('views.shared.annotation')) %>
-		<% end -%>
-	</section>
+    <% if @annotations[:tracks].present? -%>
+      <%= render partial: 'annotations', collection: @annotations[:tracks], locals: {doc: @doc, body: @annotations[:text]} -%>
+    <% else -%>
+      <%= t('controllers.shared.not_exists', model: t('views.shared.annotation')) %>
+    <% end -%>
+  </section>
 </section>

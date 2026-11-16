@@ -1,107 +1,107 @@
 <% content_for :path do %>
-	> <%= link_to t('views.paths.home'), home_path %>
-	<%=
-		if params.has_key? :project_id
-			link_to('> ' + t('activerecord.models.project').pluralize, projects_path) + ' ' +
-			link_to('> ' + @organization.name, project_path(@organization.name)) + ' ' +
-			link_to('jobs', project_jobs_path(@organization.name))
-		else
-			link_to('> ' + t('activerecord.models.collection').pluralize, collections_path) + ' ' +
-			link_to('> ' + @organization.name, collection_path(@organization.name)) + ' ' +
-			link_to('jobs', collection_jobs_path(@organization.name))
-		end
-	%>
-	> <%= @job.id %>
+  > <%= link_to t('views.paths.home'), home_path %>
+  <%=
+    if params.has_key? :project_id
+      link_to('> ' + t('activerecord.models.project').pluralize, projects_path) + ' ' +
+      link_to('> ' + @organization.name, project_path(@organization.name)) + ' ' +
+      link_to('jobs', project_jobs_path(@organization.name))
+    else
+      link_to('> ' + t('activerecord.models.collection').pluralize, collections_path) + ' ' +
+      link_to('> ' + @organization.name, collection_path(@organization.name)) + ' ' +
+      link_to('jobs', collection_jobs_path(@organization.name))
+    end
+  %>
+  > <%= @job.id %>
 <% end %>
 
 <section>
-	<%=
-		if params.has_key? :project_id
-			@project = @organization
-			render :partial => 'projects/titlebar'
-		else
-			@collection = @organization
-			render :partial => 'collections/titlebar'
-		end
-	-%>
+  <%=
+    if params.has_key? :project_id
+      @project = @organization
+      render :partial => 'projects/titlebar'
+    else
+      @collection = @organization
+      render :partial => 'collections/titlebar'
+    end
+  -%>
 
-	<section>
-		<h1>
-		Job #<%= @job.id %>: <%= @job.name %>
-		<%=
-			unless @job.running?
-				organization_job_path = if params.has_key? :project_id
-					project_job_path(@organization.name, @job)
-				else
-					collection_job_path(@organization.name, @job)
-				end
-				link_to 'Remove', organization_job_path, method: :delete, data: { confirm: 'Are you sure?' }, :class => :button
-			end
-		%>
-		</h1>
+  <section>
+    <h1>
+    Job #<%= @job.id %>: <%= @job.name %>
+    <%=
+      unless @job.running?
+        organization_job_path = if params.has_key? :project_id
+          project_job_path(@organization.name, @job)
+        else
+          collection_job_path(@organization.name, @job)
+        end
+        link_to 'Remove', organization_job_path, method: :delete, data: { confirm: 'Are you sure?' }, :class => :button
+      end
+    %>
+    </h1>
 
-		<p id="notice"><%= notice %></p>
+    <p id="notice"><%= notice %></p>
 
-		<table>
-		<tr>
-			<th>Created at</th>
-			<td><%= @job.created_at %></td>
-		</tr>
+    <table>
+    <tr>
+      <th>Created at</th>
+      <td><%= @job.created_at %></td>
+    </tr>
 
-		<tr>
-			<th>Begun at</th>
-			<td><%= @job.begun_at %></td>
-		</tr>
+    <tr>
+      <th>Begun at</th>
+      <td><%= @job.begun_at %></td>
+    </tr>
 
-		<% if @job.ended_at.present? %>
-			<tr>
-				<th>Ended at</th>
-				<td><%= @job.ended_at %></td>
-			</tr>
+    <% if @job.ended_at.present? %>
+      <tr>
+        <th>Ended at</th>
+        <td><%= @job.ended_at %></td>
+      </tr>
 
-			<tr>
-				<th>Elapsed</th>
-				<td><%= time_duration(@job.elapsed_time) %></td>
-			</tr>
+      <tr>
+        <th>Elapsed</th>
+        <td><%= time_duration(@job.elapsed_time) %></td>
+      </tr>
 
-			<% if @job.pace.present? %>
-				<tr>
-					<th>Pace</th>
-					<td><%= @job.pace.round(3) %> docs/second</td>
-				</tr>
-			<% end %>
-		<% else %>
-			<tr>
-				<th>Now</th>
-				<td><%= Time.now.utc %></td>
-			</tr>
+      <% if @job.pace.present? %>
+        <tr>
+          <th>Pace</th>
+          <td><%= @job.pace.round(3) %> docs/second</td>
+        </tr>
+      <% end %>
+    <% else %>
+      <tr>
+        <th>Now</th>
+        <td><%= Time.now.utc %></td>
+      </tr>
 
-			<% if @job.begun_at.present? %>
-				<tr>
-					<th>Elapsed</th>
-					<td><%= time_duration(@job.elapsed_time) %></td>
-				</tr>
-				<tr>
-					<th>Progress</th>
-					<td><%= @job.num_dones %> / <%= @job.num_items %></td>
-				</tr>
+      <% if @job.begun_at.present? %>
+        <tr>
+          <th>Elapsed</th>
+          <td><%= time_duration(@job.elapsed_time) %></td>
+        </tr>
+        <tr>
+          <th>Progress</th>
+          <td><%= @job.num_dones %> / <%= @job.num_items %></td>
+        </tr>
 
-				<% if @job.pace.present? %>
-					<tr>
-						<th>Pace</th>
-						<td><%= @job.pace.round(3) %> docs/second</td>
-					</tr>
-					<% if @job.estimated_remaining_time.present? %>
-						<tr>
-							<th>will further take</th>
-							<td><%= time_duration(@job.estimated_remaining_time) %> (estimation)</td>
-						</tr>
-					<% end %>
-				<% end %>
-			<% end %>
-		<% end %>
-		</table>
+        <% if @job.pace.present? %>
+          <tr>
+            <th>Pace</th>
+            <td><%= @job.pace.round(3) %> docs/second</td>
+          </tr>
+          <% if @job.estimated_remaining_time.present? %>
+            <tr>
+              <th>will further take</th>
+              <td><%= time_duration(@job.estimated_remaining_time) %> (estimation)</td>
+            </tr>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+    </table>
 
-		<%= render partial: 'messages/messages_grid' -%>
-	</section>
+    <%= render partial: 'messages/messages_grid' -%>
+  </section>
 </section>

@@ -1,46 +1,46 @@
 <%= render :partial => 'docs/path'-%>
 
 <section>
-	<%= render :partial => 'projects/titlebar' -%>
+  <%= render :partial => 'projects/titlebar' -%>
 
-	<section>
-		<%= render :partial => 'docs/titlebar' -%>
-		<%= render :partial => 'docs/content'-%>
-		<%= render :partial => 'docs/divisions'-%>
+  <section>
+    <%= render :partial => 'docs/titlebar' -%>
+    <%= render :partial => 'docs/content'-%>
+    <%= render :partial => 'docs/divisions'-%>
 
-		<% if @medium.present? && current_user&.can_access_media? %>
-			<section>
-				<h2>Media</h2>
-				<%= medium_tag(@medium, id: 'media-player') %>
-				<p><%= link_to "#{@medium.sourcedb}:#{@medium.sourceid}", show_media_path(sourcedb: @medium.sourcedb, sourceid: @medium.sourceid) %></p>
-			</section>
-		<% end %>
+    <% if @medium.present? && current_user&.can_access_media? %>
+      <section>
+        <h2>Media</h2>
+        <%= medium_tag(@medium, id: 'media-player') %>
+        <p><%= link_to "#{@medium.sourcedb}:#{@medium.sourceid}", show_media_path(sourcedb: @medium.sourcedb, sourceid: @medium.sourceid) %></p>
+      </section>
+    <% end %>
 
-		<section>
-			<% if @project.annotations_accessible?(current_user) %>
-				<%= render :partial => 'annotations/titlebar_in_project' -%>
-				<%= render :partial => 'annotations/summary' -%>
-			<% else %>
-				<h2><%= t('views.shared.annotation').pluralize.capitalize.html_safe %></h2>
-				<p><i class="fa fa-bars" aria-hidden="true"></i> <i>blinded</i></p>
-			<% end %>
-		</section>
+    <section>
+      <% if @project.annotations_accessible?(current_user) %>
+        <%= render :partial => 'annotations/titlebar_in_project' -%>
+        <%= render :partial => 'annotations/summary' -%>
+      <% else %>
+        <h2><%= t('views.shared.annotation').pluralize.capitalize.html_safe %></h2>
+        <p><i class="fa fa-bars" aria-hidden="true"></i> <i>blinded</i></p>
+      <% end %>
+    </section>
 
-		<% if user_signed_in? and @project.editable?(current_user) %>
-			<section>
-				<h2>
-					<%= t('views.docs.automatic_annotation') %>
-					<a href="https://www.pubannotation.org/docs/obtain-annotation/">
-					<%= image_tag("hint.png",
-					      :size => "16x16",
-					      :title => "click for help") %>
-					</a>
-				</h2>
-				<%= render :partial => 'annotations/obtain_annotation' -%>
-			</section>
-		<% end %>
+    <% if user_signed_in? and @project.editable?(current_user) %>
+      <section>
+        <h2>
+          <%= t('views.docs.automatic_annotation') %>
+          <a href="https://www.pubannotation.org/docs/obtain-annotation/">
+          <%= image_tag("hint.png",
+                :size => "16x16",
+                :title => "click for help") %>
+          </a>
+        </h2>
+        <%= render :partial => 'annotations/obtain_annotation' -%>
+      </section>
+    <% end %>
 
-		<%= link_to t('views.shared.annotations'), annotations_url, class: 'button' if @project.blank? -%>
-	</section>
+    <%= link_to t('views.shared.annotations'), annotations_url, class: 'button' if @project.blank? -%>
+  </section>
 
 </section>

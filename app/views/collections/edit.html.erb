@@ -1,14 +1,14 @@
 <% content_for :path do %>
-	> <%= link_to t('views.paths.home'), home_path %>
-	> <%= link_to "collections", collections_path %>
-	> <%= link_to @collection.name, collection_path(@collection.name) %>
-	> edit
+  > <%= link_to t('views.paths.home'), home_path %>
+  > <%= link_to "collections", collections_path %>
+  > <%= link_to @collection.name, collection_path(@collection.name) %>
+  > edit
 <% end %>
 
 <%= render :partial => 'titlebar' -%>
 
 <h1>
-	Properties
+  Properties
 </h1>
 
 <%= render 'form' %>

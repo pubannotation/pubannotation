@@ -1,72 +1,72 @@
 <%= form_for(@doc) do |f| %>
-	<%= errors_helper(@doc) %>
+  <%= errors_helper(@doc) %>
 
-	<table style="width:610px">
-		<tr>
-			<th style="width:5em">Text</th>
-			<td>
-				<% if @doc.persisted? && @doc.media_transcript&.transcribed_by_whisper? %>
-					<div class="doc-text-notice">
-						<strong>This text cannot be edited directly.</strong>
-						<p>It was transcribed by Whisper.
-							<% if segments_listable?(@doc) && @doc.segment_editable_by?(current_user) %>
-								To change it, <%= link_to 'edit the segments', doc_segments_path(@doc) %>.
-							<% end %>
-						</p>
-					</div>
-					<%# readonly (not disabled) so it's still submitted; the stored body, not a rejected edit %>
-					<%= text_area_tag 'doc[text]', @doc.body_in_database, size: "60x10", readonly: true, class: 'doc-text-readonly' %>
-				<% else %>
-					<%= text_area_tag 'doc[text]', @doc.body, size: "60x10" %>
-					<% if @doc.persisted? && @doc.media_transcript&.segments.to_a.size > 1 %>
-						<p>Changing the text merges the <%= @doc.media_transcript.segments.size %> segments of the media transcript into one.</p>
-					<% end %>
-				<% end %>
-			</td>
-		</tr>
-		<tr>
-			<th>Meta-data</th>
-			<td>
-				Leave it blank if you don't know what they are.
-				<table>
-					<tr>
-						<th>Source URL</th>
-						<td><%= f.text_field :source %></td>
-					</tr>
-					<tr>
-						<th>Source DB</th>
-						<td><%= f.text_field :sourcedb %></td>
-					</tr>
-					<tr>
-						<th>Source Id</th>
-						<td><%= f.text_field :sourceid %></td>
-					</tr>
-				</table>
-			</td>
-		</tr>
-	<% if @doc.new_record? && current_user&.can_access_media? %>
-	<tr>
-		<th>Media</th>
-		<td>
-			Leave it blank if not associated with a media.
-			<table>
-				<tr>
-					<th>Media Source DB</th>
-					<td><%= text_field_tag 'media[sourcedb]' %></td>
-				</tr>
-				<tr>
-					<th>Media Source Id</th>
-					<td><%= text_field_tag 'media[sourceid]' %></td>
-				</tr>
-			</table>
-		</td>
-	</tr>
-	<% end %>
-	</table>
+  <table style="width:610px">
+    <tr>
+      <th style="width:5em">Text</th>
+      <td>
+        <% if @doc.persisted? && @doc.media_transcript&.transcribed_by_whisper? %>
+          <div class="doc-text-notice">
+            <strong>This text cannot be edited directly.</strong>
+            <p>It was transcribed by Whisper.
+              <% if segments_listable?(@doc) && @doc.segment_editable_by?(current_user) %>
+                To change it, <%= link_to 'edit the segments', doc_segments_path(@doc) %>.
+              <% end %>
+            </p>
+          </div>
+          <%# readonly (not disabled) so it's still submitted; the stored body, not a rejected edit %>
+          <%= text_area_tag 'doc[text]', @doc.body_in_database, size: "60x10", readonly: true, class: 'doc-text-readonly' %>
+        <% else %>
+          <%= text_area_tag 'doc[text]', @doc.body, size: "60x10" %>
+          <% if @doc.persisted? && @doc.media_transcript&.segments.to_a.size > 1 %>
+            <p>Changing the text merges the <%= @doc.media_transcript.segments.size %> segments of the media transcript into one.</p>
+          <% end %>
+        <% end %>
+      </td>
+    </tr>
+    <tr>
+      <th>Meta-data</th>
+      <td>
+        Leave it blank if you don't know what they are.
+        <table>
+          <tr>
+            <th>Source URL</th>
+            <td><%= f.text_field :source %></td>
+          </tr>
+          <tr>
+            <th>Source DB</th>
+            <td><%= f.text_field :sourcedb %></td>
+          </tr>
+          <tr>
+            <th>Source Id</th>
+            <td><%= f.text_field :sourceid %></td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  <% if @doc.new_record? && current_user&.can_access_media? %>
+  <tr>
+    <th>Media</th>
+    <td>
+      Leave it blank if not associated with a media.
+      <table>
+        <tr>
+          <th>Media Source DB</th>
+          <td><%= text_field_tag 'media[sourcedb]' %></td>
+        </tr>
+        <tr>
+          <th>Media Source Id</th>
+          <td><%= text_field_tag 'media[sourceid]' %></td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <% end %>
+  </table>
 
-	<%= f.hidden_field :username, value: current_user.username -%>
-	<%= hidden_field_tag :project_id, @project.name if @project.present? -%>
-	<div class="actions">
-		<%= f.submit %>
-	</div>
+  <%= f.hidden_field :username, value: current_user.username -%>
+  <%= hidden_field_tag :project_id, @project.name if @project.present? -%>
+  <div class="actions">
+    <%= f.submit %>
+  </div>
 <% end %>

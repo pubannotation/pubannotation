@@ -1,5 +1,5 @@
 class Typesetting < ActiveRecord::Base
-	belongs_to :doc
+  belongs_to :doc
 
   def self.store_for(doc, items)
     return [] if items.nil?
@@ -13,25 +13,25 @@ class Typesetting < ActiveRecord::Base
     records
   end
 
-	def as_json(options={})
-		options ||= {}
+  def as_json(options={})
+    options ||= {}
 
-		{
-			style: self.style,
-			span: {
-				begin: self.begin,
-				end: self.end
-			}
-		}
-	end
+    {
+      style: self.style,
+      span: {
+        begin: self.begin,
+        end: self.end
+      }
+    }
+  end
 
-	def to_hash
-		{
-			style: self.style,
-			span: {
-				begin: self.begin,
-				end: self.end
-			}
-		}
-	end
+  def to_hash
+    {
+      style: self.style,
+      span: {
+        begin: self.begin,
+        end: self.end
+      }
+    }
+  end
 end

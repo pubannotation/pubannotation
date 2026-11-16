@@ -1,95 +1,95 @@
 <% content_for :path do %>
-	> <%= link_to t('views.paths.home'), home_path %>
-	> <%= link_to t('activerecord.models.project').pluralize, projects_path -%>
-	> <%= link_to @project.name, project_path(@project.name) -%>
-	> <%= link_to t('views.shared.evaluations'), project_evaluations_path(@project.name) -%>
-	> evaluation
+  > <%= link_to t('views.paths.home'), home_path %>
+  > <%= link_to t('activerecord.models.project').pluralize, projects_path -%>
+  > <%= link_to @project.name, project_path(@project.name) -%>
+  > <%= link_to t('views.shared.evaluations'), project_evaluations_path(@project.name) -%>
+  > evaluation
 <% end %>
 
 <% if @project %>
-	<section>
-		<%= render partial: 'projects/titlebar' -%>
+  <section>
+    <%= render partial: 'projects/titlebar' -%>
 <% end %>
 
 <section>
-	<h1>
-		Evaluation #<%= @evaluation.id %>
-		&nbsp;
-		<%= badge_private(@evaluation.is_public).html_safe %>
-		<%= link_to 'List', project_evaluations_path(@project.name), class: 'button' %>
-		<% if @evaluation.changeable?(current_user) -%>
-			<%= link_to 'Edit', edit_evaluation_path(@evaluation), class: 'button' %>
-			<%= link_to 'Destroy', @evaluation, method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
-		<% end %>
-	</h1>
+  <h1>
+    Evaluation #<%= @evaluation.id %>
+    &nbsp;
+    <%= badge_private(@evaluation.is_public).html_safe %>
+    <%= link_to 'List', project_evaluations_path(@project.name), class: 'button' %>
+    <% if @evaluation.changeable?(current_user) -%>
+      <%= link_to 'Edit', edit_evaluation_path(@evaluation), class: 'button' %>
+      <%= link_to 'Destroy', @evaluation, method: :delete, data: { confirm: 'Are you sure?' }, class: 'button' %>
+    <% end %>
+  </h1>
 
-	<table class="column-head">
-		<tr>
-			<th>Note</th>
-			<td><%= @evaluation.note %></td>
-		</tr>
+  <table class="column-head">
+    <tr>
+      <th>Note</th>
+      <td><%= @evaluation.note %></td>
+    </tr>
 
-		<tr>
-			<th>Study project</th>
-			<td><%= @evaluation.study_project.name %></td>
-		</tr>
+    <tr>
+      <th>Study project</th>
+      <td><%= @evaluation.study_project.name %></td>
+    </tr>
 
-		<tr>
-			<th>Reference project</th>
-			<td><%= link_to(@evaluation.reference_project.name, project_path(@evaluation.reference_project.name))%></td>
-		</tr>
+    <tr>
+      <th>Reference project</th>
+      <td><%= link_to(@evaluation.reference_project.name, project_path(@evaluation.reference_project.name))%></td>
+    </tr>
 
-		<tr>
-			<th>Evaluator</th>
-			<td><%= link_to(@evaluation.evaluator.name, evaluator_path(@evaluation.evaluator.name)) %></td>
-		</tr>
+    <tr>
+      <th>Evaluator</th>
+      <td><%= link_to(@evaluation.evaluator.name, evaluator_path(@evaluation.evaluator.name)) %></td>
+    </tr>
 
-		<tr>
-			<th>Soft match characters</th>
-			<td><%= @evaluation.soft_match_characters %></td>
-		</tr>
+    <tr>
+      <th>Soft match characters</th>
+      <td><%= @evaluation.soft_match_characters %></td>
+    </tr>
 
-		<tr>
-			<th>Soft match words</th>
-			<td><%= @evaluation.soft_match_words %></td>
-		</tr>
+    <tr>
+      <th>Soft match words</th>
+      <td><%= @evaluation.soft_match_words %></td>
+    </tr>
 
-		<tr>
-			<th>Denotations type match</th>
-			<td><pre><%= @evaluation.denotations_type_match %></pre></td>
-		</tr>
+    <tr>
+      <th>Denotations type match</th>
+      <td><pre><%= @evaluation.denotations_type_match %></pre></td>
+    </tr>
 
-		<tr>
-			<th>Relations type match</th>
-			<td><pre><%= @evaluation.relations_type_match %></pre></td>
-		</tr>
+    <tr>
+      <th>Relations type match</th>
+      <td><pre><%= @evaluation.relations_type_match %></pre></td>
+    </tr>
 
-		<% if @evaluation.changeable?(current_user) -%>
-			<tr>
-				<th>Result</th>
-				<td>
-					<%= button_to(t('views.evaluations.generate'), evaluation_generate_path(@evaluation.id)) %>
-				</td>
-			</tr>
-		<% end %>
+    <% if @evaluation.changeable?(current_user) -%>
+      <tr>
+        <th>Result</th>
+        <td>
+          <%= button_to(t('views.evaluations.generate'), evaluation_generate_path(@evaluation.id)) %>
+        </td>
+      </tr>
+    <% end %>
 
-		<tr>
-			<th>Updated at</th>
-			<td><%= @evaluation.updated_at %></td>
-		</tr>
-	</table>
+    <tr>
+      <th>Updated at</th>
+      <td><%= @evaluation.updated_at %></td>
+    </tr>
+  </table>
 
-	<fieldset class="pane evaluation_result">
-		<legend>
-			Result
-			<%= link_to('JSON', evaluation_result_path(@evaluation), class: 'button') if @evaluation.result %>
-		</legend>
+  <fieldset class="pane evaluation_result">
+    <legend>
+      Result
+      <%= link_to('JSON', evaluation_result_path(@evaluation), class: 'button') if @evaluation.result %>
+    </legend>
 
-		<%= @evaluation.result.nil? ? 'There is no result of this evaluation yet.' : render(partial: "result") -%>
+    <%= @evaluation.result.nil? ? 'There is no result of this evaluation yet.' : render(partial: "result") -%>
 
-	</fieldset>
+  </fieldset>
 </section>
 
 <% if @project.present? -%>
-	</section>
+  </section>
 <% end %>

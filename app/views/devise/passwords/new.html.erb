@@ -1,7 +1,7 @@
 <% content_for :path do %>
-	> <%= link_to t('views.paths.home'), home_path %>
-	> <%= link_to t('views.users.sign_in'), new_user_session_path %> 
-	> <%= t('views.users.reset_password') %>
+  > <%= link_to t('views.paths.home'), home_path %>
+  > <%= link_to t('views.users.sign_in'), new_user_session_path %> 
+  > <%= t('views.users.reset_password') %>
 <% end %>
 
 <section>
@@ -13,8 +13,8 @@
 
   <table>
   <tr>
-  	<th><%= f.label :login %></th>
-  	<td><%= f.text_field :login, :placeholder => "Your username or e-mail address" %></td>
+    <th><%= f.label :login %></th>
+    <td><%= f.text_field :login, :placeholder => "Your username or e-mail address" %></td>
   </tr>
   <% if recaptcha_usable? %>
     <tr>
@@ -23,7 +23,7 @@
     </tr>
   <% end %>
   <tr>
-  	<th colspan="2" style="text-align:center"><%= f.submit t('views.users.send_reset_password_instructions') %></th>
+    <th colspan="2" style="text-align:center"><%= f.submit t('views.users.send_reset_password_instructions') %></th>
   </tr>
   </table>
 

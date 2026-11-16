@@ -1,45 +1,45 @@
 <% content_for :javascript do %>
-	<%= javascript_include_tag 'reloadJobsTable' %>
+  <%= javascript_include_tag 'reloadJobsTable' %>
 <% end %>
 
 <% content_for :path do %>
-	> <%= link_to t('views.paths.home'), home_path %>
-	<%=
-		if params.has_key? :project_id
-			link_to('> ' + t('activerecord.models.project').pluralize, projects_path) + ' ' +
-			link_to('> ' + @organization.name, project_path(@organization.name))
-		else
-			link_to('> ' + t('activerecord.models.collection').pluralize, collections_path) + ' ' +
-			link_to('> ' + @organization.name, collection_path(@organization.name))
-		end
-	%>
-	> jobs
+  > <%= link_to t('views.paths.home'), home_path %>
+  <%=
+    if params.has_key? :project_id
+      link_to('> ' + t('activerecord.models.project').pluralize, projects_path) + ' ' +
+      link_to('> ' + @organization.name, project_path(@organization.name))
+    else
+      link_to('> ' + t('activerecord.models.collection').pluralize, collections_path) + ' ' +
+      link_to('> ' + @organization.name, collection_path(@organization.name))
+    end
+  %>
+  > jobs
 <% end %>
 
 <section>
-	<%=
-		if params.has_key? :project_id
-			@project = @organization
-			render :partial => 'projects/titlebar'
-		else
-			@collection = @organization
-			render :partial => 'collections/titlebar'
-		end
-	-%>
+  <%=
+    if params.has_key? :project_id
+      @project = @organization
+      render :partial => 'projects/titlebar'
+    else
+      @collection = @organization
+      render :partial => 'collections/titlebar'
+    end
+  -%>
 
-	<section>
-		<h1>Background jobs
-			<%=
-				clear_finished_jobs_path = if params.has_key? :project_id
-					project_clear_finished_jobs_path(@organization.name)
-				else
-					collection_clear_finished_jobs_path(@organization.name)
-				end
-				link_to 'Clear finished jobs', clear_finished_jobs_path, method: :delete, :class => 'control button'
-			%>
-		</h1>
-		<%= turbo_frame_tag "jobs_table", data: { refresh_url: "#{request.path}/latest_jobs_table" }, target: "_top" do %>
-			<%= render :partial => "jobs/jobs_table", :locals => { jobs: @jobs, organization: @organization, message_counts: @job_message_counts } %>
-		<% end %>
-	</section>
+  <section>
+    <h1>Background jobs
+      <%=
+        clear_finished_jobs_path = if params.has_key? :project_id
+          project_clear_finished_jobs_path(@organization.name)
+        else
+          collection_clear_finished_jobs_path(@organization.name)
+        end
+        link_to 'Clear finished jobs', clear_finished_jobs_path, method: :delete, :class => 'control button'
+      %>
+    </h1>
+    <%= turbo_frame_tag "jobs_table", data: { refresh_url: "#{request.path}/latest_jobs_table" }, target: "_top" do %>
+      <%= render :partial => "jobs/jobs_table", :locals => { jobs: @jobs, organization: @organization, message_counts: @job_message_counts } %>
+    <% end %>
+  </section>
 </section>

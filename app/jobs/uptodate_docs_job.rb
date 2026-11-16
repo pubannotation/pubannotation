@@ -1,72 +1,72 @@
 class UptodateDocsJob < ApplicationJob
-	include UseJobRecordConcern
-	
-	queue_as :low_priority
+  include UseJobRecordConcern
+  
+  queue_as :low_priority
 
-	def perform(project)
-		batch_num = Sequencer::MAX_NUM_ID
-		sourcedbs = project.docs.pluck(:sourcedb).uniq
-		count_sourceids = sourcedbs.reduce(0) do |sum, sourcedb|
-			sum + project.docs.where(sourcedb:sourcedb).pluck(:sourceid).uniq.count
-		end
+  def perform(project)
+    batch_num = Sequencer::MAX_NUM_ID
+    sourcedbs = project.docs.pluck(:sourcedb).uniq
+    count_sourceids = sourcedbs.reduce(0) do |sum, sourcedb|
+      sum + project.docs.where(sourcedb:sourcedb).pluck(:sourceid).uniq.count
+    end
 
-		if @job
-			prepare_progress_record(count_sourceids)
-		end
+    if @job
+      prepare_progress_record(count_sourceids)
+    end
 
-		num = 0
-		sourcedbs.each do |sourcedb|
-			sourceids = project.docs.where(sourcedb:sourcedb).pluck(:sourceid).uniq
+    num = 0
+    sourcedbs.each do |sourcedb|
+      sourceids = project.docs.where(sourcedb:sourcedb).pluck(:sourceid).uniq
 
-			sourceids.each_slice(batch_num).each do |sids|
-				docs, messages = DocumentFetcher.fetch(sourcedb, sids)
-				unless messages.empty?
-					messages.each do |m|
-						message = if m.class == String
-							{body: m[0 ... 200]}
-						elsif m.class == Hash
-							_sourcedb = m[:sourcedb] || ''
-							_sourceid = m[:sourceid] || ''
-							_body = m[:body] || ''
-							{sourcedb: _sourcedb[0 ... 200], sourceid: _sourceid[0 ... 200], body: _body[0 ... 200]}
-						else
-							{body: "Unknown message: #{m}"[0 ... 200]}
-						end
-						@job.add_message message
-					end
-				end
-				hdocs_sequenced = docs
-				hdocs_sequenced.each do |hdoc|
-					doc = Doc.where(sourcedb:sourcedb, sourceid:hdoc[:sourceid]).first
-					Doc.uptodate(doc, hdoc)
-					if @job
-						@job.update_attribute(:num_dones, num += 1)
-						check_suspend_flag
-					end
-				rescue => e
-					if e.class == Exceptions::JobSuspendError
-						raise e
-					elsif @job
-						@job.add_message sourcedb: hdoc[:sourcedb],
-														 sourceid: hdoc[:sourceid],
-														 body: e.message
-					else
-						raise e.message
-					end
-				end
-			rescue => e
-				if e.class == Exceptions::JobSuspendError
-					raise e
-				elsif @job
-					@job.add_message sourcedb: sourcedb,
-													 sourceid: sids.join(", ")[0 ... 200],
-													 body: e.message[0 ... 200]
-				end
-			end
-		end
-	end
+      sourceids.each_slice(batch_num).each do |sids|
+        docs, messages = DocumentFetcher.fetch(sourcedb, sids)
+        unless messages.empty?
+          messages.each do |m|
+            message = if m.class == String
+              {body: m[0 ... 200]}
+            elsif m.class == Hash
+              _sourcedb = m[:sourcedb] || ''
+              _sourceid = m[:sourceid] || ''
+              _body = m[:body] || ''
+              {sourcedb: _sourcedb[0 ... 200], sourceid: _sourceid[0 ... 200], body: _body[0 ... 200]}
+            else
+              {body: "Unknown message: #{m}"[0 ... 200]}
+            end
+            @job.add_message message
+          end
+        end
+        hdocs_sequenced = docs
+        hdocs_sequenced.each do |hdoc|
+          doc = Doc.where(sourcedb:sourcedb, sourceid:hdoc[:sourceid]).first
+          Doc.uptodate(doc, hdoc)
+          if @job
+            @job.update_attribute(:num_dones, num += 1)
+            check_suspend_flag
+          end
+        rescue => e
+          if e.class == Exceptions::JobSuspendError
+            raise e
+          elsif @job
+            @job.add_message sourcedb: hdoc[:sourcedb],
+                             sourceid: hdoc[:sourceid],
+                             body: e.message
+          else
+            raise e.message
+          end
+        end
+      rescue => e
+        if e.class == Exceptions::JobSuspendError
+          raise e
+        elsif @job
+          @job.add_message sourcedb: sourcedb,
+                           sourceid: sids.join(", ")[0 ... 200],
+                           body: e.message[0 ... 200]
+        end
+      end
+    end
+  end
 
-	def job_name
-		"Uptodate docs in project - #{resource_name}"
-	end
+  def job_name
+    "Uptodate docs in project - #{resource_name}"
+  end
 end

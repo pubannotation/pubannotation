@@ -1,15 +1,15 @@
 <tr>
-	<td><%= denotation[:id] %></td>
-	<td>
-		<%= span_link(doc, denotation[:span]) -%>
-	</td>
-	<td>denotes</td>
-	<td><%= denotation[:obj] %></td>
-	<td class="spans_preview">
-		<% if denotation[:span].respond_to?(:push) %>
-			<%= denotation[:span].map{|s| body[s[:begin]...s[:end]]}.join('...') %>
-		<% else %>
-			<%= body[denotation[:span][:begin]...denotation[:span][:end]] -%>
-		<% end %>
-	</td>
+  <td><%= denotation[:id] %></td>
+  <td>
+    <%= span_link(doc, denotation[:span]) -%>
+  </td>
+  <td>denotes</td>
+  <td><%= denotation[:obj] %></td>
+  <td class="spans_preview">
+    <% if denotation[:span].respond_to?(:push) %>
+      <%= denotation[:span].map{|s| body[s[:begin]...s[:end]]}.join('...') %>
+    <% else %>
+      <%= body[denotation[:span][:begin]...denotation[:span][:end]] -%>
+    <% end %>
+  </td>
 </tr>

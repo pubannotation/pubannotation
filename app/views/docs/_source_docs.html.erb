@@ -1,107 +1,107 @@
 <h1>
-	<% @docs_path = @project.present? ? project_docs_path(@project.name) : docs_path -%>
-	<%= link_to t('views.docs.list').capitalize, @docs_path -%>
-	<span class='info'>
-		(<%= number_with_delimiter(@search_count, :delimiter => ',') + '/' if @search_count.present? -%><%= docs_count %>)
-	</span>
-	<span class='tab-bar'>
-		<%= link_to 'JSON', params.permit(:controller, :action, :project_id, :sourcedb, :per, :page).merge(format: :json), class: 'tab', title: "To get the whole list (up to 1,000 items) in JSON" -%>
-		<%= link_to 'TSV', params.permit(:controller, :action, :project_id, :sourcedb, :per, :page).merge(format: :tsv), class: 'tab', title: "To get the whole list (up to 1,000 items) in TSV (Tab-separated values)" -%>
-	</span>
-	<%= render partial: 'docs/search_form' -%>
-	<% if @search_count.nil? && docs_count.to_i < 100000 %>
-		<span class='option'>
-			<% if params[:randomize] == 'true' %>
-				<% params.delete(:randomize) %>
-				<%= link_to content_tag(:i, '', class: "fa fa-random", "aria-hidden" => "true"), params.permit(:controller, :action, :project_id, :sourcedb), class: 'pushdown-button pressed', title: "randomize the order (only for projects with <0.1M documents)" -%>
-			<% else %>
-				<a href=<%= params %>YYY</a>
-				<%= link_to content_tag(:i, '', class: "fa fa-random", "aria-hidden" => "true"), params.permit(:controller, :action, :project_id, :sourcedb).merge(randomize: true), class: 'pushdown-button', title: "randomize the order (only for projects with <0.1M documents)" -%>
-			<% end %>
-		</span>
-	<% end %>
+  <% @docs_path = @project.present? ? project_docs_path(@project.name) : docs_path -%>
+  <%= link_to t('views.docs.list').capitalize, @docs_path -%>
+  <span class='info'>
+    (<%= number_with_delimiter(@search_count, :delimiter => ',') + '/' if @search_count.present? -%><%= docs_count %>)
+  </span>
+  <span class='tab-bar'>
+    <%= link_to 'JSON', params.permit(:controller, :action, :project_id, :sourcedb, :per, :page).merge(format: :json), class: 'tab', title: "To get the whole list (up to 1,000 items) in JSON" -%>
+    <%= link_to 'TSV', params.permit(:controller, :action, :project_id, :sourcedb, :per, :page).merge(format: :tsv), class: 'tab', title: "To get the whole list (up to 1,000 items) in TSV (Tab-separated values)" -%>
+  </span>
+  <%= render partial: 'docs/search_form' -%>
+  <% if @search_count.nil? && docs_count.to_i < 100000 %>
+    <span class='option'>
+      <% if params[:randomize] == 'true' %>
+        <% params.delete(:randomize) %>
+        <%= link_to content_tag(:i, '', class: "fa fa-random", "aria-hidden" => "true"), params.permit(:controller, :action, :project_id, :sourcedb), class: 'pushdown-button pressed', title: "randomize the order (only for projects with <0.1M documents)" -%>
+      <% else %>
+        <a href=<%= params %>YYY</a>
+        <%= link_to content_tag(:i, '', class: "fa fa-random", "aria-hidden" => "true"), params.permit(:controller, :action, :project_id, :sourcedb).merge(randomize: true), class: 'pushdown-button', title: "randomize the order (only for projects with <0.1M documents)" -%>
+      <% end %>
+    </span>
+  <% end %>
 </h1>
 
 <table class="full with_row_link">
 <colgroup>
-	<col class="docs_col_sourcedb">
-	<col class="docs_col_sourceid">
-	<col class="docs_col_text show-when-wide">
-	<% if @search_results.present? %>
-		<col class="docs_col_score">
-		<col class="docs_col_score">
-		<col class="docs_col_score">
-	<% end %>
-	<col class="docs_col_length">
-	<col class="table_col_date show-when-wide">
-	<col class="table_cell_col_sep">
-	<col class="docs_col_projects_number">
-	<col class="table_cell_col_sep">
-	<col class="docs_col_annotations_number">
-	<col class="table_col_date">
-	<col class="docs_col_button">
-	<% if @project.present? && @project.editable?(current_user) %>
-		<col class="docs_col_button">
-	<% end -%>
+  <col class="docs_col_sourcedb">
+  <col class="docs_col_sourceid">
+  <col class="docs_col_text show-when-wide">
+  <% if @search_results.present? %>
+    <col class="docs_col_score">
+    <col class="docs_col_score">
+    <col class="docs_col_score">
+  <% end %>
+  <col class="docs_col_length">
+  <col class="table_col_date show-when-wide">
+  <col class="table_cell_col_sep">
+  <col class="docs_col_projects_number">
+  <col class="table_cell_col_sep">
+  <col class="docs_col_annotations_number">
+  <col class="table_col_date">
+  <col class="docs_col_button">
+  <% if @project.present? && @project.editable?(current_user) %>
+    <col class="docs_col_button">
+  <% end -%>
 </colgroup>
 <tr>
-	<th>
-		<%= t('activerecord.attributes.doc.sourcedb') -%>
-	</th>
-	<th>
-		<% if @project && @project.small? %>
-			<%= sortable(Doc, t('activerecord.attributes.doc.sourceid'), 'sourceid') %>
-		<% else %>
-			<%= t('activerecord.attributes.doc.sourceid') %>
-		<% end %>
-	</th>
-	<th class="show-when-wide">
-		<%= t('activerecord.attributes.doc.body') %>
-	</th>
-	<% if @search_results.present? %>
-		<th colspan="3"><span title="Search scores: B=BM25 (keyword match), K=kNN (semantic similarity), R=RRF (combined)">Scores (B, K, R)</span></th>
-	<% end %>
-	<th>
-		<%= t('views.shared.length') %>
-	</th>
-	<th class="show-when-wide">updated at</th>
-	<th class="table_cell_col_sep"></th>
-	<th>
-		<span title="the number of the projects that include the document">
-			<% if params[:keywords].present? -%>
-				<%= t('views.shared.projects_count') -%>
-			<% else -%>
-				<%= sortable(Doc, t('views.shared.projects_count'), 'projects_num') -%>
-			<% end -%>
-		</span>
-	</th>
-	<th class="table_cell_col_sep"></th>
-	<th>
-		<span title="the number of the annotations (denotations) that the document has">
-			<% if params[:keywords].present? -%>
-				<%= t('views.shared.annotations_count') -%>
-			<% else -%>
-				<% if  params[:project_id].present? -%>
-					<%= sortable(Doc, t('views.shared.annotations_count'), 'project_docs.denotations_num') -%>
-				<% else %>
-					<%= sortable(Doc, t('views.shared.annotations_count'), 'denotations_num') -%>
-				<% end %>
-			<% end -%>
-		</span>
-	</th>
-	<% if @project %>
-		<th><%= sortable(Doc, "updated_at", 'project_docs.annotations_updated_at', 'ASC') -%></th>
-	<% end %>
+  <th>
+    <%= t('activerecord.attributes.doc.sourcedb') -%>
+  </th>
+  <th>
+    <% if @project && @project.small? %>
+      <%= sortable(Doc, t('activerecord.attributes.doc.sourceid'), 'sourceid') %>
+    <% else %>
+      <%= t('activerecord.attributes.doc.sourceid') %>
+    <% end %>
+  </th>
+  <th class="show-when-wide">
+    <%= t('activerecord.attributes.doc.body') %>
+  </th>
+  <% if @search_results.present? %>
+    <th colspan="3"><span title="Search scores: B=BM25 (keyword match), K=kNN (semantic similarity), R=RRF (combined)">Scores (B, K, R)</span></th>
+  <% end %>
+  <th>
+    <%= t('views.shared.length') %>
+  </th>
+  <th class="show-when-wide">updated at</th>
+  <th class="table_cell_col_sep"></th>
+  <th>
+    <span title="the number of the projects that include the document">
+      <% if params[:keywords].present? -%>
+        <%= t('views.shared.projects_count') -%>
+      <% else -%>
+        <%= sortable(Doc, t('views.shared.projects_count'), 'projects_num') -%>
+      <% end -%>
+    </span>
+  </th>
+  <th class="table_cell_col_sep"></th>
+  <th>
+    <span title="the number of the annotations (denotations) that the document has">
+      <% if params[:keywords].present? -%>
+        <%= t('views.shared.annotations_count') -%>
+      <% else -%>
+        <% if  params[:project_id].present? -%>
+          <%= sortable(Doc, t('views.shared.annotations_count'), 'project_docs.denotations_num') -%>
+        <% else %>
+          <%= sortable(Doc, t('views.shared.annotations_count'), 'denotations_num') -%>
+        <% end %>
+      <% end -%>
+    </span>
+  </th>
+  <% if @project %>
+    <th><%= sortable(Doc, "updated_at", 'project_docs.annotations_updated_at', 'ASC') -%></th>
+  <% end %>
 </tr>
 
 <%= render partial: 'source_doc', collection: @docs -%>
 <!--
 <script>
-	jQuery(document).ready(function($) {
-		$(".clickable-row").click(function() {
-			window.location = $(this).data("href");
-		});
-	});
+  jQuery(document).ready(function($) {
+    $(".clickable-row").click(function() {
+      window.location = $(this).data("href");
+    });
+  });
 </script>
  -->
 </table>

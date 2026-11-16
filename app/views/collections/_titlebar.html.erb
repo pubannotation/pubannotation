@@ -1,16 +1,16 @@
 <div class='page-title-box collection-title'>
-	<%= link_to_unless_current @collection.name, collection_path(@collection.name) -%>
-	<%= collection_home_button -%>
-	<%= badge_sharedtask(@collection).html_safe %>
-	<%= badge_accessibility(@collection).html_safe %>
-	<%= badge_open(@collection).html_safe %>
-	<%= link_to content_tag(:i, '', class: "fa fa-search", "aria-hidden" => "true", title: "search"), sparql_collection_path(@collection.name) %>
-	<% if @collection.jobs.exists? && @collection.editable?(current_user) -%>
-		<% content_for :javascript do %>
-			<%= javascript_include_tag 'reloadGearIcon' %>
-		<% end %>
-		<span class="gear-icon-wrapper">
-			<%= render "collections/gear_icon" %>
-		</span>
-	<% end -%>
+  <%= link_to_unless_current @collection.name, collection_path(@collection.name) -%>
+  <%= collection_home_button -%>
+  <%= badge_sharedtask(@collection).html_safe %>
+  <%= badge_accessibility(@collection).html_safe %>
+  <%= badge_open(@collection).html_safe %>
+  <%= link_to content_tag(:i, '', class: "fa fa-search", "aria-hidden" => "true", title: "search"), sparql_collection_path(@collection.name) %>
+  <% if @collection.jobs.exists? && @collection.editable?(current_user) -%>
+    <% content_for :javascript do %>
+      <%= javascript_include_tag 'reloadGearIcon' %>
+    <% end %>
+    <span class="gear-icon-wrapper">
+      <%= render "collections/gear_icon" %>
+    </span>
+  <% end -%>
 </div>

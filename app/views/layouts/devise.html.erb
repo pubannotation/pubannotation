@@ -1,41 +1,41 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<title><%= t('views.service.title') -%></title>
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<%= stylesheet_link_tag    "application", :media => "all" -%>
-		<%= yield :css -%>
-		<%= javascript_include_tag "application" -%>
-		<script>
-			jQuery(document).ready(function($) {
-				$('a[rel*=facebox]').facebox()
-			})
-		</script>
-		<%= yield :javascript -%>
-		<%= csrf_meta_tags -%>
-	</head>
+  <head>
+    <title><%= t('views.service.title') -%></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <%= stylesheet_link_tag    "application", :media => "all" -%>
+    <%= yield :css -%>
+    <%= javascript_include_tag "application" -%>
+    <script>
+      jQuery(document).ready(function($) {
+        $('a[rel*=facebox]').facebox()
+      })
+    </script>
+    <%= yield :javascript -%>
+    <%= csrf_meta_tags -%>
+  </head>
 
-	<body>
+  <body>
 
-		<div id="login_header" class="frame">
-			<div class="content">
-				<%= render :partial => 'layouts/login_header' -%>
-			</div>
-		</div>
+    <div id="login_header" class="frame">
+      <div class="content">
+        <%= render :partial => 'layouts/login_header' -%>
+      </div>
+    </div>
 
-		<div id="notice">
-			<div class="content">
-				<%= notice.html_safe if notice -%>
-				<%= alert -%>
-			</div>
-		</div>
+    <div id="notice">
+      <div class="content">
+        <%= notice.html_safe if notice -%>
+        <%= alert -%>
+      </div>
+    </div>
 
-		<div id="main">
-			<div class="content">
-				<%= yield -%>
-			</div>
-		</div>
+    <div id="main">
+      <div class="content">
+        <%= yield -%>
+      </div>
+    </div>
 
-		<div id='Indicator'></div>
-	</body>
+    <div id='Indicator'></div>
+  </body>
 </html>

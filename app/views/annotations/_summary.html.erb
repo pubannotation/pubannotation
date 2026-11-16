@@ -1,23 +1,23 @@
 <%
-	@span ||= nil
-	annotations_updated_at = ProjectDoc.where(doc_id:@doc.id, project_id:@project.id).first.annotations_updated_at
+  @span ||= nil
+  annotations_updated_at = ProjectDoc.where(doc_id:@doc.id, project_id:@project.id).first.annotations_updated_at
 %>
 
 <% if annotations_updated_at.present? %>
-	<p class="note" style="margin-left:1em">last updated at <%= annotations_updated_at %></p>
+  <p class="note" style="margin-left:1em">last updated at <%= annotations_updated_at %></p>
 <% end %>
 
 <ul>
-	<li>
-		<%= t('activerecord.models.denotations') %>:
-		<%= @project.get_denotations_count(@doc, @span) %>
-	</li>
-	<li>
-		<%= t('activerecord.models.blocks') %>:
-		<%= @project.get_blocks_count(@doc, @span) %>
-	</li>
-	<li>
-		<%= t('activerecord.models.relations') %>:
-		<%= @project.get_relations_count(@doc, @span) %>
-	</li>
+  <li>
+    <%= t('activerecord.models.denotations') %>:
+    <%= @project.get_denotations_count(@doc, @span) %>
+  </li>
+  <li>
+    <%= t('activerecord.models.blocks') %>:
+    <%= @project.get_blocks_count(@doc, @span) %>
+  </li>
+  <li>
+    <%= t('activerecord.models.relations') %>:
+    <%= @project.get_relations_count(@doc, @span) %>
+  </li>
 </ul>

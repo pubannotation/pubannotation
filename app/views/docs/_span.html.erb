@@ -1,13 +1,13 @@
 <table>
-	<tr>
-		<th>
-			<%= @doc.sourcedb %>:<%= link_to @doc.sourceid, @doc.source %>/spans/<%= params[:begin] %>-<%= params[:end] %>
-		</th>
-	</tr>
-	<tr>
-		<td>
-			<%= @highlight_text.html_safe -%>
-		</td>
-	</tr>
-		
+  <tr>
+    <th>
+      <%= @doc.sourcedb %>:<%= link_to @doc.sourceid, @doc.source %>/spans/<%= params[:begin] %>-<%= params[:end] %>
+    </th>
+  </tr>
+  <tr>
+    <td>
+      <%= @highlight_text.html_safe -%>
+    </td>
+  </tr>
+    
 </table>

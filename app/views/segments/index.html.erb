@@ -3,84 +3,84 @@
 <h1>Segments</h1>
 
 <% if @editable -%>
-	<p>Editing a segment's text rebuilds the document's text from the segments. The annotations after it are not moved.</p>
+  <p>Editing a segment's text rebuilds the document's text from the segments. The annotations after it are not moved.</p>
 <% end -%>
 
 <div class="segments-table-container">
 <table class="segments-table">
-	<colgroup>
-		<col class="segment-number">
-		<col class="segment-time">
-		<col class="segment-time">
-		<col>
-		<col class="segment-speech">
-		<% if @editable -%>
-			<col class="segment-line-break">
-			<col class="segment-edit">
-		<% end -%>
-	</colgroup>
-	<tr>
-		<th>#</th>
-		<th>Start</th>
-		<th>End</th>
-		<th>Text</th>
-		<th>Speech</th>
-		<% if @editable -%>
-			<th>Line break</th>
-			<th></th>
-		<% end -%>
-	</tr>
-	<% @media_transcript.segments.each_with_index do |segment, index| -%>
-		<tr>
-			<td><%= index %></td>
-			<td><%= segment_time(segment.start_ms) %></td>
-			<td><%= segment_time(segment.end_ms) %></td>
-			<td class="segment-text" title="<%= segment.text %>" tabindex="0"><%= segment.text %></td>
-			<td class="speech"><%= '✓' if segment.speech? %></td>
-			<% if @editable -%>
-				<td class="line-break">
-					<% if @media_transcript.line_break_settable_after?(segment) -%>
-						<%= form_with scope: :segment, url: doc_segment_path(@doc, segment), method: :patch, class: 'line-break-form' do |f| %>
-							<%= f.check_box :line_break_after, checked: segment.line_break_after, id: "segment_line_break_after_#{index}",
-								aria: { label: "Line break after segment ##{index}" } %>
-						<% end %>
-					<% end -%>
-				</td>
-				<td>
-					<%= button_tag 'Edit', type: 'button', class: 'button edit-segment',
-						data: { url: doc_segment_path(@doc, segment), index:, text: segment.text,
-						        time: segment_time_range(segment) } %>
-				</td>
-			<% end -%>
-		</tr>
-	<% end -%>
+  <colgroup>
+    <col class="segment-number">
+    <col class="segment-time">
+    <col class="segment-time">
+    <col>
+    <col class="segment-speech">
+    <% if @editable -%>
+      <col class="segment-line-break">
+      <col class="segment-edit">
+    <% end -%>
+  </colgroup>
+  <tr>
+    <th>#</th>
+    <th>Start</th>
+    <th>End</th>
+    <th>Text</th>
+    <th>Speech</th>
+    <% if @editable -%>
+      <th>Line break</th>
+      <th></th>
+    <% end -%>
+  </tr>
+  <% @media_transcript.segments.each_with_index do |segment, index| -%>
+    <tr>
+      <td><%= index %></td>
+      <td><%= segment_time(segment.start_ms) %></td>
+      <td><%= segment_time(segment.end_ms) %></td>
+      <td class="segment-text" title="<%= segment.text %>" tabindex="0"><%= segment.text %></td>
+      <td class="speech"><%= '✓' if segment.speech? %></td>
+      <% if @editable -%>
+        <td class="line-break">
+          <% if @media_transcript.line_break_settable_after?(segment) -%>
+            <%= form_with scope: :segment, url: doc_segment_path(@doc, segment), method: :patch, class: 'line-break-form' do |f| %>
+              <%= f.check_box :line_break_after, checked: segment.line_break_after, id: "segment_line_break_after_#{index}",
+                aria: { label: "Line break after segment ##{index}" } %>
+            <% end %>
+          <% end -%>
+        </td>
+        <td>
+          <%= button_tag 'Edit', type: 'button', class: 'button edit-segment',
+            data: { url: doc_segment_path(@doc, segment), index:, text: segment.text,
+                    time: segment_time_range(segment) } %>
+        </td>
+      <% end -%>
+    </tr>
+  <% end -%>
 </table>
 </div>
 
 <%= link_to t('views.shared.back'), doc_sourcedb_sourceid_show_path(@doc.sourcedb, @doc.sourceid) %>
 
 <% if @editable -%>
-	<%# Filled in from the clicked Edit button; rendered open with the entered text after a failed save. %>
-	<dialog id="segment-dialog" aria-labelledby="segment-dialog-title" data-open-on-load="<%= @segment.present? %>">
-		<div class="segment-dialog-content">
-			<h2 id="segment-dialog-title">Edit segment text</h2>
-			<%= form_with scope: :segment, url: (doc_segment_path(@doc, @segment) if @segment), method: :patch do |f| %>
-				<p id="segment-dialog-error" class="error"><%= @error %></p>
-				<p>
-					<span id="segment-dialog-index"><%= "##{@index}" if @segment %></span> /
-					<span id="segment-dialog-time"><%= segment_time_range(@segment) if @segment %></span>
-				</p>
-				<%= f.label :text, 'Text' %>
-				<%= f.text_field :text, value: @text, size: 60 %>
-				<div class="actions">
-					<%= f.submit 'Save' %>
-					<%= button_tag 'Cancel', type: 'button', id: 'segment-dialog-cancel' %>
-				</div>
-			<% end %>
-		</div>
-	</dialog>
+  <%# Filled in from the clicked Edit button; rendered open with the entered text after a failed save. %>
+  <dialog id="segment-dialog" aria-labelledby="segment-dialog-title" data-open-on-load="<%= @segment.present? %>">
+    <div class="segment-dialog-content">
+      <h2 id="segment-dialog-title">Edit segment text</h2>
+      <%= form_with scope: :segment, url: (doc_segment_path(@doc, @segment) if @segment), method: :patch do |f| %>
+        <p id="segment-dialog-error" class="error"><%= @error %></p>
+        <p>
+          <span id="segment-dialog-index"><%= "##{@index}" if @segment %></span> /
+          <span id="segment-dialog-time"><%= segment_time_range(@segment) if @segment %></span>
+        </p>
+        <%= f.label :text, 'Text' %>
+        <%= f.text_field :text, value: @text, size: 60 %>
+        <div class="actions">
+          <%= f.submit 'Save' %>
+          <%= button_tag 'Cancel', type: 'button', id: 'segment-dialog-cancel' %>
+        </div>
+      <% end %>
+    </div>
+  </dialog>
 
-	<% content_for :javascript do -%>
-		<%= javascript_include_tag 'segments', defer: true -%>
-	<% end -%>
+  <% content_for :javascript do -%>
+    <%= javascript_include_tag 'segments', defer: true -%>
+  <% end -%>
 <% end -%>

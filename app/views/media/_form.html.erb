@@ -1,28 +1,28 @@
 <%= form_with model: @medium, url: media_path, multipart: true do |f| %>
-	<% if @medium.errors.any? %>
-		<ul>
-			<% @medium.errors.full_messages.each do |message| %>
-				<li><%= message %></li>
-			<% end %>
-		</ul>
-	<% end %>
+  <% if @medium.errors.any? %>
+    <ul>
+      <% @medium.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  <% end %>
 
-	<table>
-		<tr>
-			<th><%= f.label :sourcedb, 'Source DB' %></th>
-			<td><%= f.text_field :sourcedb, required: true %></td>
-		</tr>
-		<tr>
-			<th><%= f.label :sourceid, 'Source ID' %></th>
-			<td><%= f.text_field :sourceid, required: true %></td>
-		</tr>
-		<tr>
-			<th><%= f.label :file, 'File' %></th>
-			<td><%= f.file_field :file, accept: Medium::ALLOWED_CONTENT_TYPES.join(','), required: true %></td>
-		</tr>
-		<tr>
-			<th></th>
-			<td><%= f.submit 'Upload' %></td>
-		</tr>
-	</table>
+  <table>
+    <tr>
+      <th><%= f.label :sourcedb, 'Source DB' %></th>
+      <td><%= f.text_field :sourcedb, required: true %></td>
+    </tr>
+    <tr>
+      <th><%= f.label :sourceid, 'Source ID' %></th>
+      <td><%= f.text_field :sourceid, required: true %></td>
+    </tr>
+    <tr>
+      <th><%= f.label :file, 'File' %></th>
+      <td><%= f.file_field :file, accept: Medium::ALLOWED_CONTENT_TYPES.join(','), required: true %></td>
+    </tr>
+    <tr>
+      <th></th>
+      <td><%= f.submit 'Upload' %></td>
+    </tr>
+  </table>
 <% end %>

@@ -1,21 +1,21 @@
 <% content_for :path do -%>
-	> <%= link_to t('views.paths.home'), home_path -%>
-	> <%= link_to t('activerecord.models.project').pluralize, projects_path -%>
-	> <%= link_to @project.name, project_path(@project.name) -%>
-	> rdfize-annotations
+  > <%= link_to t('views.paths.home'), home_path -%>
+  > <%= link_to t('activerecord.models.project').pluralize, projects_path -%>
+  > <%= link_to @project.name, project_path(@project.name) -%>
+  > rdfize-annotations
 <% end -%>
 
 <% if @project.present? -%>
-	<section>
-		<%= render partial: 'projects/titlebar' -%>
+  <section>
+    <%= render partial: 'projects/titlebar' -%>
 <% end %>
 
-		<section>
-			<h2><%= t('views.docs.rdfize_annotations') %></h2>
-			<p class="note">It is now a beta feature, which is still under development. Please understand that sometimes this feature may work unstably. Your comments or reports on bugs will be highly appreciated.</p>
-			<%= render partial: 'annotations/rdfize_annotation' -%>
-		</section>
+    <section>
+      <h2><%= t('views.docs.rdfize_annotations') %></h2>
+      <p class="note">It is now a beta feature, which is still under development. Please understand that sometimes this feature may work unstably. Your comments or reports on bugs will be highly appreciated.</p>
+      <%= render partial: 'annotations/rdfize_annotation' -%>
+    </section>
 
 <% if @project.present? -%>
-	</section>
+  </section>
 <% end %>

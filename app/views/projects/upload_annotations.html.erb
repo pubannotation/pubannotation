@@ -1,15 +1,15 @@
 <% content_for :path do -%>
-	> <%= link_to t('views.paths.home'), home_path -%>
-	> <%= link_to t('activerecord.models.project').pluralize, projects_path -%>
-	> <%= link_to @project.name, project_path(@project.name) -%>
-	> upload-annotations
+  > <%= link_to t('views.paths.home'), home_path -%>
+  > <%= link_to t('activerecord.models.project').pluralize, projects_path -%>
+  > <%= link_to @project.name, project_path(@project.name) -%>
+  > upload-annotations
 <% end -%>
 
 <section>
-	<%= render partial: 'projects/titlebar' -%>
+  <%= render partial: 'projects/titlebar' -%>
 
-	<section>
-		<h2><%= t('views.docs.upload_annotations') %></h2>
-		<%= render partial: 'annotations/upload' -%>
-	</section>
+  <section>
+    <h2><%= t('views.docs.upload_annotations') %></h2>
+    <%= render partial: 'annotations/upload' -%>
+  </section>
 </section>

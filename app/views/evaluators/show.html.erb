@@ -1,39 +1,39 @@
 <% content_for :path do %>
-	> <%= link_to t('views.paths.home'), home_path %>
-	> <%= link_to 'evaluators', evaluators_path %>
-	> <%= @evaluator.name %>
+  > <%= link_to t('views.paths.home'), home_path %>
+  > <%= link_to 'evaluators', evaluators_path %>
+  > <%= @evaluator.name %>
 <% end %>
 
 <section>
-	<h1>
-		<%= @evaluator.name %>
-		<%= button_home(@evaluator.home) -%>
-		<%= badge_public(@evaluator.is_public).html_safe %>
-		<% if @evaluator.changeable?(current_user) -%>
-			<%= button :edit, edit_evaluator_path(@evaluator), 'Edit' %>
-			<%= button_destroy @evaluator, 'Delete' %>
-		<% end %>
-	</h1>
+  <h1>
+    <%= @evaluator.name %>
+    <%= button_home(@evaluator.home) -%>
+    <%= badge_public(@evaluator.is_public).html_safe %>
+    <% if @evaluator.changeable?(current_user) -%>
+      <%= button :edit, edit_evaluator_path(@evaluator), 'Edit' %>
+      <%= button_destroy @evaluator, 'Delete' %>
+    <% end %>
+  </h1>
 
-	<% if @evaluator.description.present? %>
-		<p><%= @evaluator.description %></p>
-	<% end -%>
+  <% if @evaluator.description.present? %>
+    <p><%= @evaluator.description %></p>
+  <% end -%>
 
-	<table class="column-head">
+  <table class="column-head">
 
-		<tr>
-			<th>Access Type</th>
-			<td><%= access_type_helper(@evaluator) %></td>
-		</tr>
+    <tr>
+      <th>Access Type</th>
+      <td><%= access_type_helper(@evaluator) %></td>
+    </tr>
 
-		<tr>
-			<th>URL</th>
-			<td><%= @evaluator.url %></td>
-		</tr>
+    <tr>
+      <th>URL</th>
+      <td><%= @evaluator.url %></td>
+    </tr>
 
-		<tr>
-			<th>Creator</th>
-			<td><%= @evaluator.user.username %></td>
-		</tr>
-	</table>
+    <tr>
+      <th>Creator</th>
+      <td><%= @evaluator.user.username %></td>
+    </tr>
+  </table>
 </section>

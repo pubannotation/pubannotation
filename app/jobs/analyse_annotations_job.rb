@@ -1,49 +1,49 @@
 class AnalyseAnnotationsJob < ApplicationJob
-	include UseJobRecordConcern
+  include UseJobRecordConcern
 
-	queue_as :low_priority
+  queue_as :low_priority
 
-	def perform(project, options)
-		docs = project.docs
+  def perform(project, options)
+    docs = project.docs
 
-		if @job
-			prepare_progress_record(docs.count)
-		end
+    if @job
+      prepare_progress_record(docs.count)
+    end
 
-		analysis = {
-			embeddings:[],
-			bcrossings:[],
-			duplabels:[]
-		}
+    analysis = {
+      embeddings:[],
+      bcrossings:[],
+      duplabels:[]
+    }
 
-		docs.each_with_index do |doc, i|
-			begin
-				annotations = DocPresenter.new(doc).hannotations(project, nil, nil)
-				a = AnnotationUtils.analyse(annotations)
+    docs.each_with_index do |doc, i|
+      begin
+        annotations = DocPresenter.new(doc).hannotations(project, nil, nil)
+        a = AnnotationUtils.analyse(annotations)
 
-				analysis[:embeddings] += a[:embeddings]
-				analysis[:bcrossings] += a[:bcrossings]
-				analysis[:duplabels] += a[:duplabels]
-			rescue => e
-				if @job
-					@job.add_message sourcedb: annotations[:sourcedb],
-													 sourceid: annotations[:sourceid],
-													 body: e.message
-				else
-					raise e
-				end
-			ensure
-				if @job
-					@job.update_attribute(:num_dones, i + 1)
-					check_suspend_flag
-				end
-			end
-		end
+        analysis[:embeddings] += a[:embeddings]
+        analysis[:bcrossings] += a[:bcrossings]
+        analysis[:duplabels] += a[:duplabels]
+      rescue => e
+        if @job
+          @job.add_message sourcedb: annotations[:sourcedb],
+                           sourceid: annotations[:sourceid],
+                           body: e.message
+        else
+          raise e
+        end
+      ensure
+        if @job
+          @job.update_attribute(:num_dones, i + 1)
+          check_suspend_flag
+        end
+      end
+    end
 
-		project.update_attribute(:analysis, JSON.generate(analysis))
-	end
+    project.update_attribute(:analysis, JSON.generate(analysis))
+  end
 
-	def job_name
-		'Analyse project annotations'
-	end
+  def job_name
+    'Analyse project annotations'
+  end
 end

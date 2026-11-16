@@ -1,15 +1,15 @@
 <% content_for :path do %>
-	> <%= link_to t('views.paths.home'), home_path %>
-	> <%= t('activerecord.models.collection').pluralize %>
+  > <%= link_to t('views.paths.home'), home_path %>
+  > <%= t('activerecord.models.collection').pluralize %>
 <% end %>
 
 <section>
 <h1>
-	<%= link_to t('activerecord.models.collection').pluralize.capitalize.html_safe, collections_path %>
+  <%= link_to t('activerecord.models.collection').pluralize.capitalize.html_safe, collections_path %>
 
-	<% if user_signed_in?%>
-		<%= button :create, new_collection_path, 'Create a new collection' %>
-	<% end %>
+  <% if user_signed_in?%>
+    <%= button :create, new_collection_path, 'Create a new collection' %>
+  <% end %>
 </h1>
 <div class="projects-list show-when-wide">
 <%= render :partial => "collections_grid" %>

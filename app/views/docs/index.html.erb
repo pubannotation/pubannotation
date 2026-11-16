@@ -1,29 +1,29 @@
 <% content_for :path do -%>
-	> <%= link_to t('views.paths.home'), home_path -%>
-	<% if @project -%>
-		> <%= link_to t('activerecord.models.project').pluralize, projects_path %>
-		> <%= link_to @project.name, project_path(@project.name) %>
-		<% if @sourcedb -%>
-			> <%= link_to 'docs', project_docs_path(@project.name) %>
-			> <%= link_to "sourcedb", project_sourcedb_docs_path(@project.name) %>
-			> <%= @sourcedb %>
-		<% else -%>
-			> docs
-		<% end -%>
-	<% else -%>
-		<% if @sourcedb -%>
-			> <%= link_to 'docs', docs_path %>
-			> <%= link_to "sourcedb", sourcedb_docs_path %>
-			> <%= @sourcedb %>
-		<% else -%>
-			> docs
-		<% end -%>
-	<% end -%>
+  > <%= link_to t('views.paths.home'), home_path -%>
+  <% if @project -%>
+    > <%= link_to t('activerecord.models.project').pluralize, projects_path %>
+    > <%= link_to @project.name, project_path(@project.name) %>
+    <% if @sourcedb -%>
+      > <%= link_to 'docs', project_docs_path(@project.name) %>
+      > <%= link_to "sourcedb", project_sourcedb_docs_path(@project.name) %>
+      > <%= @sourcedb %>
+    <% else -%>
+      > docs
+    <% end -%>
+  <% else -%>
+    <% if @sourcedb -%>
+      > <%= link_to 'docs', docs_path %>
+      > <%= link_to "sourcedb", sourcedb_docs_path %>
+      > <%= @sourcedb %>
+    <% else -%>
+      > docs
+    <% end -%>
+  <% end -%>
 <% end -%>
 
 <% if @project %>
-	<section>
-		<%= render partial: 'projects/titlebar' -%>
+  <section>
+    <%= render partial: 'projects/titlebar' -%>
         <% if @can_stream_media_documents %>
             <% content_for :javascript do %>
                 <%= javascript_include_tag 'doc_generation_stream', type: 'module' %>
@@ -32,16 +32,16 @@
         <% end %>
 <% end %>
 
-		<section class="project-docs-list">
-			<% if @can_stream_media_documents %>
-				<%= turbo_frame_tag 'media_documents', data: { refresh_url: request.fullpath, turbo: false }, target: '_top' do %>
-					<%= render partial: 'source_docs' -%>
-				<% end %>
-			<% else %>
-				<%= render partial: 'source_docs' -%>
-			<% end %>
-		</section>
+    <section class="project-docs-list">
+      <% if @can_stream_media_documents %>
+        <%= turbo_frame_tag 'media_documents', data: { refresh_url: request.fullpath, turbo: false }, target: '_top' do %>
+          <%= render partial: 'source_docs' -%>
+        <% end %>
+      <% else %>
+        <%= render partial: 'source_docs' -%>
+      <% end %>
+    </section>
 
 <% if @project %>
-	</section>
+  </section>
 <% end %>

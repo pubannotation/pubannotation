@@ -1,33 +1,33 @@
 .collection-title {
-	background: repeating-linear-gradient(
-		45deg,
-		#ecadac,
-		#ecadac 10px,
-		#d8a298 10px,
-		#d8a298 20px
-	);
+  background: repeating-linear-gradient(
+    45deg,
+    #ecadac,
+    #ecadac 10px,
+    #d8a298 10px,
+    #d8a298 20px
+  );
 }
 
 .collection-object {
-	display: inline-block;
-	position: relative;
-	margin: 1px;
-	padding: 2px;
-	border-style: ridge;
-	border-width: 2px;
-	border-radius: 4px;
-	font-size: medium;
-	font-weight: bold;
+  display: inline-block;
+  position: relative;
+  margin: 1px;
+  padding: 2px;
+  border-style: ridge;
+  border-width: 2px;
+  border-radius: 4px;
+  font-size: medium;
+  font-weight: bold;
 }
 
 .collections_header_name {
-	width: 12em;
+  width: 12em;
 }
 
 .collections_header_type {
-	width: 1.5em;
+  width: 1.5em;
 }
 
 .collections_header_projects_count {
-	width: 3em;
+  width: 3em;
 }

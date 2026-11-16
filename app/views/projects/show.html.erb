@@ -1,181 +1,181 @@
 <% content_for :path do %>
-	> <%= link_to t('views.paths.home'), home_path %>
-	> <%= link_to t('activerecord.models.project').pluralize, projects_path %>
-	> <%= @project.name %>
+  > <%= link_to t('views.paths.home'), home_path %>
+  > <%= link_to t('activerecord.models.project').pluralize, projects_path %>
+  > <%= @project.name %>
 <% end %>
 
 <section>
 <%= render :partial => 'titlebar' -%>
 
 <% if @project.collections.accessible(current_user).any? %>
-	<fieldset class="pane collection(s)">
-	<legend>in Collections</legend>
-	<% @project.collections.accessible(current_user).each do |collection| %>
-		<%= render partial: 'collections/object', locals: {collection: collection} -%>
-	<% end %>
-	</fieldset>
+  <fieldset class="pane collection(s)">
+  <legend>in Collections</legend>
+  <% @project.collections.accessible(current_user).each do |collection| %>
+    <%= render partial: 'collections/object', locals: {collection: collection} -%>
+  <% end %>
+  </fieldset>
 <% end %>
 
 <fieldset class="pane description">
 <legend>
-	Project info
-	<% if user_signed_in? -%>
-		<% if @project.editable?(current_user) -%>
-			<%= button :edit, edit_project_path(@project.name), 'Edit project info' -%>
-		<% end -%>
+  Project info
+  <% if user_signed_in? -%>
+    <% if @project.editable?(current_user) -%>
+      <%= button :edit, edit_project_path(@project.name), 'Edit project info' -%>
+    <% end -%>
 
-		<% if @project.destroyable?(current_user) -%>
-			<%= button_destroy @project.name, 'Delete the project' %>
-		<% end -%>
-	<% end %>
+    <% if @project.destroyable?(current_user) -%>
+      <%= button_destroy @project.name, 'Delete the project' %>
+    <% end -%>
+  <% end %>
 </legend>
 <% if @project.description.present? -%>
-	<div><%= @project.description.html_safe %></div>
+  <div><%= @project.description.html_safe %></div>
 <% end -%>
 <br/>
 
 <table class="vertical">
-	<tr>
-		<th><%= t('activerecord.attributes.project.updated_at') %></th>
-		<td><%= @project.updated_at %></td>
-	</tr>
-	<tr>
-		<th><%= t('activerecord.attributes.project.status') %></th>
-		<td><%= @project.status_text -%></td>
-	</tr>
-	<tr>
-		<th><%= t('activerecord.attributes.project.maintainer') %></th>
-		<td><%= user_link(@project.user, @project.anonymize == true) %></td>
-	</tr>
-	<% if @project.author.present? %>
-		<tr>
-			<th><%= t('activerecord.attributes.project.author') %></th>
-			<td><%= @project.author %></td>
-		</tr>
-	<% end %>
-	<tr>
-		<th><%= t('activerecord.attributes.project.license') %></th>
-		<td><%= license_display_helper(@project.license).html_safe %></td>
-	</tr>
-	<% if @project.textae_config.present? %>
-		<tr>
-			<th>TextAE config</th>
-			<td><%= textae_config_display_helper(@project.textae_config).html_safe %></td>
-		</tr>
-	<% end %>
+  <tr>
+    <th><%= t('activerecord.attributes.project.updated_at') %></th>
+    <td><%= @project.updated_at %></td>
+  </tr>
+  <tr>
+    <th><%= t('activerecord.attributes.project.status') %></th>
+    <td><%= @project.status_text -%></td>
+  </tr>
+  <tr>
+    <th><%= t('activerecord.attributes.project.maintainer') %></th>
+    <td><%= user_link(@project.user, @project.anonymize == true) %></td>
+  </tr>
+  <% if @project.author.present? %>
+    <tr>
+      <th><%= t('activerecord.attributes.project.author') %></th>
+      <td><%= @project.author %></td>
+    </tr>
+  <% end %>
+  <tr>
+    <th><%= t('activerecord.attributes.project.license') %></th>
+    <td><%= license_display_helper(@project.license).html_safe %></td>
+  </tr>
+  <% if @project.textae_config.present? %>
+    <tr>
+      <th>TextAE config</th>
+      <td><%= textae_config_display_helper(@project.textae_config).html_safe %></td>
+    </tr>
+  <% end %>
 </table>
 </fieldset>
 
 <% if @project.sample.present? -%>
-	<fieldset class="pane sample">
-	<legend>Sample</legend>
-		<%= render :partial => 'shared/textae_css_js'-%>
-		<div class="textae-editor" control="hidden" style="border-style:none; background-color:white" source="<%= @project.sample -%>" config="<%= @project.textae_config %>"></div>
-	</fieldset>
+  <fieldset class="pane sample">
+  <legend>Sample</legend>
+    <%= render :partial => 'shared/textae_css_js'-%>
+    <div class="textae-editor" control="hidden" style="border-style:none; background-color:white" source="<%= @project.sample -%>" config="<%= @project.textae_config %>"></div>
+  </fieldset>
 <% end -%>
 
 <fieldset class="pane documents">
-	<legend>
-		<%= t('activerecord.models.doc').pluralize.capitalize %>
-		<span class='info'>(<%= number_with_delimiter(docs_count, :delimiter => ',') %>)</span>
-	</legend>
-		<%= render :partial => "docs/sourcedb_counts" -%>
+  <legend>
+    <%= t('activerecord.models.doc').pluralize.capitalize %>
+    <span class='info'>(<%= number_with_delimiter(docs_count, :delimiter => ',') %>)</span>
+  </legend>
+    <%= render :partial => "docs/sourcedb_counts" -%>
 
-		<table class="vertical">
-		<% if user_signed_in? && @project.editable?(current_user) %>
-			<tr>
-				<th><%= t('views.shared.add') %></th>
-				<td><%= link_to t('views.docs.add_docs'), add_docs_project_path(@project.name), class: 'button long_button' -%></td>
-			</tr>
-			<tr>
-				<th><%= t('views.shared.import') %></th>
-				<td style="text-align:right"><%= render partial: 'import_docs_form' -%></td>
-			</tr>
-			<tr>
-				<%= tag.th t('views.shared.create'), rowspan: (current_user&.can_access_media? ? 2 : nil) %>
-				<td><%= link_to t('views.docs.create_doc'), new_project_doc_path(@project.name), class: 'button long_button' -%></td>
-			</tr>
-			<% if current_user&.can_access_media? %>
-				<tr>
-					<td><%= link_to t('views.docs.create_doc_from_media'), new_project_doc_generation_path(@project.name), class: 'button long_button' -%></td>
-				</tr>
-			<% end %>
-			<tr>
-				<th><%= t('views.shared.upload') %></th>
-				<td><%= link_to t('views.docs.upload_docs'), upload_docs_project_path(@project.name), class: 'button long_button' -%></td>
-			</tr>
-			<tr>
-				<th><%= t('views.shared.delete') %></th>
-				<td><%= render partial: 'delete_docs' -%></td>
-			</tr>
-		<% end -%>
-	</table>
+    <table class="vertical">
+    <% if user_signed_in? && @project.editable?(current_user) %>
+      <tr>
+        <th><%= t('views.shared.add') %></th>
+        <td><%= link_to t('views.docs.add_docs'), add_docs_project_path(@project.name), class: 'button long_button' -%></td>
+      </tr>
+      <tr>
+        <th><%= t('views.shared.import') %></th>
+        <td style="text-align:right"><%= render partial: 'import_docs_form' -%></td>
+      </tr>
+      <tr>
+        <%= tag.th t('views.shared.create'), rowspan: (current_user&.can_access_media? ? 2 : nil) %>
+        <td><%= link_to t('views.docs.create_doc'), new_project_doc_path(@project.name), class: 'button long_button' -%></td>
+      </tr>
+      <% if current_user&.can_access_media? %>
+        <tr>
+          <td><%= link_to t('views.docs.create_doc_from_media'), new_project_doc_generation_path(@project.name), class: 'button long_button' -%></td>
+        </tr>
+      <% end %>
+      <tr>
+        <th><%= t('views.shared.upload') %></th>
+        <td><%= link_to t('views.docs.upload_docs'), upload_docs_project_path(@project.name), class: 'button long_button' -%></td>
+      </tr>
+      <tr>
+        <th><%= t('views.shared.delete') %></th>
+        <td><%= render partial: 'delete_docs' -%></td>
+      </tr>
+    <% end -%>
+  </table>
  </fieldset>
 
 <fieldset class="pane annotations">
-	<legend>
-		Annotations
-		<span class='info'>(<%= annotations_count_detailed_helper(@project, @doc) %>)</span>
-	</legend>
+  <legend>
+    Annotations
+    <span class='info'>(<%= annotations_count_detailed_helper(@project, @doc) %>)</span>
+  </legend>
 
-	<table class="vertical">
-		<tr>
-			<th><%= t('views.shared.download.download') %></th>
-			<td><%= render partial: 'download' -%></td>
-		</tr>
-		<tr>
-			<th><%= t('views.shared.evaluations') %></th>
-			<td><%= link_to t('views.shared.evaluations') + " (#{@project.evaluations.count})", project_evaluations_path(@project.name), class: 'button long_button' -%>
-		</tr>
-		<% if @project.editable?(current_user) -%>
-			<tr>
-				<th><%= t('views.shared.upload') %></th>
-				<td><%= link_to t('views.docs.upload_annotations'), upload_annotations_project_path(@project.name), class: 'button long_button' -%></td>
+  <table class="vertical">
+    <tr>
+      <th><%= t('views.shared.download.download') %></th>
+      <td><%= render partial: 'download' -%></td>
+    </tr>
+    <tr>
+      <th><%= t('views.shared.evaluations') %></th>
+      <td><%= link_to t('views.shared.evaluations') + " (#{@project.evaluations.count})", project_evaluations_path(@project.name), class: 'button long_button' -%>
+    </tr>
+    <% if @project.editable?(current_user) -%>
+      <tr>
+        <th><%= t('views.shared.upload') %></th>
+        <td><%= link_to t('views.docs.upload_annotations'), upload_annotations_project_path(@project.name), class: 'button long_button' -%></td>
 <!--
-				<td><%= content_tag :span, t('views.docs.upload_annotations'), class: 'button long_button disabled', title: 'This feature is disabled at the moment due to a reported bug' -%></td>
+        <td><%= content_tag :span, t('views.docs.upload_annotations'), class: 'button long_button disabled', title: 'This feature is disabled at the moment due to a reported bug' -%></td>
 -->
-			</tr>
-			<tr>
-				<th><%= t('views.shared.obtain') %></th>
-				<td>
-					<%= render partial: 'reobtain', locals: { obtain_path: annotations_obtain_path } -%>
-					<%= render partial: 'obtain_missing_annotations', locals: { obtain_path: annotations_obtain_path } -%>
-					<%= link_to t('views.docs.obtain_annotations'), obtain_annotations_project_path(@project.name), class: 'button long_button' -%><br/>
-				</td>
-			</tr>
-			<tr>
-				<th><%= t('views.shared.import') %></th>
-				<td><%= link_to t('views.docs.import_annotations'), import_annotations_project_path(@project.name), class: 'button long_button' -%></td>
-			</tr>
+      </tr>
+      <tr>
+        <th><%= t('views.shared.obtain') %></th>
+        <td>
+          <%= render partial: 'reobtain', locals: { obtain_path: annotations_obtain_path } -%>
+          <%= render partial: 'obtain_missing_annotations', locals: { obtain_path: annotations_obtain_path } -%>
+          <%= link_to t('views.docs.obtain_annotations'), obtain_annotations_project_path(@project.name), class: 'button long_button' -%><br/>
+        </td>
+      </tr>
+      <tr>
+        <th><%= t('views.shared.import') %></th>
+        <td><%= link_to t('views.docs.import_annotations'), import_annotations_project_path(@project.name), class: 'button long_button' -%></td>
+      </tr>
 
-			<% if current_user.root? %>
-				<tr>
-					<th><%= t('views.shared.clean') %></th>
-					<td><%= link_to t('views.docs.clean_annotations'), clean_annotations_project_path(@project.name), class: 'button long_button' -%></td>
-				</tr>
-			<% end %>
+      <% if current_user.root? %>
+        <tr>
+          <th><%= t('views.shared.clean') %></th>
+          <td><%= link_to t('views.docs.clean_annotations'), clean_annotations_project_path(@project.name), class: 'button long_button' -%></td>
+        </tr>
+      <% end %>
 
-			<% if @project.docs.count < Rails.application.config.project_indexable_max_docs || current_user.root? %>
-				<tr>
-					<th><%= t('views.shared.index') %></th>
-					<td>
-						<% if last_indexed_at = @project.last_indexed_at %>
-							Updated at <%= last_indexed_at %><br/>
-						<% end %>
-						<% if current_user.root? %>
-							<%= link_to t('views.docs.rdfize_annotations'), rdfize_annotations_project_path(@project.name), class: 'button long_button' -%>
-						<% else %>
-							<a class="button long_button disabled" title="RDFization of individual project is disabled at the moment."><%= t('views.docs.rdfize_annotations') -%></a>
-						<% end %>
-					</td>
-				</tr>
-			<% end %>
-			<tr>
-				<th><%= t('views.shared.delete') %></th>
-				<td><%= link_to t('views.docs.delete_annotations'), delete_annotations_project_path(@project.name), class: 'button long_button' -%>
-			</tr>
-		<% end -%>
-	</table>
+      <% if @project.docs.count < Rails.application.config.project_indexable_max_docs || current_user.root? %>
+        <tr>
+          <th><%= t('views.shared.index') %></th>
+          <td>
+            <% if last_indexed_at = @project.last_indexed_at %>
+              Updated at <%= last_indexed_at %><br/>
+            <% end %>
+            <% if current_user.root? %>
+              <%= link_to t('views.docs.rdfize_annotations'), rdfize_annotations_project_path(@project.name), class: 'button long_button' -%>
+            <% else %>
+              <a class="button long_button disabled" title="RDFization of individual project is disabled at the moment."><%= t('views.docs.rdfize_annotations') -%></a>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+      <tr>
+        <th><%= t('views.shared.delete') %></th>
+        <td><%= link_to t('views.docs.delete_annotations'), delete_annotations_project_path(@project.name), class: 'button long_button' -%>
+      </tr>
+    <% end -%>
+  </table>
 </fieldset>
 
 </section>

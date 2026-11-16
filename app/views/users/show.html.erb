@@ -1,267 +1,267 @@
 <% content_for :path do %>
-	> <%= link_to t('views.paths.home'), home_path %>
-	> users
-	> <%= @user.username %>
+  > <%= link_to t('views.paths.home'), home_path %>
+  > users
+  > <%= @user.username %>
 <% end %>
 
 <section>
-	<%= render :partial => 'titlebar' -%>
+  <%= render :partial => 'titlebar' -%>
 
-	<fieldset class="pane">
-		<legend>
-			User info
-			<% if @user == current_user %>
-				<%= button(:edit, edit_user_registration_path, 'Edit user information') if @user == current_user -%>
-			<% end %>
-		</legend>
+  <fieldset class="pane">
+    <legend>
+      User info
+      <% if @user == current_user %>
+        <%= button(:edit, edit_user_registration_path, 'Edit user information') if @user == current_user -%>
+      <% end %>
+    </legend>
 
-		<% if @user == current_user %>
-			<table>
-			<tr>
-			<th>E-mail</th>
-			<td><%= @user.email -%></td>
-			</tr>
-			<tr>
-			<th>Last login</th>
-			<td><%= @user.last_sign_in_at -%></td>
-			</tr>
-			</table>
-		<% end %>
-	</fieldset>
+    <% if @user == current_user %>
+      <table>
+      <tr>
+      <th>E-mail</th>
+      <td><%= @user.email -%></td>
+      </tr>
+      <tr>
+      <th>Last login</th>
+      <td><%= @user.last_sign_in_at -%></td>
+      </tr>
+      </table>
+    <% end %>
+  </fieldset>
 
-	<fieldset class="pane">
-		<legend>
-			Collections
-			<%= button(:create, new_collection_path, 'Create a new collection') if @user == current_user %>
-		</legend>
+  <fieldset class="pane">
+    <legend>
+      Collections
+      <%= button(:create, new_collection_path, 'Create a new collection') if @user == current_user %>
+    </legend>
 
-		<%=
-			grid(@collections_grid) do |g|
+    <%=
+      grid(@collections_grid) do |g|
 
-				g.blank_slate  do
-					"<p>none</p>"
-				end
+        g.blank_slate  do
+          "<p>none</p>"
+        end
 
-				g.column name: 'Name', attribute: 'name' do |collection|
-					[link_to(collection.name, collection_path(collection.name)), {title: collection.name}]
-				end
+        g.column name: 'Name', attribute: 'name' do |collection|
+          [link_to(collection.name, collection_path(collection.name)), {title: collection.name}]
+        end
 
-				if @user == current_user
-					g.column attribute: 'accessibility', filter: false, class: 'column-project-type' do |collection|
-						[badge_accessibility(collection).html_safe, {style: 'text-align:center'}]
-					end
-				end
+        if @user == current_user
+          g.column attribute: 'accessibility', filter: false, class: 'column-project-type' do |collection|
+            [badge_accessibility(collection).html_safe, {style: 'text-align:center'}]
+          end
+        end
 
-				g.column filter: false, class: 'column-project-type' do |collection|
-					[badge_sharedtask(collection).html_safe, {style: 'text-align:center'}]
-				end
+        g.column filter: false, class: 'column-project-type' do |collection|
+          [badge_sharedtask(collection).html_safe, {style: 'text-align:center'}]
+        end
 
-				g.column name: 'Description', attribute: 'description' do |collection|
-					[strip_tags(collection.description), {style: 'width:20em; max-width: 20em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
-				end
+        g.column name: 'Description', attribute: 'description' do |collection|
+          [strip_tags(collection.description), {style: 'width:20em; max-width: 20em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
+        end
 
-				g.column name: 'Updated at', attribute: 'updated_at', filter: false do |collection|
-					[collection.updated_at.strftime('%Y-%m-%d'), {style: 'width:7em; text-align:center'}]
-				end
+        g.column name: 'Updated at', attribute: 'updated_at', filter: false do |collection|
+          [collection.updated_at.strftime('%Y-%m-%d'), {style: 'width:7em; text-align:center'}]
+        end
 
-			end
-		-%>
-	</fieldset>
+      end
+    -%>
+  </fieldset>
 
-	<fieldset class="pane">
-		<legend>
-			Projects
-			<%= button(:create, new_project_path, 'Create a new project') if @user == current_user %>
-		</legend>
+  <fieldset class="pane">
+    <legend>
+      Projects
+      <%= button(:create, new_project_path, 'Create a new project') if @user == current_user %>
+    </legend>
 
-		<%=
-			grid(@projects_grid) do |g|
+    <%=
+      grid(@projects_grid) do |g|
 
-				g.blank_slate  do
-					"<p>none</p>"
-				end
+        g.blank_slate  do
+          "<p>none</p>"
+        end
 
-				g.column name: 'Name', attribute: 'name' do |project|
-					[link_to(project.name, project_path(project.name)), {title: project.name}]
-				end
+        g.column name: 'Name', attribute: 'name' do |project|
+          [link_to(project.name, project_path(project.name)), {title: project.name}]
+        end
 
-				if @user == current_user
-					g.column name: 'A', attribute: 'accessibility', filter: false, class: 'column-project-type' do |project|
-						[badge_accessibility(project).html_safe, {style: 'text-align:center'}]
-					end
-				end
+        if @user == current_user
+          g.column name: 'A', attribute: 'accessibility', filter: false, class: 'column-project-type' do |project|
+            [badge_accessibility(project).html_safe, {style: 'text-align:center'}]
+          end
+        end
 
-				g.column name: 'T', attribute: 'process', filter: false, class: 'column-project-type' do |project|
-					[badge_type(project).html_safe, {style: 'text-align:center'}]
-				end
+        g.column name: 'T', attribute: 'process', filter: false, class: 'column-project-type' do |project|
+          [badge_type(project).html_safe, {style: 'text-align:center'}]
+        end
 
-				g.column name: 'Description', attribute: 'description' do |project|
-					[strip_tags(project.description), {style: 'width:20em; max-width: 20em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
-				end
+        g.column name: 'Description', attribute: 'description' do |project|
+          [strip_tags(project.description), {style: 'width:20em; max-width: 20em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
+        end
 
-				g.column name: '# Ann.', attribute: 'denotations_num' do |project|
-					# [number_with_delimiter(project.denotations_num, :delimiter => ','), {style: 'width:5.5em; text-align:right'}]
-					[number_to_human(project.denotations_num, units: {thousand:'K', million:'M', billion:'G', trillion:'T'}), {style: 'width:5.5em; text-align:right'}]
-				end
+        g.column name: '# Ann.', attribute: 'denotations_num' do |project|
+          # [number_with_delimiter(project.denotations_num, :delimiter => ','), {style: 'width:5.5em; text-align:right'}]
+          [number_to_human(project.denotations_num, units: {thousand:'K', million:'M', billion:'G', trillion:'T'}), {style: 'width:5.5em; text-align:right'}]
+        end
 
-				g.column name: 'Updated at', attribute: 'updated_at', filter: false do |project|
-					[project.updated_at.strftime('%Y-%m-%d'), {style: 'width:7em; text-align:center'}]
-				end
+        g.column name: 'Updated at', attribute: 'updated_at', filter: false do |project|
+          [project.updated_at.strftime('%Y-%m-%d'), {style: 'width:7em; text-align:center'}]
+        end
 
-				g.column name: 'Status', attribute: 'status', custom_filter: {'released' => 1, 'beta' => 2, 'uploading' => 3, 'developing' => 8, 'testing' => 9} do |project|
-					[project.status_text, {style: 'width:8em; text-align:center'}]
-				end
+        g.column name: 'Status', attribute: 'status', custom_filter: {'released' => 1, 'beta' => 2, 'uploading' => 3, 'developing' => 8, 'testing' => 9} do |project|
+          [project.status_text, {style: 'width:8em; text-align:center'}]
+        end
 
-			end
-		-%>
-	</fieldset>
+      end
+    -%>
+  </fieldset>
 
-	<fieldset class="pane">
-		<legend>
-			Automatic annotators
-			<%= button(:create, new_annotator_path, 'Create a new annotator') if @user == current_user %>
-		</legend>
+  <fieldset class="pane">
+    <legend>
+      Automatic annotators
+      <%= button(:create, new_annotator_path, 'Create a new annotator') if @user == current_user %>
+    </legend>
 
-		<%=
-			grid(@annotators_grid) do |g|
-				g.blank_slate  do
-					"<p>none</p>"
-				end
+    <%=
+      grid(@annotators_grid) do |g|
+        g.blank_slate  do
+          "<p>none</p>"
+        end
 
-				g.column name: 'Name', attribute: 'name' do |annotator|
-					[link_to(annotator.name, annotator), {style: 'width:10em'}]
-				end
+        g.column name: 'Name', attribute: 'name' do |annotator|
+          [link_to(annotator.name, annotator), {style: 'width:10em'}]
+        end
 
-				if @user == current_user
-					g.column name: 'P', attribute: 'is_public', filter: false, class: 'column-project-type' do |annotator|
-						[badge_is_public(annotator).html_safe, {style: 'text-align:center'}]
-					end
-				end
+        if @user == current_user
+          g.column name: 'P', attribute: 'is_public', filter: false, class: 'column-project-type' do |annotator|
+            [badge_is_public(annotator).html_safe, {style: 'text-align:center'}]
+          end
+        end
 
-				g.column name: 'Description', attribute: 'description' do |annotator|
-					[strip_tags(annotator.description), {style: 'width:20em; max-width: 20em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
-				end
-			end
-		-%>
-	</fieldset>
+        g.column name: 'Description', attribute: 'description' do |annotator|
+          [strip_tags(annotator.description), {style: 'width:20em; max-width: 20em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
+        end
+      end
+    -%>
+  </fieldset>
 
-	<fieldset class="pane">
-		<legend>
-			Editors
-			<%= button(:create, new_editor_path, 'Create a new editor') if @user == current_user %>
-		</legend>
+  <fieldset class="pane">
+    <legend>
+      Editors
+      <%= button(:create, new_editor_path, 'Create a new editor') if @user == current_user %>
+    </legend>
 
-		<%=
-			grid(@editors_grid) do |g|
-				g.blank_slate  do
-					"<p>none</p>"
-				end
+    <%=
+      grid(@editors_grid) do |g|
+        g.blank_slate  do
+          "<p>none</p>"
+        end
 
-				g.column name: 'Name', attribute: 'name' do |editor|
-					[link_to(editor.name, editor), {style: 'width:10em'}]
-				end
+        g.column name: 'Name', attribute: 'name' do |editor|
+          [link_to(editor.name, editor), {style: 'width:10em'}]
+        end
 
-				if @user == current_user
-					g.column name: 'P', attribute: 'is_public', filter: false, class: 'column-project-type' do |editor|
-						[badge_is_public(editor).html_safe, {style: 'text-align:center'}]
-					end
-				end
+        if @user == current_user
+          g.column name: 'P', attribute: 'is_public', filter: false, class: 'column-project-type' do |editor|
+            [badge_is_public(editor).html_safe, {style: 'text-align:center'}]
+          end
+        end
 
-				g.column name: 'Description', attribute: 'description' do |editor|
-					[strip_tags(editor.description), {style: 'width:20em; max-width: 20em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
-				end
-			end
-		-%>
-	</fieldset>
+        g.column name: 'Description', attribute: 'description' do |editor|
+          [strip_tags(editor.description), {style: 'width:20em; max-width: 20em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis'}]
+        end
+      end
+    -%>
+  </fieldset>
 
-	<% if @user == current_user %>
-		<fieldset class="pane">
-			<legend>Access Token</legend>
+  <% if @user == current_user %>
+    <fieldset class="pane">
+      <legend>Access Token</legend>
 
-			<% if @user.access_token.present? %>
-				<button disabled>Generate Access Token</button>
-				<table>
-					<tr>
-						<th>Access Token</th>
-						<td id="access-token"><%= @user.access_token.token %></td>
-						<td><button id="clipboard-btn" style="cursor: pointer" data-clipboard-target="#access-token"><%= fa_icon('copy') %></button></td>
-						<td><%= link_to fa_icon('trash'), access_token_path(@user.access_token), method: :delete, data: { confirm: 'Are you sure?' } %></td>
-					</tr>
-				</table>
-			<% else %>
-				<%= form_with url: access_tokens_path, method: :post do %>
-					<button type="submit" class="button">Generate Access Token</button>
-				<% end %>
-			<% end %>
-		</fieldset>
-	<% end %>
+      <% if @user.access_token.present? %>
+        <button disabled>Generate Access Token</button>
+        <table>
+          <tr>
+            <th>Access Token</th>
+            <td id="access-token"><%= @user.access_token.token %></td>
+            <td><button id="clipboard-btn" style="cursor: pointer" data-clipboard-target="#access-token"><%= fa_icon('copy') %></button></td>
+            <td><%= link_to fa_icon('trash'), access_token_path(@user.access_token), method: :delete, data: { confirm: 'Are you sure?' } %></td>
+          </tr>
+        </table>
+      <% else %>
+        <%= form_with url: access_tokens_path, method: :post do %>
+          <button type="submit" class="button">Generate Access Token</button>
+        <% end %>
+      <% end %>
+    </fieldset>
+  <% end %>
 
-	<% if @user == current_user && current_user.root? %>
-		<fieldset class="pane">
-			<legend>
-				Jobs
-				(for admin)
-				<%=  link_to 'sidekiq', home_path + 'sidekiq', class: 'button' %>
-			</legend>
+  <% if @user == current_user && current_user.root? %>
+    <fieldset class="pane">
+      <legend>
+        Jobs
+        (for admin)
+        <%=  link_to 'sidekiq', home_path + 'sidekiq', class: 'button' %>
+      </legend>
 
-			<table>
-				<tr>
-					<th>waiting</th><td style="text-align:right"><%= @num_waiting %></td>
-				</tr>
-				<tr>
-					<th>running</th><td style="text-align:right"><%= @num_running %></td>
-				</tr>
-				<tr>
-					<th>finished</th><td style="text-align:right"><%= @num_finished %></td>
-				</tr>
-			</table>
+      <table>
+        <tr>
+          <th>waiting</th><td style="text-align:right"><%= @num_waiting %></td>
+        </tr>
+        <tr>
+          <th>running</th><td style="text-align:right"><%= @num_running %></td>
+        </tr>
+        <tr>
+          <th>finished</th><td style="text-align:right"><%= @num_finished %></td>
+        </tr>
+      </table>
 
-			<%=
-				grid(@jobs_grid) do |g|
+      <%=
+        grid(@jobs_grid) do |g|
 
-					g.column name: 'Name', attribute: 'name' do |job|
-						[link_to(job.name, project_job_path(job.organization.name, job)), {style: 'width:15em'}]
-					end
+          g.column name: 'Name', attribute: 'name' do |job|
+            [link_to(job.name, project_job_path(job.organization.name, job)), {style: 'width:15em'}]
+          end
 
-					g.column name: 'Project' do |job|
-						[link_to(job.organization.name, project_path(job.organization.name)), {style: 'width:10em'}]
-					end
+          g.column name: 'Project' do |job|
+            [link_to(job.organization.name, project_path(job.organization.name)), {style: 'width:10em'}]
+          end
 
-					g.column name: 'User' do |job|
-						[link_to(job.organization.user.username, show_user_path(job.organization.user.username)), {style: 'width:10em'}]
-					end
+          g.column name: 'User' do |job|
+            [link_to(job.organization.user.username, show_user_path(job.organization.user.username)), {style: 'width:10em'}]
+          end
 
-					g.column name: 'State' do |job|
-						job.state
-					end
+          g.column name: 'State' do |job|
+            job.state
+          end
 
-					g.column name: 'Created at', attribute: 'created_at' do |job|
-						[job.created_at, {style:'text-align:center'}]
-					end
+          g.column name: 'Created at', attribute: 'created_at' do |job|
+            [job.created_at, {style:'text-align:center'}]
+          end
 
-					g.column name: 'Begun at', attribute: 'begun_at' do |job|
-						[job.begun_at || '-', {style:'text-align:center'}]
-					end
+          g.column name: 'Begun at', attribute: 'begun_at' do |job|
+            [job.begun_at || '-', {style:'text-align:center'}]
+          end
 
-					g.column name: 'Ended at', attribute: 'ended_at' do |job|
-						[job.ended_at || '-', {style:'text-align:center'}]
-					end
+          g.column name: 'Ended at', attribute: 'ended_at' do |job|
+            [job.ended_at || '-', {style:'text-align:center'}]
+          end
 
-					g.column name: 'Progress' do |job|
-						[job.num_items.nil? ? '-' : "#{job.num_dones} / #{job.num_items}", {style:'text-align:center'}]
-					end
+          g.column name: 'Progress' do |job|
+            [job.num_items.nil? ? '-' : "#{job.num_dones} / #{job.num_items}", {style:'text-align:center'}]
+          end
 
-					g.column name: '# Messages' do |job|
-						[job.messages.length, {style:'text-align:right'}]
-					end
+          g.column name: '# Messages' do |job|
+            [job.messages.length, {style:'text-align:right'}]
+          end
 
-				end
-			-%>
-		</fieldset>
-	<% end %>
+        end
+      -%>
+    </fieldset>
+  <% end %>
 
 </section>
 
 <script>
-	new ClipboardJS('#clipboard-btn')
+  new ClipboardJS('#clipboard-btn')
 </script>

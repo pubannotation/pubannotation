@@ -1,43 +1,43 @@
 <table style="font-size:smaller">
-	<%
-		docs_counts = sourcedb_counts(@project)
-		sourcedbs = docs_counts.keys.sort{|a, b| docs_counts[b] <=> docs_counts[a]}
-	%>
-	<% sourcedbs.each do |sourcedb| -%>
-		<% next if docs_counts[sourcedb] == 0 %>
-		<% next unless @project || Doc::SOURCEDBS.include?(sourcedb) %>
-		<%
-			index_path, open_path = if @project.nil?
-				[doc_sourcedb_index_path(sourcedb), open_docs_path]
-			else
-				[index_project_sourcedb_docs_path(@project.name, sourcedb), open_project_docs_path(@project.name)]
-			end
-		%>
-		<tr>
-			<td style="width:8em"><%= link_to sourcedb, index_path, style: "display:block" %></td>
-			<td style="width:7em;text-align: right"><%= link_to number_to_human(docs_counts[sourcedb], units: {thousand:'K', million:'M', billion:'G', trillion:'T'}), index_path, style: "display:block" %></td>
-			<!-- <td style="width:5em;text-align: right"><%= number_to_human(docs_count, units: {thousand:'K', million:'M', billion:'G', trillion:'T'}) %></td> -->
-			<td style="text-align: right">
-				<%= form_tag(index_path, method: 'get', style:"display:inline-block") do -%>
-					<%= hidden_field_tag :sourcedb, sourcedb %>
-					<%= text_field_tag :keywords, nil,
-						style: "width:6em",
-						# placeholder: t('views.shared.keywords'),
-						placeholder: 'keywords',
-						minlength: 2,
-						required: true -%>
-					<button type="submit" class="short_button" title="Search"><i class='fa fa-search' aria-hidden='true'></i></button>
-				<% end %>
-				<%= form_tag(open_path, method: 'get')  do -%>
-					<%= hidden_field_tag :sourcedb, sourcedb %>
-					<%= text_field_tag :sourceid, nil,
-						style: "width:6em",
-						# placeholder: t('activerecord.attributes.doc.sourceid')
-						placeholder: 'source ID'
-					-%>
-					<button type="submit" class="short_button" title="Open"><i class="fa fa-file-text-o" aria-hidden="true"></i></button>
-				<% end %>
-			</td>
-		</tr>
-	<% end -%>
+  <%
+    docs_counts = sourcedb_counts(@project)
+    sourcedbs = docs_counts.keys.sort{|a, b| docs_counts[b] <=> docs_counts[a]}
+  %>
+  <% sourcedbs.each do |sourcedb| -%>
+    <% next if docs_counts[sourcedb] == 0 %>
+    <% next unless @project || Doc::SOURCEDBS.include?(sourcedb) %>
+    <%
+      index_path, open_path = if @project.nil?
+        [doc_sourcedb_index_path(sourcedb), open_docs_path]
+      else
+        [index_project_sourcedb_docs_path(@project.name, sourcedb), open_project_docs_path(@project.name)]
+      end
+    %>
+    <tr>
+      <td style="width:8em"><%= link_to sourcedb, index_path, style: "display:block" %></td>
+      <td style="width:7em;text-align: right"><%= link_to number_to_human(docs_counts[sourcedb], units: {thousand:'K', million:'M', billion:'G', trillion:'T'}), index_path, style: "display:block" %></td>
+      <!-- <td style="width:5em;text-align: right"><%= number_to_human(docs_count, units: {thousand:'K', million:'M', billion:'G', trillion:'T'}) %></td> -->
+      <td style="text-align: right">
+        <%= form_tag(index_path, method: 'get', style:"display:inline-block") do -%>
+          <%= hidden_field_tag :sourcedb, sourcedb %>
+          <%= text_field_tag :keywords, nil,
+            style: "width:6em",
+            # placeholder: t('views.shared.keywords'),
+            placeholder: 'keywords',
+            minlength: 2,
+            required: true -%>
+          <button type="submit" class="short_button" title="Search"><i class='fa fa-search' aria-hidden='true'></i></button>
+        <% end %>
+        <%= form_tag(open_path, method: 'get')  do -%>
+          <%= hidden_field_tag :sourcedb, sourcedb %>
+          <%= text_field_tag :sourceid, nil,
+            style: "width:6em",
+            # placeholder: t('activerecord.attributes.doc.sourceid')
+            placeholder: 'source ID'
+          -%>
+          <button type="submit" class="short_button" title="Open"><i class="fa fa-file-text-o" aria-hidden="true"></i></button>
+        <% end %>
+      </td>
+    </tr>
+  <% end -%>
 </table>

@@ -1,39 +1,39 @@
 <table>
 <tr>
-	<th rowspan="2" style="width:10em"></th>
-	<th colspan="2">Study count</th>
-	<th colspan="2">Reference count</th>
-	<th rowspan="2" style="width:4em">Prec.</th>
-	<th rowspan="2" style="width:4em">Recall</th>
-	<th rowspan="2" style="width:4em">F-score</th>
+  <th rowspan="2" style="width:10em"></th>
+  <th colspan="2">Study count</th>
+  <th colspan="2">Reference count</th>
+  <th rowspan="2" style="width:4em">Prec.</th>
+  <th rowspan="2" style="width:4em">Recall</th>
+  <th rowspan="2" style="width:4em">F-score</th>
 </tr>
 <tr>
 
-	<th style="width:4em">all</th>
-	<th style="width:4em">match</th>
-	<th style="width:4em">all</th>
-	<th style="width:4em">match</th>
+  <th style="width:4em">all</th>
+  <th style="width:4em">match</th>
+  <th style="width:4em">all</th>
+  <th style="width:4em">match</th>
 </tr>
 <%
-	elements = (counts[:study].keys + counts[:reference].keys).uniq.sort
-	elements.delete(:All)
-	elements.push(:All)
+  elements = (counts[:study].keys + counts[:reference].keys).uniq.sort
+  elements.delete(:All)
+  elements.push(:All)
 %>
 <% elements.each do |e| %>
 <tr>
-	<th><%= e %></th>
-	<td style="text-align:right"><%= counts[:study][e].present? ? number_with_delimiter(counts[:study][e], :delimiter => ',') : 0 %></td>
-	<td style="text-align:right"><%= counts[:matched_study][e].present? ? number_with_delimiter('%.02f' % counts[:matched_study][e], :delimiter => ',') : 0 %></td>
-	<td style="text-align:right"><%= counts[:reference][e].present? ? number_with_delimiter(counts[:reference][e], :delimiter => ','): 0 %></td>
-	<td style="text-align:right"><%= counts[:matched_reference][e].present? ? number_with_delimiter('%.02f' % counts[:matched_reference][e], :delimiter => ',') : 0 %></td>
-	<td style="text-align:right"><%= measures[:precision][e].present? ? '%.02f' % measures[:precision][e] : '-' %></td>
-	<td style="text-align:right"><%= measures[:recall][e].present? ? '%.02f' % measures[:recall][e] : '-' %></td>
-	<td style="text-align:right"><%= measures[:fscore][e].present? ? '%.02f' % measures[:fscore][e] : '-' %></td>
-	<td>
-		<%= link_to('TPs', evaluation_index_tps_path(@evaluation, {type: type, element:e, sort_key: 'text'}), class: 'button', title: 'True positives') %>
-		<%= link_to('FPs', evaluation_index_fps_path(@evaluation, {type: type, element:e, sort_key: 'text'}), class: 'button', title: 'False positives') %>
-		<%= link_to('FNs', evaluation_index_fns_path(@evaluation, {type: type, element:e, sort_key: 'text'}), class: 'button', title: 'False negatives') %>
-	</td>
+  <th><%= e %></th>
+  <td style="text-align:right"><%= counts[:study][e].present? ? number_with_delimiter(counts[:study][e], :delimiter => ',') : 0 %></td>
+  <td style="text-align:right"><%= counts[:matched_study][e].present? ? number_with_delimiter('%.02f' % counts[:matched_study][e], :delimiter => ',') : 0 %></td>
+  <td style="text-align:right"><%= counts[:reference][e].present? ? number_with_delimiter(counts[:reference][e], :delimiter => ','): 0 %></td>
+  <td style="text-align:right"><%= counts[:matched_reference][e].present? ? number_with_delimiter('%.02f' % counts[:matched_reference][e], :delimiter => ',') : 0 %></td>
+  <td style="text-align:right"><%= measures[:precision][e].present? ? '%.02f' % measures[:precision][e] : '-' %></td>
+  <td style="text-align:right"><%= measures[:recall][e].present? ? '%.02f' % measures[:recall][e] : '-' %></td>
+  <td style="text-align:right"><%= measures[:fscore][e].present? ? '%.02f' % measures[:fscore][e] : '-' %></td>
+  <td>
+    <%= link_to('TPs', evaluation_index_tps_path(@evaluation, {type: type, element:e, sort_key: 'text'}), class: 'button', title: 'True positives') %>
+    <%= link_to('FPs', evaluation_index_fps_path(@evaluation, {type: type, element:e, sort_key: 'text'}), class: 'button', title: 'False positives') %>
+    <%= link_to('FNs', evaluation_index_fns_path(@evaluation, {type: type, element:e, sort_key: 'text'}), class: 'button', title: 'False negatives') %>
+  </td>
 </tr>
 <% end %>
 </table>

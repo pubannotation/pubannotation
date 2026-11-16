@@ -1,25 +1,25 @@
 <a href="https://www.pubannotation.org/"><%= image_tag 'logo.png', alt: 'Logo', id: 'logo' %></a>
 <div class="corner-menu">
-	<div class="section">
-		<%= language_switch_helper.html_safe %>
-	</div>
+  <div class="section">
+    <%= language_switch_helper.html_safe %>
+  </div>
 
-	<div class="section">
-		<ul>
-			<li><%= render 'devise/menu/registration_items' %></li>
-			<li><%= render 'devise/menu/login_items' %></li>
-		</ul>
-	</div>
+  <div class="section">
+    <ul>
+      <li><%= render 'devise/menu/registration_items' %></li>
+      <li><%= render 'devise/menu/login_items' %></li>
+    </ul>
+  </div>
 </div>
 
 <nav class="main-nav">
 <ul>
-	<li><%= link_to "Repository", home_path %></li>
-	<li><%= link_to "Search", sparql_path %></li>
-	<li><%= link_to "Annotators", annotators_path %></li>
-	<li><%= link_to "Editors", editors_path %></li>
-	<li><%= link_to "Evaluators", evaluators_path %></li>
+  <li><%= link_to "Repository", home_path %></li>
+  <li><%= link_to "Search", sparql_path %></li>
+  <li><%= link_to "Annotators", annotators_path %></li>
+  <li><%= link_to "Editors", editors_path %></li>
+  <li><%= link_to "Evaluators", evaluators_path %></li>
   <li><%= link_to 'NEWS', news_notifications_path -%></li>
-	<li><a href="https://www.pubannotation.org/docs/intro">Documentation</a></li>
+  <li><a href="https://www.pubannotation.org/docs/intro">Documentation</a></li>
 </ul>
 </nav>

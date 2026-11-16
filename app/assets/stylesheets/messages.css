@@ -2,32 +2,32 @@
  /* They will automatically be included in application.css. */
 
 .text_alignment_table {
-	td {
-		white-space: normal;
-		overflow-wrap: anywhere;
-	}
+  td {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
 
-	tr.common_text {
-		background-color: #bdf;
-	}
+  tr.common_text {
+    background-color: #bdf;
+  }
 
-	tr.aligned_texts {
-		background-color: #bfd;
-	}
+  tr.aligned_texts {
+    background-color: #bfd;
+  }
 
-	tr.disparate_texts {
-		background-color: #fbb;
-	}
+  tr.disparate_texts {
+    background-color: #fbb;
+  }
 
-	td.text_alignment_common {
-		text-align: center;
-	}
+  td.text_alignment_common {
+    text-align: center;
+  }
 
-	td.text_alignment_left {
-		text-align: right;
-	}
+  td.text_alignment_left {
+    text-align: right;
+  }
 
-	td.text_alignment_right {
-		text-align: left;
-	}
+  td.text_alignment_right {
+    text-align: left;
+  }
 }

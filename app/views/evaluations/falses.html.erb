@@ -1,32 +1,32 @@
 <%= render :partial => 'shared/textae_css_js'-%>
 <%
-	docspec  = params[:sourcedb] + ':' + params[:sourceid]
-	type = params[:type]
-	element = params[:element]
+  docspec  = params[:sourcedb] + ':' + params[:sourceid]
+  type = params[:type]
+  element = params[:element]
 %>
 <h1>
-	False cases for <%= docspec %>
-	<% unless type.nil? %>
-		(
-		<%= "'#{element}'-type" unless element.nil? %>
-		<%= type %>s
-		)
-	<% end %>
+  False cases for <%= docspec %>
+  <% unless type.nil? %>
+    (
+    <%= "'#{element}'-type" unless element.nil? %>
+    <%= type %>s
+    )
+  <% end %>
 </h1>
 <% if @fps && !@fps.empty?%>
-	<section>
-		<h2>False positives</h2>
-		<% @fps.each do |fp| %>
-			<%= render partial: 'visualize_false', locals: {pair:fp} %>
-		<% end %>
-	</section>
+  <section>
+    <h2>False positives</h2>
+    <% @fps.each do |fp| %>
+      <%= render partial: 'visualize_false', locals: {pair:fp} %>
+    <% end %>
+  </section>
 <% end %>
 
 <% if @fns && !@fns.empty?%>
-	<section>
-		<h2>False nagatives</h2>
-		<% @fns.each do |fn| %>
-			<%= render partial: 'visualize_false', locals: {pair:fn} %>
-		<% end %>
-	</section>
+  <section>
+    <h2>False nagatives</h2>
+    <% @fns.each do |fn| %>
+      <%= render partial: 'visualize_false', locals: {pair:fn} %>
+    <% end %>
+  </section>
 <% end %>

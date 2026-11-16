@@ -1,7 +1,7 @@
 <% content_for :path do %>
-	> <%= link_to t('views.paths.home'), home_path %>
-	> <%= link_to t('views.users.sign_in'), new_user_session_path %> 
-	> <%= t('views.users.change_your_password') %>
+  > <%= link_to t('views.paths.home'), home_path %>
+  > <%= link_to t('views.users.sign_in'), new_user_session_path %> 
+  > <%= t('views.users.change_your_password') %>
 <% end %>
 
 <section>
@@ -14,12 +14,12 @@
 
   <table>
   <tr>
-  	<th><%= f.label :password, t('devise.passwords.new_password') %></th>
-  	<td><%= f.password_field :password %></td>
+    <th><%= f.label :password, t('devise.passwords.new_password') %></th>
+    <td><%= f.password_field :password %></td>
   </tr>
   <tr>
-  	<th><%= f.label :password_confirmation, t('devise.passwords.confirm_new_password') %></th>
-  	<td><%= f.password_field :password_confirmation %></td>
+    <th><%= f.label :password_confirmation, t('devise.passwords.confirm_new_password') %></th>
+    <td><%= f.password_field :password_confirmation %></td>
   </tr>
   <tr><td colspan="2" style="text-align:center"><%= f.submit t('devise.passwords.change_my_password') %></td></tr>
   </table>

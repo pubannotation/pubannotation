@@ -2,54 +2,54 @@
 <%= t('views.shared.annotation').pluralize.capitalize.html_safe %>
 
 <span class='tab-bar'>
-	<%=
-		link_to_unless_current 'TAB', params.permit(:controller, :action).merge(controller: :annotations, action: :project_doc_annotations_index), :class => 'tab inactive_tab', id: 'annotations_view', title: 'table' do
-			content_tag :span, 'TAB', :class => 'tab active_tab', title: 'table'
-		end
-	%>
+  <%=
+    link_to_unless_current 'TAB', params.permit(:controller, :action).merge(controller: :annotations, action: :project_doc_annotations_index), :class => 'tab inactive_tab', id: 'annotations_view', title: 'table' do
+      content_tag :span, 'TAB', :class => 'tab active_tab', title: 'table'
+    end
+  %>
 
-	<% if @project.present? %>
-		<%=
-			link_to 'TSV', params.permit(:controller, :action).merge(controller: :annotations, action: :project_doc_annotations_index, format: :tsv), :class => 'tab inactive_tab', id: 'annotations_tsv', title: 'tsv'
-		%>
-		<%=
-			link_to 'DIC', params.permit(:controller, :action).merge(controller: :annotations, action: :project_doc_annotations_index, format: :dic), :class => 'tab inactive_tab', id: 'annotations_dic', title: 'dic'
-		%>
-	<% end %>
+  <% if @project.present? %>
+    <%=
+      link_to 'TSV', params.permit(:controller, :action).merge(controller: :annotations, action: :project_doc_annotations_index, format: :tsv), :class => 'tab inactive_tab', id: 'annotations_tsv', title: 'tsv'
+    %>
+    <%=
+      link_to 'DIC', params.permit(:controller, :action).merge(controller: :annotations, action: :project_doc_annotations_index, format: :dic), :class => 'tab inactive_tab', id: 'annotations_dic', title: 'dic'
+    %>
+  <% end %>
 
-	<%=
-		link_to 'JSON', params.permit(:controller, :action).merge(controller: :annotations, action: :project_doc_annotations_index, format: :json), :class => 'tab inactive_tab', id: 'annotations_json', title: 'json'
-	%>
+  <%=
+    link_to 'JSON', params.permit(:controller, :action).merge(controller: :annotations, action: :project_doc_annotations_index, format: :json), :class => 'tab inactive_tab', id: 'annotations_json', title: 'json'
+  %>
 
-	<% if @project.present? -%>
-		<% Editor.accessibles(current_user).each do |editor| -%>
-			<%= link_to_editor(@project, editor, annotations_url) %>
-		<% end %>
-	<% else -%>
-		<%=
-			link_to_unless_current 'ListView', annotations_url + '/visualize', :class => 'tab inactive_tab', id: 'annotations_textae', title: 'List view of annotations' do
-				content_tag :span, 'TextAE', :class => 'tab active_tab', title: 'List view of annotations'
-			end
-		%>
-		<%=
-			link_to_unless_current 'MergeView', annotations_url + '/merge_view', :class => 'tab inactive_tab', id: 'annotations_textae', title: 'Merged view of annotations' do
-				content_tag :span, 'MergeView', :class => 'tab active_tab', title: 'Merged view of annotations'
-			end
-		%>
-	<% end -%>
+  <% if @project.present? -%>
+    <% Editor.accessibles(current_user).each do |editor| -%>
+      <%= link_to_editor(@project, editor, annotations_url) %>
+    <% end %>
+  <% else -%>
+    <%=
+      link_to_unless_current 'ListView', annotations_url + '/visualize', :class => 'tab inactive_tab', id: 'annotations_textae', title: 'List view of annotations' do
+        content_tag :span, 'TextAE', :class => 'tab active_tab', title: 'List view of annotations'
+      end
+    %>
+    <%=
+      link_to_unless_current 'MergeView', annotations_url + '/merge_view', :class => 'tab inactive_tab', id: 'annotations_textae', title: 'Merged view of annotations' do
+        content_tag :span, 'MergeView', :class => 'tab active_tab', title: 'Merged view of annotations'
+      end
+    %>
+  <% end -%>
 
 </span>
 
 <% if @project.present? && @project.editable?(current_user) && (@project.get_denotations_count(@doc) > 0 || @project.get_blocks_count(@doc) > 0) && params[:sourceid].present? -%>
-	<% destroy_path = if params[:begin].present?
-			destroy_annotations_in_span_project_sourcedb_sourceid_docs_path
-		else
-			destroy_annotations_project_sourcedb_sourceid_docs_path
-		end
-	-%>
-	<span class='tab-bar'></span>
-	<span class='tab-bar'>
-		<%= button_destroy destroy_path, 'Delete all the annotations' %>
-	</span>
+  <% destroy_path = if params[:begin].present?
+      destroy_annotations_in_span_project_sourcedb_sourceid_docs_path
+    else
+      destroy_annotations_project_sourcedb_sourceid_docs_path
+    end
+  -%>
+  <span class='tab-bar'></span>
+  <span class='tab-bar'>
+    <%= button_destroy destroy_path, 'Delete all the annotations' %>
+  </span>
 <% end %>
 </h2>

@@ -1,19 +1,19 @@
 <% content_for :javascript do %>
-	<%= javascript_include_tag 'reloadJobsTable' %>
+  <%= javascript_include_tag 'reloadJobsTable' %>
 <% end %>
 
 <% content_for :path do -%>
-	> <%= link_to t('views.paths.home'), home_path -%>
-	> <%= link_to 'Media', media_path -%>
-	> Jobs
+  > <%= link_to t('views.paths.home'), home_path -%>
+  > <%= link_to 'Media', media_path -%>
+  > Jobs
 <% end -%>
 
 <section>
-	<h2>Media Jobs</h2>
+  <h2>Media Jobs</h2>
 
-	<%= link_to 'Clear finished jobs', media_clear_finished_jobs_path, method: :delete, data: { confirm: t('controllers.shared.confirm_delete') }, class: :button %>
+  <%= link_to 'Clear finished jobs', media_clear_finished_jobs_path, method: :delete, data: { confirm: t('controllers.shared.confirm_delete') }, class: :button %>
 
-	<%= turbo_frame_tag "jobs_table", data: { refresh_url: latest_jobs_table_media_jobs_path }, target: "_top" do %>
-		<%= render partial: 'jobs_table', locals: { jobs: @jobs, message_counts: @job_message_counts, reload_necessary: @reload_necessary } %>
-	<% end %>
+  <%= turbo_frame_tag "jobs_table", data: { refresh_url: latest_jobs_table_media_jobs_path }, target: "_top" do %>
+    <%= render partial: 'jobs_table', locals: { jobs: @jobs, message_counts: @job_message_counts, reload_necessary: @reload_necessary } %>
+  <% end %>
 </section>

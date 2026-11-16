@@ -1,17 +1,17 @@
 <table style="width:100%">
 <tr>
-	<td class="text">
-		<% if @span %>
-			<div id="body" class="with_hilight"><%= body_with_highlighted_span(@doc.body, @span) %></div>
-		<% elsif @speech_segment_spans.present? %>
-			<div id="body"><%= body_with_speech_segments(@doc.body, @speech_segment_spans) %></div>
-		<% else %>
-			<div id="body"><%= @doc.body %></div>
-		<% end %>
-	</td>
+  <td class="text">
+    <% if @span %>
+      <div id="body" class="with_hilight"><%= body_with_highlighted_span(@doc.body, @span) %></div>
+    <% elsif @speech_segment_spans.present? %>
+      <div id="body"><%= body_with_speech_segments(@doc.body, @speech_segment_spans) %></div>
+    <% else %>
+      <div id="body"><%= @doc.body %></div>
+    <% end %>
+  </td>
 </tr>
 <tr>
-	<td id="linkSpace"></td>
+  <td id="linkSpace"></td>
 </tr>
 </table>
 
@@ -19,5 +19,5 @@
 <%= link_to 'Segments', doc_segments_path(@doc), class: 'button' if segments_listable?(@doc) -%>
 
 <% content_for :javascript do -%>
-	<%= javascript_include_tag 'docs', defer: true -%>
+  <%= javascript_include_tag 'docs', defer: true -%>
 <% end -%>

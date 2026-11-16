@@ -1,87 +1,87 @@
 class UploadDocsJob < ApplicationJob
-	include UseJobRecordConcern
-	include UploadFilesConcern
+  include UseJobRecordConcern
+  include UploadFilesConcern
 
-	queue_as :low_priority
+  queue_as :low_priority
 
-	def perform(project, filepath, options)
-		dirpath = prepare_upload_files(filepath)
+  def perform(project, filepath, options)
+    dirpath = prepare_upload_files(filepath)
 
-		all_txt_files  = "*.txt"
-		all_json_files  = "*.json"
-		all_applicable_files = "*.{json,txt}"
+    all_txt_files  = "*.txt"
+    all_json_files  = "*.json"
+    all_applicable_files = "*.{json,txt}"
 
-		file_count = Dir.glob(File.join(dirpath, '**', all_applicable_files)).count { |file| File.file?(file) }
+    file_count = Dir.glob(File.join(dirpath, '**', all_applicable_files)).count { |file| File.file?(file) }
 
-		prepare_progress_record(file_count)
+    prepare_progress_record(file_count)
 
-		username = project.user
-		mode = options[:mode].to_sym
-		num_dones = 0
-		num_updated_or_skipped = 0
-		@added_doc_ids = []
+    username = project.user
+    mode = options[:mode].to_sym
+    num_dones = 0
+    num_updated_or_skipped = 0
+    @added_doc_ids = []
 
-		Dir.glob(File.join(dirpath, '**', all_applicable_files)) do |filepath|
-			# Check if it's a file and not a directory (glob should return only files, but just to be safe)
-			if File.file?(filepath)
-				begin
-					ext = File.extname(filepath)
-					hdoc = case ext
-						when '.json'
-							json_string = File.read(filepath)
-							JSON.parse(json_string, symbolize_names:true).select{|k,v| [:sourcedb, :sourceid, :text, :source].include? k}
-						when '.txt'
-							sourcedb, sourceid = if options.has_key? :sourcedb
-								[options[:sourcedb], options[:sourceid]]
-							else
-								DocumentImportNormalizer.parse_filename(File.basename(filepath, ext))
-							end
+    Dir.glob(File.join(dirpath, '**', all_applicable_files)) do |filepath|
+      # Check if it's a file and not a directory (glob should return only files, but just to be safe)
+      if File.file?(filepath)
+        begin
+          ext = File.extname(filepath)
+          hdoc = case ext
+            when '.json'
+              json_string = File.read(filepath)
+              JSON.parse(json_string, symbolize_names:true).select{|k,v| [:sourcedb, :sourceid, :text, :source].include? k}
+            when '.txt'
+              sourcedb, sourceid = if options.has_key? :sourcedb
+                [options[:sourcedb], options[:sourceid]]
+              else
+                DocumentImportNormalizer.parse_filename(File.basename(filepath, ext))
+              end
 
-							{
-								text: File.read(filepath),
-								sourcedb: sourcedb,
-								sourceid: sourceid
-							}
-					end
+              {
+                text: File.read(filepath),
+                sourcedb: sourcedb,
+                sourceid: sourceid
+              }
+          end
 
-					hdoc = DocumentImportNormalizer.normalize!(hdoc, username, options[:root] == true)
-					same_doc = Doc.find_by sourcedb: hdoc[:sourcedb], sourceid: hdoc[:sourceid]
-					if same_doc.present?
-						if mode == :update
-							error_messages = same_doc.revise(hdoc)
-							raise RuntimeError, error_messages.join("\n") if error_messages.present?
-						end
-						num_updated_or_skipped += 1
-						unless project.has_doc?(same_doc)
-							project.add_doc!(same_doc)
-							@added_doc_ids << same_doc.id
-						end
-					else
-						doc = DocumentImporter.store_hdoc!(hdoc)
-						project.add_doc!(doc)
-						@added_doc_ids << doc.id
-					end
-					num_dones += 1
-				rescue => e
-					raise e if @job.nil?
-					@job.add_message body: "[#{filepath}] #{e.message}"
-				ensure
-					@job&.update_attribute(:num_dones, num_dones)
-					check_suspend_flag
-				end
-			end
-		end
+          hdoc = DocumentImportNormalizer.normalize!(hdoc, username, options[:root] == true)
+          same_doc = Doc.find_by sourcedb: hdoc[:sourcedb], sourceid: hdoc[:sourceid]
+          if same_doc.present?
+            if mode == :update
+              error_messages = same_doc.revise(hdoc)
+              raise RuntimeError, error_messages.join("\n") if error_messages.present?
+            end
+            num_updated_or_skipped += 1
+            unless project.has_doc?(same_doc)
+              project.add_doc!(same_doc)
+              @added_doc_ids << same_doc.id
+            end
+          else
+            doc = DocumentImporter.store_hdoc!(hdoc)
+            project.add_doc!(doc)
+            @added_doc_ids << doc.id
+          end
+          num_dones += 1
+        rescue => e
+          raise e if @job.nil?
+          @job.add_message body: "[#{filepath}] #{e.message}"
+        ensure
+          @job&.update_attribute(:num_dones, num_dones)
+          check_suspend_flag
+        end
+      end
+    end
 
-		@job&.add_message body: "#{num_updated_or_skipped} docs were #{mode == :update ? 'updated' : 'skipped'}." if num_updated_or_skipped > 0
-	ensure
-		if @added_doc_ids.present?
-			Elasticsearch::IndexQueue.add_project_memberships(doc_ids: @added_doc_ids, project_id: project.id)
-			Elasticsearch::IndexQueue.schedule_processing
-		end
-		remove_upload_files(filepath, dirpath)
-	end
+    @job&.add_message body: "#{num_updated_or_skipped} docs were #{mode == :update ? 'updated' : 'skipped'}." if num_updated_or_skipped > 0
+  ensure
+    if @added_doc_ids.present?
+      Elasticsearch::IndexQueue.add_project_memberships(doc_ids: @added_doc_ids, project_id: project.id)
+      Elasticsearch::IndexQueue.schedule_processing
+    end
+    remove_upload_files(filepath, dirpath)
+  end
 
-	def job_name
-		"Upload documents"
-	end
+  def job_name
+    "Upload documents"
+  end
 end

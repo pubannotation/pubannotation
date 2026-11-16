@@ -1,21 +1,21 @@
 <% content_for :path do -%>
-	> <%= link_to t('views.paths.home'), home_path -%>
-	> <%= link_to 'Media', media_path -%>
-	> new
+  > <%= link_to t('views.paths.home'), home_path -%>
+  > <%= link_to 'Media', media_path -%>
+  > new
 <% end -%>
 
 <section>
-	<h2>Upload a single media file</h2>
-	<%= render 'form' %>
+  <h2>Upload a single media file</h2>
+  <%= render 'form' %>
 </section>
 
 <section>
-	<h2>Bulk upload via ZIP</h2>
-	<p><%= link_to 'View Jobs', media_jobs_path %></p>
-	<ul>
-		<li>Upload a ZIP file containing multiple media files.</li>
-		<li>Each filename must be in the form <i>sourcedb-sourceid.ext</i> (e.g. PMC-12345.jpg).</li>
-		<li>Files without an extension will be skipped.</li>
-	</ul>
-	<%= render 'bulk_upload_form' %>
+  <h2>Bulk upload via ZIP</h2>
+  <p><%= link_to 'View Jobs', media_jobs_path %></p>
+  <ul>
+    <li>Upload a ZIP file containing multiple media files.</li>
+    <li>Each filename must be in the form <i>sourcedb-sourceid.ext</i> (e.g. PMC-12345.jpg).</li>
+    <li>Files without an extension will be skipped.</li>
+  </ul>
+  <%= render 'bulk_upload_form' %>
 </section>

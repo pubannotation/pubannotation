@@ -2,39 +2,39 @@
 <%= t('views.shared.annotation').pluralize.capitalize.html_safe %>
 
 <span class='tab-bar'>
-	<%=
-		link_to_unless_current 'TAB', params.permit(:controller, :action, :projects).merge(controller: :annotations, action: :doc_annotations_index), :class => 'tab inactive_tab', id: 'annotations_view', title: 'table' do
-			content_tag :span, 'TAB', :class => 'tab active_tab', title: 'table'
-		end
-	%>
+  <%=
+    link_to_unless_current 'TAB', params.permit(:controller, :action, :projects).merge(controller: :annotations, action: :doc_annotations_index), :class => 'tab inactive_tab', id: 'annotations_view', title: 'table' do
+      content_tag :span, 'TAB', :class => 'tab active_tab', title: 'table'
+    end
+  %>
 
-	<%=
-		link_to 'JSON', params.permit(:controller, :action, :projects).merge(controller: :annotations, action: :doc_annotations_index, format: :json), :class => 'tab inactive_tab', id: 'annotations_json', title: 'json'
-	%>
+  <%=
+    link_to 'JSON', params.permit(:controller, :action, :projects).merge(controller: :annotations, action: :doc_annotations_index, format: :json), :class => 'tab inactive_tab', id: 'annotations_json', title: 'json'
+  %>
 
-	<%=
-		link_to_unless_current 'ListView', params.permit(:controller, :action, :projects).merge(controller: :annotations, action: :doc_annotations_list_view), :class => 'tab inactive_tab', id: 'annotations_textae', title: 'List view of annotations' do
-			content_tag :span, 'ListView', :class => 'tab active_tab', title: 'List view of annotations'
-		end
-	%>
+  <%=
+    link_to_unless_current 'ListView', params.permit(:controller, :action, :projects).merge(controller: :annotations, action: :doc_annotations_list_view), :class => 'tab inactive_tab', id: 'annotations_textae', title: 'List view of annotations' do
+      content_tag :span, 'ListView', :class => 'tab active_tab', title: 'List view of annotations'
+    end
+  %>
 
-	<%=
-		link_to_unless_current 'MergeView', params.permit(:controller, :action, :projects).merge(controller: :annotations, action: :doc_annotations_merge_view), :class => 'tab inactive_tab', id: 'annotations_textae', title: 'Merged view of annotations' do
-			content_tag :span, 'MergeView', :class => 'tab active_tab', title: 'Merged view of annotations'
-		end
-	%>
+  <%=
+    link_to_unless_current 'MergeView', params.permit(:controller, :action, :projects).merge(controller: :annotations, action: :doc_annotations_merge_view), :class => 'tab inactive_tab', id: 'annotations_textae', title: 'Merged view of annotations' do
+      content_tag :span, 'MergeView', :class => 'tab active_tab', title: 'Merged view of annotations'
+    end
+  %>
 
 </span>
 
 <% if @project.present? && @project.editable?(current_user) && @annotations[:denotations].present? && params[:sourceid].present? -%>
-	<% destroy_path = if params[:begin].present?
-			destroy_annotations_in_span_project_sourcedb_sourceid_docs_path
-		else
-			destroy_annotations_project_sourcedb_sourceid_docs_path
-		end
-	-%>
-	<%= form_tag(destroy_path, method: :delete, style: 'display:inline') do%>
-		<%= submit_tag t('views.shared.delete_all'), :data => { confirm: t('views.annotations.index.confirm_destroy_all', :class => 'control button') } %>
-	<% end %>
+  <% destroy_path = if params[:begin].present?
+      destroy_annotations_in_span_project_sourcedb_sourceid_docs_path
+    else
+      destroy_annotations_project_sourcedb_sourceid_docs_path
+    end
+  -%>
+  <%= form_tag(destroy_path, method: :delete, style: 'display:inline') do%>
+    <%= submit_tag t('views.shared.delete_all'), :data => { confirm: t('views.annotations.index.confirm_destroy_all', :class => 'control button') } %>
+  <% end %>
 <% end %>
 </h2>

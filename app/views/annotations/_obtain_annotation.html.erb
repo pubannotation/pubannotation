@@ -1,61 +1,61 @@
 <%= form_tag annotations_obtain_path, multipart: true do %>
-	<table style="border-color:#FFFFFF">
-		<tr>
-			<th>Choose a predefined annotator</th>
-			<td>
-				<%= select_tag(:annotator, options_for_select(annotator_options), prompt: 'choose one', required: true) %>
-			</td>
-		</tr>
+  <table style="border-color:#FFFFFF">
+    <tr>
+      <th>Choose a predefined annotator</th>
+      <td>
+        <%= select_tag(:annotator, options_for_select(annotator_options), prompt: 'choose one', required: true) %>
+      </td>
+    </tr>
 
-		<% unless params[:sourceid].present? %>
-		<tr>
-			<th>
-				and, specify the documents<br>to be annotated<br>
-				* <i>leave it blank to annotate<br>all the documents in the project</i>
-			</th>
-			<td>
-				<table>
-					<tr>
-						<th style="width:6em"><%= t('activerecord.attributes.doc.sourcedb')%></th>
-						<td style="width:17em"><%= select_tag(:sourcedb, options_for_select(Doc::SOURCEDBS)) -%></td>
-					</tr>
-					<tr>
-						<th><%= t('activerecord.attributes.doc.sourceid')%></th>
-						<td>
-							<p>Specify source IDs below:</p>
-							<%= text_area_tag(:ids, nil, :placeholder => t('activerecord.placeholders.doc.ids')) %>
-							<p style="text-align: center">--- or ---</p>
-							<p>Upload a text file with source IDs (one ID at a line):</p>
-							<%= file_field_tag 'upfile', accept: '.txt' -%>
-						</td>
-					</tr>
-				</table>
-			</td>
-		</tr>
-		<% end %>
+    <% unless params[:sourceid].present? %>
+    <tr>
+      <th>
+        and, specify the documents<br>to be annotated<br>
+        * <i>leave it blank to annotate<br>all the documents in the project</i>
+      </th>
+      <td>
+        <table>
+          <tr>
+            <th style="width:6em"><%= t('activerecord.attributes.doc.sourcedb')%></th>
+            <td style="width:17em"><%= select_tag(:sourcedb, options_for_select(Doc::SOURCEDBS)) -%></td>
+          </tr>
+          <tr>
+            <th><%= t('activerecord.attributes.doc.sourceid')%></th>
+            <td>
+              <p>Specify source IDs below:</p>
+              <%= text_area_tag(:ids, nil, :placeholder => t('activerecord.placeholders.doc.ids')) %>
+              <p style="text-align: center">--- or ---</p>
+              <p>Upload a text file with source IDs (one ID at a line):</p>
+              <%= file_field_tag 'upfile', accept: '.txt' -%>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <% end %>
 
-		<tr>
-			<th>Choose mode</th>
-			<td>
-				For each document, when there is existing annotation, the obtained annotations will
-				<ul>
-					<li><%= radio_button_tag :mode, :replace, checked: true %><%= label_tag :mode_replace,
-						'<span style="font-weight:bold">REPLACE</span> the existing ones,'.html_safe %></li>
-					<li><%= radio_button_tag :mode, :add %><%= label_tag :mode_add,
-						'be <span style="font-weight:bold">ADD</span>ed to the existing ones,'.html_safe %></li>
-					<li><%= radio_button_tag :mode, :merge %><%= label_tag :mode_merge,
-						'be <span style="font-weight:bold">MERGED</span>ed to the existing ones,'.html_safe %></li>
-					<li><%= radio_button_tag :mode, :skip %><%= label_tag :mode_skip,
-						'be <span style="font-weight:bold">SKIP</span>ped.'.html_safe %></li>
-				</ul>
-			</td>
-		</tr>
+    <tr>
+      <th>Choose mode</th>
+      <td>
+        For each document, when there is existing annotation, the obtained annotations will
+        <ul>
+          <li><%= radio_button_tag :mode, :replace, checked: true %><%= label_tag :mode_replace,
+            '<span style="font-weight:bold">REPLACE</span> the existing ones,'.html_safe %></li>
+          <li><%= radio_button_tag :mode, :add %><%= label_tag :mode_add,
+            'be <span style="font-weight:bold">ADD</span>ed to the existing ones,'.html_safe %></li>
+          <li><%= radio_button_tag :mode, :merge %><%= label_tag :mode_merge,
+            'be <span style="font-weight:bold">MERGED</span>ed to the existing ones,'.html_safe %></li>
+          <li><%= radio_button_tag :mode, :skip %><%= label_tag :mode_skip,
+            'be <span style="font-weight:bold">SKIP</span>ped.'.html_safe %></li>
+        </ul>
+      </td>
+    </tr>
 
-		<tr>
-			<th colspan="2">
-				<%= submit_tag('Request annotation') %>
-			</th>
-		</tr>
-	</table>
+    <tr>
+      <th colspan="2">
+        <%= submit_tag('Request annotation') %>
+      </th>
+    </tr>
+  </table>
 <% end %>
 
