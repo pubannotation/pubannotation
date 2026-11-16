@@ -67,15 +67,4 @@ RSpec.describe DocumentImportNormalizer do
     expect { described_class.normalize!({}, user) }.to raise_error(ArgumentError, 'Text is missing.')
   end
 
-  describe '.validate_sourcedb!' do
-    it 'requires an explicit source database when personalization is disabled' do
-      expect { described_class.validate_sourcedb!(nil, true) }.to raise_error(ArgumentError, /cannot be automatically generated/)
-      expect { described_class.validate_sourcedb!('PMC', true) }.not_to raise_error
-    end
-
-    it 'allows a missing source database when personalization is enabled' do
-      expect { described_class.validate_sourcedb!(nil, false) }.not_to raise_error
-    end
-  end
-
 end

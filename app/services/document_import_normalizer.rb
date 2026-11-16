@@ -17,24 +17,7 @@ class DocumentImportNormalizer
       hdoc[:body] ||= hdoc[:text] || raise(ArgumentError, "Text is missing.")
       hdoc.delete(:text) if hdoc[:text].present?
 
-      # sourcedb, to be personalized
-      if no_personalize
-        validate_sourcedb!(hdoc[:sourcedb], no_personalize)
-      else
-        # personalize the sourcedb unless no_personalize
-        if hdoc[:sourcedb].present?
-          if hdoc[:sourcedb].include?(Doc::UserSourcedbSeparator)
-            parts = hdoc[:sourcedb].split(Doc::UserSourcedbSeparator)
-            raise ArgumentError, "'#{Doc::UserSourcedbSeparator}' is a special character reserved for separation of the username from a personal sourcedb name." unless parts.length == 2
-            sourcedb, username = parts
-            raise ArgumentError, "This document belongs to '#{username}'." unless username == current_user.username
-          else
-            hdoc[:sourcedb] += Doc::UserSourcedbSeparator + current_user.username
-          end
-        else
-          hdoc[:sourcedb] = Doc::UserSourcedbSeparator + current_user.username
-        end
-      end
+      hdoc[:sourcedb] = DocumentSourcedb.normalize!(hdoc[:sourcedb], current_user, no_personalize)
 
       # sourceid control
       unless hdoc[:sourceid].present?
@@ -45,10 +28,5 @@ class DocumentImportNormalizer
       hdoc
     end
 
-    def validate_sourcedb!(sourcedb, no_personalize)
-      if no_personalize && sourcedb.blank?
-        raise ArgumentError, "For admin, the 'sourcedb' cannot be automatically generated."
-      end
-    end
   end
 end
