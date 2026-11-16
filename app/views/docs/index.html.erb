@@ -32,7 +32,7 @@
 
 		<section class="project-docs-list">
 			<% if @can_view_generation_status %>
-				<%= turbo_frame_tag 'media_documents', data: { refresh_url: request.fullpath }, target: '_top' do %>
+				<%= turbo_frame_tag 'media_documents', data: { refresh_url: request.fullpath, turbo: false }, target: '_top' do %>
 					<%= render partial: 'source_docs' -%>
 				<% end %>
 			<% else %>

@@ -34,6 +34,7 @@ RSpec.describe 'DocGenerationsController', type: :request do
       expect(frame['src']).to be_nil
       expect(frame['data-refresh-url']).to include('page=2', 'per=5')
       expect(frame['target']).to eq('_top')
+      expect(frame['data-turbo']).to eq('false')
     end
 
     it 'does not give a frame response a self-referencing source' do
