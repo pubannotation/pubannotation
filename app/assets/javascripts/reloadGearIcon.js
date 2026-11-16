@@ -3,7 +3,6 @@ document.addEventListener('DOMContentLoaded', () => {
 	if (!wrapper.length) return;
 
 	let unfinishedIds = $('.gear-icon').data('unfinished-job-ids') || [];
-	let completedSuccessfully = false;
 
 	function reload() {
 		if (!$('.gear-icon').data('is-reload-necessary')) return;
@@ -17,13 +16,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
 			const icon = $('.gear-icon');
 			const succeededIds = icon.data('succeeded-job-ids') || [];
-			completedSuccessfully ||= unfinishedIds.some(id => succeededIds.includes(id));
+			const completedSuccessfully = unfinishedIds.some(id => succeededIds.includes(id));
 			unfinishedIds = icon.data('unfinished-job-ids') || [];
+
+			if (completedSuccessfully && $('.project-docs-list').length) {
+				$('.project-docs-list').load(`${location.href} .project-docs-list > *`);
+				$('#notice .content').text('A task completed successfully.');
+			}
 
 			if (icon.data('is-reload-necessary')) {
 				setTimeout(reload, 3000);
-			} else if (completedSuccessfully && $('.project-docs-list').length) {
-				$('.project-docs-list').load(`${location.href} .project-docs-list > *`);
 			}
 		});
 	}
