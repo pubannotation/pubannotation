@@ -31,7 +31,8 @@ RSpec.describe 'DocGenerationsController', type: :request do
       get project_docs_path(project.name, page: 2, per: 5)
 
       frame = Nokogiri::HTML(response.body).at_css('turbo-frame#media_documents')
-      expect(frame['src']).to include('page=2', 'per=5')
+      expect(frame['src']).to be_nil
+      expect(frame['data-refresh-url']).to include('page=2', 'per=5')
       expect(frame['target']).to eq('_top')
     end
 

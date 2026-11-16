@@ -1,9 +1,19 @@
+function reloadGenerationFrame(id) {
+  const frame = document.getElementById(id);
+  if (!frame) return;
+  if (!frame.getAttribute('src') && frame.dataset.refreshUrl) {
+    frame.src = frame.dataset.refreshUrl;
+  } else {
+    frame.reload();
+  }
+}
+
 Turbo.StreamActions.reload_media_generation = function () {
-  document.getElementById(this.target)?.reload();
+  reloadGenerationFrame(this.target);
 };
 
 Turbo.StreamActions.reload_media_docs = function () {
-  document.getElementById(this.target)?.reload();
+  reloadGenerationFrame(this.target);
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -13,8 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // A broadcast can arrive before subscription, or while the connection is down.
   const synchronize = () => {
     if (stream.hasAttribute('connected')) {
-      document.getElementById('doc_generation_status')?.reload();
-      document.getElementById('media_documents')?.reload();
+      reloadGenerationFrame('doc_generation_status');
+      reloadGenerationFrame('media_documents');
     }
   };
   new MutationObserver(synchronize).observe(stream, { attributes: true, attributeFilter: ['connected'] });
