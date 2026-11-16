@@ -31,9 +31,6 @@ RSpec.describe DocGenerationFromMediaJob, type: :job do
 
         expect(job_record.reload).to have_attributes(succeeded: true, ended_at: be_present)
         expect(Turbo::StreamsChannel).to have_received(:broadcast_action_to).with(
-          project, :doc_generations, action: :reload_media_generation, target: 'doc_generation_status'
-        ).twice
-        expect(Turbo::StreamsChannel).to have_received(:broadcast_action_to).with(
           project, :doc_generations, action: :reload_media_docs, target: 'media_documents'
         ).once
       end
@@ -43,7 +40,7 @@ RSpec.describe DocGenerationFromMediaJob, type: :job do
         active_job.perform_now
 
         expect(job_record.reload).to have_attributes(succeeded: nil, ended_at: be_present)
-        expect(Turbo::StreamsChannel).to have_received(:broadcast_action_to).twice
+        expect(Turbo::StreamsChannel).not_to have_received(:broadcast_action_to)
       end
     end
 

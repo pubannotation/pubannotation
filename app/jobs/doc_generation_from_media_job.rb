@@ -20,31 +20,7 @@ class DocGenerationFromMediaJob < ApplicationJob
     JOB_NAME
   end
 
-  def before_enqueue
-    job = super
-    broadcast_status(job)
-  end
-
-  def before_perform(active_job)
-    super
-    broadcast_status
-  end
-
-  def after_perform
-    super
-    broadcast_status
-  end
-
-  def handle_standard_error(exception)
-    super
-    broadcast_status
-  end
-
   private
-
-  def broadcast_status(job = @job)
-    broadcast_update(:reload_media_generation, 'doc_generation_status', job)
-  end
 
   def broadcast_update(action, target, job = @job)
     return unless job
@@ -54,6 +30,6 @@ class DocGenerationFromMediaJob < ApplicationJob
       action: action, target: target
     )
   rescue StandardError => e
-    Rails.logger.error("Could not broadcast document generation status: #{e.class}: #{e.message}")
+    Rails.logger.error("Could not broadcast document list update: #{e.class}: #{e.message}")
   end
 end

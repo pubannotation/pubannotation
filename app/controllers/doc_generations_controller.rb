@@ -5,12 +5,6 @@ class DocGenerationsController < ApplicationController
   before_action :authorize_media_access!
   before_action :ensure_editable_project!
 
-  def index
-    @jobs = @project.jobs.where(name: DocGenerationFromMediaJob::JOB_NAME)
-                    .includes(media_transcription_task: :media_transcript).order(created_at: :desc)
-    render layout: false
-  end
-
   def new
     @available_caption_models = ImageCaptionService.available_models
   end

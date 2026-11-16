@@ -24,14 +24,13 @@
 <% if @project %>
 	<section>
 		<%= render partial: 'projects/titlebar' -%>
-        <% if @can_view_generation_status %>
+        <% if @can_stream_media_documents %>
             <%= turbo_stream_from @project, :doc_generations, data: { doc_generation_stream: true } %>
-            <%= turbo_frame_tag 'doc_generation_status', src: project_doc_generations_path(@project.name) %>
         <% end %>
 <% end %>
 
 		<section class="project-docs-list">
-			<% if @can_view_generation_status %>
+			<% if @can_stream_media_documents %>
 				<%= turbo_frame_tag 'media_documents', data: { refresh_url: request.fullpath, turbo: false }, target: '_top' do %>
 					<%= render partial: 'source_docs' -%>
 				<% end %>

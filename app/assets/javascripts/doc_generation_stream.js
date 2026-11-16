@@ -26,10 +26,6 @@ function refreshDocuments(id) {
   );
 }
 
-Turbo.StreamActions.reload_media_generation = function () {
-  reloadGenerationFrame(this.target);
-};
-
 Turbo.StreamActions.reload_media_docs = function () {
   refreshDocuments(this.target);
 };
@@ -41,7 +37,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // A broadcast can arrive before subscription, or while the connection is down.
   const synchronize = () => {
     if (stream.hasAttribute('connected')) {
-      reloadGenerationFrame('doc_generation_status');
       refreshDocuments('media_documents');
     }
   };

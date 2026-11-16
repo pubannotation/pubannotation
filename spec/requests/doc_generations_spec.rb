@@ -24,7 +24,7 @@ RSpec.describe 'DocGenerationsController', type: :request do
     allow(Elasticsearch::IndexQueue).to receive(:update_embedding)
   end
 
-  describe 'GET /projects/:project_id/doc_generations' do
+  describe 'GET /projects/:project_id/docs' do
     it 'preserves the document list query when reloading its frame' do
       sign_in user
 
@@ -35,6 +35,7 @@ RSpec.describe 'DocGenerationsController', type: :request do
       expect(frame['data-refresh-url']).to include('page=2', 'per=5')
       expect(frame['target']).to eq('_top')
       expect(frame['data-turbo']).to eq('false')
+      expect(Nokogiri::HTML(response.body).at_css('turbo-frame#doc_generation_status')).to be_nil
     end
 
     it 'does not give a frame response a self-referencing source' do
@@ -46,25 +47,7 @@ RSpec.describe 'DocGenerationsController', type: :request do
       expect(frame['src']).to be_nil
     end
 
-    it 'shows each generation result from persisted job state' do
-      sign_in user
-      name = DocGenerationFromMediaJob::JOB_NAME
-      create(:job, organization: project, name: name, begun_at: nil)
-      create(:job, organization: project, name: name)
-      create(:job, :completed, organization: project, name: name, succeeded: false)
-      create(:job, :completed, organization: project, name: name, succeeded: true)
-      empty_job = create(:job, :completed, organization: project, name: name, succeeded: true)
-      task = create(:media_transcription_task, job: empty_job)
-      create(:media_transcript, medium: task.medium, media_transcription_task: task, text: '', segments: [])
-
-      get project_doc_generations_path(project.name)
-
-      expect(response).to have_http_status(:ok)
-      expect(response.body).to include('Waiting', 'Running', 'Failed', 'no text was generated', 'result is no longer available')
-      expect(Nokogiri::HTML(response.body).at_css('a[data-turbo-frame="_top"]')).to be_present
-    end
-
-    it 'shows generation status to associate maintainers' do
+    it 'streams document updates to associate maintainers' do
       associate = create(:user).tap(&:confirm)
       AssociateMaintainer.create!(project: project, user: associate)
       sign_in associate
@@ -74,51 +57,6 @@ RSpec.describe 'DocGenerationsController', type: :request do
       expect(Nokogiri::HTML(response.body).at_css('turbo-cable-stream-source[data-doc-generation-stream]')).to be_present
     end
 
-    it 'does not disclose statuses to a user without media access' do
-      restricted_user = create(:user, can_use_media: false).tap(&:confirm)
-      restricted_project = create(:project, user: restricted_user)
-      sign_in restricted_user
-
-      get project_doc_generations_path(restricted_project.name)
-
-      expect(response).to have_http_status(:forbidden)
-    end
-
-    it 'does not disclose statuses for a project the user cannot edit' do
-      another_user = create(:user).tap(&:confirm)
-      sign_in another_user
-
-      get project_doc_generations_path(project.name, format: :json)
-
-      expect(response).to have_http_status(:not_found)
-    end
-  end
-
-  describe 'deleting generation jobs' do
-    before do
-      sign_in user
-      allow(Turbo::StreamsChannel).to receive(:broadcast_action_to)
-    end
-
-    it 'invalidates the status when a finished generation job is removed' do
-      job = create(:job, :completed, organization: project, name: DocGenerationFromMediaJob::JOB_NAME)
-
-      delete project_job_path(project.name, job)
-
-      expect(Turbo::StreamsChannel).to have_received(:broadcast_action_to).with(
-        project, :doc_generations, action: :reload_media_generation, target: 'doc_generation_status'
-      )
-    end
-
-    it 'invalidates the status when finished jobs are cleared' do
-      create(:job, :completed, organization: project, name: DocGenerationFromMediaJob::JOB_NAME)
-
-      delete project_clear_finished_jobs_path(project.name)
-
-      expect(Turbo::StreamsChannel).to have_received(:broadcast_action_to).with(
-        project, :doc_generations, action: :reload_media_generation, target: 'doc_generation_status'
-      )
-    end
   end
 
   describe 'GET /projects/:project_id/doc_generations/new' do

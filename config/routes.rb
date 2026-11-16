@@ -203,7 +203,7 @@ Pubann::Application.routes.draw do
 
 		resources :evaluations
 
-		resources :doc_generations, only: [:index, :new, :create]
+		resources :doc_generations, only: [:new, :create]
 
 		resources :docs do
 			collection do

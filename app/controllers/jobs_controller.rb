@@ -64,7 +64,6 @@ class JobsController < ApplicationController
 		raise "Could not find the job." unless job.organization == @organization
 
 		job.destroy_unless_running
-		broadcast_generation_status if job.destroyed? && @organization.is_a?(Project) && job.name == DocGenerationFromMediaJob::JOB_NAME
 
 		respond_to do |format|
 			format.html { redirect_to organization_jobs_path }
@@ -72,9 +71,7 @@ class JobsController < ApplicationController
 	end
 
 	def clear_finished_jobs
-		generation_jobs_removed = @organization.is_a?(Project) && @organization.jobs.finished.where(name: DocGenerationFromMediaJob::JOB_NAME).exists?
 		Job.batch_destroy_finished(@organization)
-		broadcast_generation_status if generation_jobs_removed
 
 		respond_to do |format|
 			format.html { redirect_to organization_jobs_path }
@@ -99,12 +96,6 @@ class JobsController < ApplicationController
 	end
 
 	private
-
-	def broadcast_generation_status
-		Turbo::StreamsChannel.broadcast_action_to(@organization, :doc_generations, action: :reload_media_generation, target: 'doc_generation_status')
-	rescue StandardError => e
-		Rails.logger.error("Could not broadcast document generation status: #{e.class}: #{e.message}")
-	end
 
 	def message_counts_for(jobs)
 		Message.where(job_id: jobs.select(:id)).group(:job_id).count
