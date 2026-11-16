@@ -25,6 +25,9 @@
 	<section>
 		<%= render partial: 'projects/titlebar' -%>
         <% if @can_stream_media_documents %>
+            <% content_for :javascript do %>
+                <%= javascript_include_tag 'doc_generation_stream', type: 'module' %>
+            <% end %>
             <%= turbo_stream_from @project, :doc_generations, data: { doc_generation_stream: true } %>
         <% end %>
 <% end %>

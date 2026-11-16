@@ -1,3 +1,5 @@
+//= require jQuery.linkToSelectedSpan
+
 // Loaded with defer only by docs/_content, so the DOM is already parsed when this runs.
 (() => {
 	$('#body').linkToSelectedSpan('#linkSpace');

@@ -5,6 +5,9 @@
 	<%= badge_accessibility(@project).html_safe %>
 	<%= link_to content_tag(:i, '', class: "fa fa-search", "aria-hidden" => "true", title: "search"), sparql_project_path(@project.name) %>
 	<% if @project.jobs.exists? && @project.editable?(current_user) -%>
+		<% content_for :javascript do %>
+			<%= javascript_include_tag 'reloadGearIcon' %>
+		<% end %>
 		<span class="gear-icon-wrapper">
 			<%= render 'projects/gear_icon' %>
 		</span>

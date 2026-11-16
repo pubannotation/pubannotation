@@ -16,10 +16,6 @@
 //= require wice_grid
 //= require autocomplete-rails
 //= require jquery.facebox
-//= require_tree
-//= stub docs
-//= stub segments
-//= stub doc_generation_stream
 
 getURLParameter = function(parameterName){
   var sPageURL = window.location.search.substring(1);

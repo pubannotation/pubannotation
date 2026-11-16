@@ -1,3 +1,6 @@
+<% content_for :javascript do %>
+	<%= javascript_include_tag 'semantic_search' %>
+<% end %>
 <% path ||= request.path %>
 <% use_semantic = params[:semantic] == 'true' %>
 <span class='search-bar'>
