@@ -23,7 +23,7 @@ class Media::JobsController < ApplicationController
 
   def latest_jobs_table
     load_jobs
-    render partial: 'jobs_table', locals: { jobs: @jobs, message_counts: @job_message_counts, reload_necessary: @reload_necessary }
+    render partial: 'jobs_table_frame', locals: { jobs: @jobs, message_counts: @job_message_counts, reload_necessary: @reload_necessary }
   end
 
   def destroy

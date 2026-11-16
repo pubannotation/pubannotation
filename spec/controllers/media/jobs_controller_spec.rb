@@ -53,6 +53,7 @@ RSpec.describe 'Media::JobsController', type: :request do
       it 'renders the jobs table partial' do
         get latest_jobs_table_media_jobs_path
         expect(response).to have_http_status(:ok)
+        expect(response.body).to include('<turbo-frame id="jobs_table"')
       end
     end
 

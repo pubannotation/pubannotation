@@ -38,8 +38,8 @@
 				link_to 'Clear finished jobs', clear_finished_jobs_path, method: :delete, :class => 'control button'
 			%>
 		</h1>
-		<div class="jobs-table-wrapper">
+		<%= turbo_frame_tag "jobs_table", data: { refresh_url: "#{request.path}/latest_jobs_table" }, target: "_top" do %>
 			<%= render :partial => "jobs/jobs_table", :locals => { jobs: @jobs, organization: @organization, message_counts: @job_message_counts } %>
-		</div>
+		<% end %>
 	</section>
 </section>

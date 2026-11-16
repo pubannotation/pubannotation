@@ -13,7 +13,7 @@
 
 	<%= link_to 'Clear finished jobs', media_clear_finished_jobs_path, method: :delete, data: { confirm: t('controllers.shared.confirm_delete') }, class: :button %>
 
-	<div class="jobs-table-wrapper">
+	<%= turbo_frame_tag "jobs_table", data: { refresh_url: latest_jobs_table_media_jobs_path }, target: "_top" do %>
 		<%= render partial: 'jobs_table', locals: { jobs: @jobs, message_counts: @job_message_counts, reload_necessary: @reload_necessary } %>
-	</div>
+	<% end %>
 </section>

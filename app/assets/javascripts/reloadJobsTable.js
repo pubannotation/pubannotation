@@ -1,21 +1,33 @@
-document.addEventListener('DOMContentLoaded', () => {
-	if ($('.jobs-table')) {
-		function getJobsTableData() {
-			return $('.jobs-table').data('is-reload-necessary');
-		}
+(() => {
+	if (window.jobsTableReloadInstalled) return;
+	window.jobsTableReloadInstalled = true;
 
-		function reload() {
-			let hasNotFinished = getJobsTableData();
-			if (hasNotFinished) {
-				$('.jobs-table-wrapper').load(`${location.pathname}/latest_jobs_table`);
+	let timer;
 
-				hasNotFinished = getJobsTableData();
-				if (hasNotFinished) {
-					setTimeout(reload, 3000);
+	function scheduleReload() {
+		clearTimeout(timer);
+		const frame = document.getElementById('jobs_table');
+		if (!frame || frame.querySelector('.jobs-table')?.dataset.isReloadNecessary !== 'true') return;
+
+		timer = setTimeout(async () => {
+			if (!frame.isConnected) return;
+			try {
+				if (frame.src) {
+					await frame.reload();
+				} else {
+					frame.src = frame.dataset.refreshUrl;
+					await frame.loaded;
 				}
+			} catch (error) {
+				console.error("Could not reload jobs table", error);
+			} finally {
+				if (frame.isConnected) scheduleReload();
 			}
-		}
-
-		reload();
+		}, 3000);
 	}
-});
+
+	document.addEventListener('turbo:load', scheduleReload);
+	document.addEventListener('turbo:before-cache', () => clearTimeout(timer));
+	document.addEventListener('DOMContentLoaded', scheduleReload);
+	scheduleReload();
+})();

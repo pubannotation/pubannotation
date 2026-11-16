@@ -82,7 +82,7 @@ class JobsController < ApplicationController
 	def latest_jobs_table
 		@jobs = @organization.jobs.order(:created_at)
 		@job_message_counts = message_counts_for(@jobs)
-		render :partial => "jobs/jobs_table", locals: { jobs: @jobs, message_counts: @job_message_counts }
+		render :partial => "jobs/jobs_table_frame", locals: { jobs: @jobs, message_counts: @job_message_counts }
 	end
 
 	def latest_gear_icon

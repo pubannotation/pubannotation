@@ -1,0 +1,3 @@
+<%= turbo_frame_tag "jobs_table", target: "_top" do %>
+	<%= render partial: "jobs/jobs_table", locals: { jobs: jobs, message_counts: message_counts } %>
+<% end %>
