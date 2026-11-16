@@ -14,15 +14,3 @@
 	<%= hidden_field_tag :semantic, 'false', id: 'semantic_fallback', disabled: use_semantic %>
 <% end %>
 </span>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-	var checkbox = document.querySelector('input[name="semantic"][type="checkbox"]');
-	var fallback = document.getElementById('semantic_fallback');
-	if (checkbox && fallback) {
-		checkbox.addEventListener('change', function() {
-			fallback.disabled = this.checked;
-		});
-	}
-});
-</script>

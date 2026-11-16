@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			const icon = $('.gear-icon');
 			const succeededIds = icon.data('succeeded-job-ids') || [];
 			const mediaGenerationIds = icon.data('media-generation-job-ids') || [];
-			const streamsMediaJobs = document.querySelector('[data-doc-generation-stream]');
+			const streamsMediaJobs = document.querySelector('[data-doc-generation-stream][connected]');
 			completedSuccessfully ||= unfinishedIds.some(id => succeededIds.includes(id) && !(streamsMediaJobs && mediaGenerationIds.includes(id)));
 			unfinishedIds = icon.data('unfinished-job-ids') || [];
 

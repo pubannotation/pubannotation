@@ -35,6 +35,15 @@ RSpec.describe 'DocGenerationsController', type: :request do
       expect(frame['target']).to eq('_top')
     end
 
+    it 'does not give a frame response a self-referencing source' do
+      sign_in user
+
+      get project_docs_path(project.name, page: 2), headers: { 'Turbo-Frame' => 'media_documents' }
+
+      frame = Nokogiri::HTML(response.body).at_css('turbo-frame#media_documents')
+      expect(frame['src']).to be_nil
+    end
+
     it 'shows each generation result from persisted job state' do
       sign_in user
       name = DocGenerationFromMediaJob::JOB_NAME
