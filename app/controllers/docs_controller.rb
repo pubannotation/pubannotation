@@ -15,6 +15,7 @@ class DocsController < ApplicationController
 		if params[:project_id].present?
 			@project = Project.accessible(current_user).find_by(name: params[:project_id])
 			raise ArgumentError, "Could not find the project." unless @project.present?
+			@can_stream_media_documents = current_user&.can_access_media? && Project.editable(current_user).where(id: @project.id).exists?
 		end
 
 		@sourcedb = params[:sourcedb]

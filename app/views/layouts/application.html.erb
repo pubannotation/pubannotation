@@ -6,6 +6,9 @@
 		<%= stylesheet_link_tag    "application", :media => "all" -%>
 		<%= yield :css -%>
 		<%= javascript_include_tag "application" -%>
+		<%= javascript_include_tag "turbo", type: "module" -%>
+		<script type="module">window.Turbo.session.drive = false;</script>
+		<%= javascript_include_tag "doc_generation_stream", type: "module" -%>
 		<script>
 			jQuery(document).ready(function($) {
 				$('a[rel*=facebox]').facebox()

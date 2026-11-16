@@ -24,10 +24,19 @@
 <% if @project %>
 	<section>
 		<%= render partial: 'projects/titlebar' -%>
+        <% if @can_stream_media_documents %>
+            <%= turbo_stream_from @project, :doc_generations, data: { doc_generation_stream: true } %>
+        <% end %>
 <% end %>
 
 		<section class="project-docs-list">
-			<%= render partial: 'source_docs' -%>
+			<% if @can_stream_media_documents %>
+				<%= turbo_frame_tag 'media_documents', data: { refresh_url: request.fullpath, turbo: false }, target: '_top' do %>
+					<%= render partial: 'source_docs' -%>
+				<% end %>
+			<% else %>
+				<%= render partial: 'source_docs' -%>
+			<% end %>
 		</section>
 
 <% if @project %>

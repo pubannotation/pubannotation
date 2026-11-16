@@ -24,6 +24,41 @@ RSpec.describe 'DocGenerationsController', type: :request do
     allow(Elasticsearch::IndexQueue).to receive(:update_embedding)
   end
 
+  describe 'GET /projects/:project_id/docs' do
+    it 'preserves the document list query when reloading its frame' do
+      sign_in user
+
+      get project_docs_path(project.name, page: 2, per: 5)
+
+      frame = Nokogiri::HTML(response.body).at_css('turbo-frame#media_documents')
+      expect(frame['src']).to be_nil
+      expect(frame['data-refresh-url']).to include('page=2', 'per=5')
+      expect(frame['target']).to eq('_top')
+      expect(frame['data-turbo']).to eq('false')
+      expect(Nokogiri::HTML(response.body).at_css('turbo-frame#doc_generation_status')).to be_nil
+    end
+
+    it 'does not give a frame response a self-referencing source' do
+      sign_in user
+
+      get project_docs_path(project.name, page: 2), headers: { 'Turbo-Frame' => 'media_documents' }
+
+      frame = Nokogiri::HTML(response.body).at_css('turbo-frame#media_documents')
+      expect(frame['src']).to be_nil
+    end
+
+    it 'streams document updates to associate maintainers' do
+      associate = create(:user).tap(&:confirm)
+      AssociateMaintainer.create!(project: project, user: associate)
+      sign_in associate
+
+      get project_docs_path(project.name)
+
+      expect(Nokogiri::HTML(response.body).at_css('turbo-cable-stream-source[data-doc-generation-stream]')).to be_present
+    end
+
+  end
+
   describe 'GET /projects/:project_id/doc_generations/new' do
     context 'when logged in' do
       before { sign_in user }
