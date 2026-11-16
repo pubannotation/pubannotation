@@ -10,8 +10,7 @@ class DocGenerationsController < ApplicationController
   end
 
   def create
-    medium = Medium.find_by(media_params)
-    raise ArgumentError, "Specified media does not exist." unless medium
+    medium = Medium.find_by!(media_params)
     raise Exceptions::TooManyBackgroundJobsError, "Up to 10 jobs can be registered per a project. Please clean your jobs page." unless @project.jobs.count < 10
 
     attributes = doc_attributes
@@ -25,6 +24,10 @@ class DocGenerationsController < ApplicationController
       format.html { redirect_to project_docs_path(@project.name), notice: notice }
       format.json { render json: { message: notice, job_name: active_job.job_name, task_location: project_job_url(@project.name, job.id, format: :json) }, status: :accepted }
     end
+  rescue ActiveRecord::RecordNotFound => e
+    raise unless e.model == 'Medium'
+
+    render_error(message: "Specified media does not exist.", status: :unprocessable_content)
   rescue ArgumentError, Exceptions::TooManyBackgroundJobsError => e
     render_error(message: e.message, status: :unprocessable_content)
   end
