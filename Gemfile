@@ -10,6 +10,8 @@ gem 'activerecord-import'
 gem 'puma'
 gem 'rack-cors'
 gem 'sprockets-rails'
+gem 'turbo-rails'
+gem 'redis'
 
 gem 'terser'
 

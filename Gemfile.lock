@@ -374,6 +374,8 @@ GEM
       psych (>= 4.0.0)
       tsort
     recaptcha (5.21.2)
+    redis (5.4.1)
+      redis-client (>= 0.22.0)
     redis-client (0.30.0)
       connection_pool
     reline (0.6.3)
@@ -431,6 +433,9 @@ GEM
     thor (1.5.0)
     timeout (0.6.1)
     tsort (0.2.0)
+    turbo-rails (2.0.23)
+      actionpack (>= 7.1.0)
+      railties (>= 7.1.0)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
     unicorn (6.1.0)
@@ -499,6 +504,7 @@ DEPENDENCIES
   rails3-jquery-autocomplete
   rake
   recaptcha
+  redis
   rest-client!
   rspec-rails
   ruby-dictionary
@@ -511,6 +517,7 @@ DEPENDENCIES
   tao_rdfizer (~> 0.12.1)
   terser
   text_alignment (~> 0.12.12)
+  turbo-rails
   unicorn
   web-console
   wice_grid!
