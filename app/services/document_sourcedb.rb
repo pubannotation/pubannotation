@@ -3,7 +3,7 @@
 class DocumentSourcedb
   def self.normalize!(sourcedb, current_user, no_personalize = false)
     if no_personalize
-      validate_presence_if_not_personalized!(sourcedb, no_personalize)
+      validate_required!(sourcedb, no_personalize)
       return sourcedb
     end
 
@@ -20,7 +20,7 @@ class DocumentSourcedb
     sourcedb
   end
 
-  def self.validate_presence_if_not_personalized!(sourcedb, no_personalize)
+  def self.validate_required!(sourcedb, no_personalize)
     if no_personalize && sourcedb.blank?
       raise ArgumentError, "For admin, the 'sourcedb' cannot be automatically generated."
     end
