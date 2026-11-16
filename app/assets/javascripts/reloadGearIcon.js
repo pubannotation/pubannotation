@@ -17,7 +17,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 			const icon = $('.gear-icon');
 			const succeededIds = icon.data('succeeded-job-ids') || [];
-			completedSuccessfully ||= unfinishedIds.some(id => succeededIds.includes(id));
+			const mediaGenerationIds = icon.data('media-generation-job-ids') || [];
+			const streamsMediaJobs = document.querySelector('[data-doc-generation-stream]');
+			completedSuccessfully ||= unfinishedIds.some(id => succeededIds.includes(id) && !(streamsMediaJobs && mediaGenerationIds.includes(id)));
 			unfinishedIds = icon.data('unfinished-job-ids') || [];
 
 			if (icon.data('is-reload-necessary')) {

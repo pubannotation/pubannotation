@@ -25,6 +25,16 @@ RSpec.describe 'DocGenerationsController', type: :request do
   end
 
   describe 'GET /projects/:project_id/doc_generations' do
+    it 'preserves the document list query when reloading its frame' do
+      sign_in user
+
+      get project_docs_path(project.name, page: 2, per: 5)
+
+      frame = Nokogiri::HTML(response.body).at_css('turbo-frame#media_documents')
+      expect(frame['src']).to include('page=2', 'per=5')
+      expect(frame['target']).to eq('_top')
+    end
+
     it 'shows each generation result from persisted job state' do
       sign_in user
       name = DocGenerationFromMediaJob::JOB_NAME

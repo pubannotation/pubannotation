@@ -12,6 +12,7 @@ class DocGenerationFromMediaJob < ApplicationJob
 
     if media_transcript.text.present?
       MediaDocCreationService.call(project, medium, user, attributes, media_transcript)
+      broadcast_update(:reload_media_docs, 'media_documents')
     end
   end
 
@@ -42,11 +43,15 @@ class DocGenerationFromMediaJob < ApplicationJob
   private
 
   def broadcast_status(job = @job)
+    broadcast_update(:reload_media_generation, 'doc_generation_status', job)
+  end
+
+  def broadcast_update(action, target, job = @job)
     return unless job
 
     Turbo::StreamsChannel.broadcast_action_to(
       job.organization, :doc_generations,
-      action: :reload_media_generation, target: 'doc_generation_status'
+      action: action, target: target
     )
   rescue StandardError => e
     Rails.logger.error("Could not broadcast document generation status: #{e.class}: #{e.message}")

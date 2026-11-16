@@ -33,6 +33,9 @@ RSpec.describe DocGenerationFromMediaJob, type: :job do
         expect(Turbo::StreamsChannel).to have_received(:broadcast_action_to).with(
           project, :doc_generations, action: :reload_media_generation, target: 'doc_generation_status'
         ).twice
+        expect(Turbo::StreamsChannel).to have_received(:broadcast_action_to).with(
+          project, :doc_generations, action: :reload_media_docs, target: 'media_documents'
+        ).once
       end
 
       it 'does not mark a failed job as successful' do
