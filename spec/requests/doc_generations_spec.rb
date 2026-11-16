@@ -24,6 +24,43 @@ RSpec.describe 'DocGenerationsController', type: :request do
     allow(Elasticsearch::IndexQueue).to receive(:update_embedding)
   end
 
+  describe 'GET /projects/:project_id/doc_generations' do
+    it 'shows each generation result from persisted job state' do
+      sign_in user
+      name = DocGenerationFromMediaJob::JOB_NAME
+      create(:job, organization: project, name: name, begun_at: nil)
+      create(:job, organization: project, name: name)
+      create(:job, :completed, organization: project, name: name, succeeded: false)
+      empty_job = create(:job, :completed, organization: project, name: name, succeeded: true)
+      task = create(:media_transcription_task, job: empty_job)
+      create(:media_transcript, medium: task.medium, media_transcription_task: task, text: '', segments: [])
+
+      get project_doc_generations_path(project.name)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include('Waiting', 'Running', 'Failed', 'no text was generated')
+    end
+
+    it 'does not disclose statuses to a user without media access' do
+      restricted_user = create(:user, can_use_media: false).tap(&:confirm)
+      restricted_project = create(:project, user: restricted_user)
+      sign_in restricted_user
+
+      get project_doc_generations_path(restricted_project.name)
+
+      expect(response).to have_http_status(:forbidden)
+    end
+
+    it 'does not disclose statuses for a project the user cannot edit' do
+      another_user = create(:user).tap(&:confirm)
+      sign_in another_user
+
+      get project_doc_generations_path(project.name, format: :json)
+
+      expect(response).to have_http_status(:not_found)
+    end
+  end
+
   describe 'GET /projects/:project_id/doc_generations/new' do
     context 'when logged in' do
       before { sign_in user }
