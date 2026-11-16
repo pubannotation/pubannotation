@@ -73,6 +73,33 @@ RSpec.describe 'DocGenerationsController', type: :request do
     end
   end
 
+  describe 'deleting generation jobs' do
+    before do
+      sign_in user
+      allow(Turbo::StreamsChannel).to receive(:broadcast_action_to)
+    end
+
+    it 'invalidates the status when a finished generation job is removed' do
+      job = create(:job, :completed, organization: project, name: DocGenerationFromMediaJob::JOB_NAME)
+
+      delete project_job_path(project.name, job)
+
+      expect(Turbo::StreamsChannel).to have_received(:broadcast_action_to).with(
+        project, :doc_generations, action: :reload_media_generation, target: 'doc_generation_status'
+      )
+    end
+
+    it 'invalidates the status when finished jobs are cleared' do
+      create(:job, :completed, organization: project, name: DocGenerationFromMediaJob::JOB_NAME)
+
+      delete project_clear_finished_jobs_path(project.name)
+
+      expect(Turbo::StreamsChannel).to have_received(:broadcast_action_to).with(
+        project, :doc_generations, action: :reload_media_generation, target: 'doc_generation_status'
+      )
+    end
+  end
+
   describe 'GET /projects/:project_id/doc_generations/new' do
     context 'when logged in' do
       before { sign_in user }
