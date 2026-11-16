@@ -19,6 +19,11 @@ class DocGenerationFromMediaJob < ApplicationJob
     JOB_NAME
   end
 
+  def before_enqueue
+    job = super
+    broadcast_status(job)
+  end
+
   def before_perform(active_job)
     super
     broadcast_status
@@ -36,11 +41,11 @@ class DocGenerationFromMediaJob < ApplicationJob
 
   private
 
-  def broadcast_status
-    return unless @job
+  def broadcast_status(job = @job)
+    return unless job
 
     Turbo::StreamsChannel.broadcast_action_to(
-      @job.organization, :doc_generations,
+      job.organization, :doc_generations,
       action: :reload_media_generation, target: 'doc_generation_status'
     )
   rescue StandardError => e

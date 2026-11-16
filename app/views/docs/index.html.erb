@@ -24,7 +24,7 @@
 <% if @project %>
 	<section>
 		<%= render partial: 'projects/titlebar' -%>
-        <% if current_user&.can_access_media? && @project.editable?(current_user) %>
+        <% if @can_view_generation_status %>
             <%= turbo_stream_from @project, :doc_generations, data: { doc_generation_stream: true } %>
             <%= turbo_frame_tag 'doc_generation_status', src: project_doc_generations_path(@project.name) %>
         <% end %>

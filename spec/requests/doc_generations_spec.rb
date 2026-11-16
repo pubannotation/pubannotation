@@ -31,6 +31,7 @@ RSpec.describe 'DocGenerationsController', type: :request do
       create(:job, organization: project, name: name, begun_at: nil)
       create(:job, organization: project, name: name)
       create(:job, :completed, organization: project, name: name, succeeded: false)
+      create(:job, :completed, organization: project, name: name, succeeded: true)
       empty_job = create(:job, :completed, organization: project, name: name, succeeded: true)
       task = create(:media_transcription_task, job: empty_job)
       create(:media_transcript, medium: task.medium, media_transcription_task: task, text: '', segments: [])
@@ -38,7 +39,18 @@ RSpec.describe 'DocGenerationsController', type: :request do
       get project_doc_generations_path(project.name)
 
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include('Waiting', 'Running', 'Failed', 'no text was generated')
+      expect(response.body).to include('Waiting', 'Running', 'Failed', 'no text was generated', 'result is no longer available')
+      expect(Nokogiri::HTML(response.body).at_css('a[data-turbo-frame="_top"]')).to be_present
+    end
+
+    it 'shows generation status to associate maintainers' do
+      associate = create(:user).tap(&:confirm)
+      AssociateMaintainer.create!(project: project, user: associate)
+      sign_in associate
+
+      get project_docs_path(project.name)
+
+      expect(Nokogiri::HTML(response.body).at_css('turbo-cable-stream-source[data-doc-generation-stream]')).to be_present
     end
 
     it 'does not disclose statuses to a user without media access' do
