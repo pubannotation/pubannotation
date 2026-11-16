@@ -1,4 +1,5 @@
 class Project < ActiveRecord::Base
+  include AnnotationCounts
   include Project::InstantiateAndSaveAnnotationsCollectionLogic
 
   DOWNLOADS_PATH = "/downloads/"

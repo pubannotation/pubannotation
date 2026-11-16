@@ -5,28 +5,16 @@ module AnnotationsHelper
     if project
       if project.annotations_accessible?(current_user)
         if doc.present?
-          ActiveRecord::Base.connection.select_value <<~SQL.squish
-						SELECT denotations_num + blocks_num + relations_num
-						FROM project_docs
-						WHERE project_id = #{project.id} AND doc_id = #{doc.id}
-					SQL
+          ProjectDoc.annotation_count_for(project, doc)
         else
-          ActiveRecord::Base.connection.select_value <<~SQL.squish
-						SELECT denotations_num + blocks_num + relations_num
-						FROM projects
-						WHERE id = #{project.id}
-					SQL
+          project.annotation_count
         end
       else
         '<i class="fa fa-bars" aria-hidden="true" title="blinded"></i>'.html_safe
       end
     else
       if doc.present?
-        ActiveRecord::Base.connection.select_value <<~SQL.squish
-					SELECT denotations_num + blocks_num + relations_num
-					FROM docs
-					WHERE id = #{doc.id}
-				SQL
+        doc.annotation_count
       else
         raise "count of all denotations?"
       end
@@ -38,17 +26,9 @@ module AnnotationsHelper
     if project
       if project.annotations_accessible?(current_user)
         if doc.present?
-          row = ActiveRecord::Base.connection.select_one <<~SQL.squish
-						SELECT denotations_num, blocks_num, relations_num
-						FROM project_docs
-						WHERE project_id = #{project.id} AND doc_id = #{doc.id}
-					SQL
+          row = ProjectDoc.annotation_counts_for(project, doc)
         else
-          row = ActiveRecord::Base.connection.select_one <<~SQL.squish
-						SELECT denotations_num, blocks_num, relations_num
-						FROM projects
-						WHERE id = #{project.id}
-					SQL
+          row = project.annotation_counts
         end
         format_annotation_counts(row)
       else
@@ -56,11 +36,7 @@ module AnnotationsHelper
       end
     else
       if doc.present?
-        row = ActiveRecord::Base.connection.select_one <<~SQL.squish
-					SELECT denotations_num, blocks_num, relations_num
-					FROM docs
-					WHERE id = #{doc.id}
-				SQL
+        row = doc.annotation_counts
         format_annotation_counts(row)
       else
         raise "count of all denotations?"

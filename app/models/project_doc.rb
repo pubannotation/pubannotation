@@ -1,4 +1,5 @@
 class ProjectDoc < ActiveRecord::Base
+  include AnnotationCounts
   include PaginateConcern
 
   belongs_to :project
@@ -10,6 +11,14 @@ class ProjectDoc < ActiveRecord::Base
 
   scope :without_denotations, -> { where(denotations_num: 0) }
   scope :with_denotations, -> { where('denotations_num > ?', 0) }
+
+  def self.annotation_count_for(project, doc)
+    annotation_count_where(project_id: project.id, doc_id: doc.id)
+  end
+
+  def self.annotation_counts_for(project, doc)
+    annotation_counts_where(project_id: project.id, doc_id: doc.id)
+  end
 
   def self.denotations_count_for(doc_id, project_id, span = nil)
     return where(doc_id: doc_id, project_id: project_id).pick(:denotations_num) if span.nil?

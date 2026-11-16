@@ -1,4 +1,5 @@
 class Doc < ActiveRecord::Base
+  include AnnotationCounts
   include Doc::Revision
   include Doc::Media
   include Doc::TextStructure
