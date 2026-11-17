@@ -6,6 +6,7 @@ class SegmentSplitsController < ApplicationController
   before_action :authenticate_user!
   before_action :authorize_media_access!
   before_action :set_media_transcript
+  before_action :authorize_segment_edit
 
   # GET /docs/:doc_id/segment_split/edit
   def edit
@@ -16,8 +17,11 @@ class SegmentSplitsController < ApplicationController
   def set_media_transcript
     @doc = Doc.find(params[:doc_id])
     return render_status_error(:not_found) unless @doc.segments_available?
-    return render_status_error(:forbidden) unless @doc.segment_editable_by?(current_user)
 
     @media_transcript = @doc.media_transcript
+  end
+
+  def authorize_segment_edit
+    render_status_error(:forbidden) unless @doc.segment_editable_by?(current_user)
   end
 end
