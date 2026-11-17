@@ -55,7 +55,7 @@ RSpec.describe 'The segment split editor', type: :request do
     end
   end
 
-  context 'as a user who can list but not edit the segments' do
+  context 'as a user who can access media but cannot update the doc' do
     before { sign_in create(:user).tap(&:confirm) }
 
     it 'is forbidden' do
