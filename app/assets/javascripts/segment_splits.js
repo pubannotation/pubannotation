@@ -1,8 +1,10 @@
 // Loaded with defer only by segment_splits/edit, so the DOM is already parsed when this runs.
 class SegmentSplits {
   constructor() {
-    // The segments as split on this page so far; not saved yet.
+    // The segments as split on this page so far; saved all at once by Save, replacing them all.
     this.segments = JSON.parse(document.getElementById('split-segments').dataset.segments);
+    // Whether any is split but not saved yet.
+    this.unsaved = false;
     // Where to split: the index of the segment and the character offset into its text.
     this.point = null;
 
@@ -14,6 +16,18 @@ class SegmentSplits {
     }
 
     document.getElementById('split-here').addEventListener('click', () => this.splitAtPoint());
+    document.getElementById('split-form').addEventListener('submit', () => this.save());
+    // Asks before leaving with splits unsaved, unless leaving by Save.
+    window.addEventListener('beforeunload', (event) => {
+      if (this.unsaved) event.preventDefault();
+    });
+  }
+
+  // Puts the segments as split into the form Save submits, and leaves without asking.
+  save() {
+    document.getElementById('segment_split_segments').value = JSON.stringify(
+      this.segments.map(({ text, start_ms, end_ms, line_break_after }) => ({ text, start_ms, end_ms, line_break_after })));
+    this.unsaved = false;
   }
 
   // Splits the pointed segment at the playback time, or shows why it can't.
@@ -22,16 +36,19 @@ class SegmentSplits {
     if (error) return this.showError(error);
 
     this.point = null;
+    this.unsaved = true;
     this.render();
   }
 
   // Splits the segment at `index` into two at `offset` into its text and at `ms`, the earlier one ending and
-  // the later one starting there, a line break after it following the later one. Returns why it can't be
-  // split, if it can't.
+  // the later one starting there, a line break after it following the later one. The spaces at the split go,
+  // as the segments' boundary stands for them. Returns why it can't be split, if it can't.
   splitSegment(index, offset, ms) {
     const segment = this.segments[index];
+    const before = segment.text.slice(0, offset).trimEnd();
+    const after = segment.text.slice(offset).trimStart();
 
-    if (offset <= 0 || offset >= segment.text.length) {
+    if (before === '' || after === '') {
       return 'Point inside the text, not at its start or end.';
     }
     if (ms <= segment.start_ms || ms >= segment.end_ms) {
@@ -39,8 +56,8 @@ class SegmentSplits {
     }
 
     this.segments.splice(index, 1,
-      { ...segment, text: segment.text.slice(0, offset), end_ms: ms, line_break_after: false },
-      { ...segment, text: segment.text.slice(offset), start_ms: ms });
+      { ...segment, text: before, end_ms: ms, line_break_after: false },
+      { ...segment, text: after, start_ms: ms });
   }
 
   render() {
@@ -88,6 +105,7 @@ class SegmentSplits {
   // Where it's pointed to split, if it is, enabling Split here.
   showPoint() {
     document.getElementById('split-here').disabled = !this.point;
+    document.getElementById('save-splits').disabled = !this.unsaved;
     document.getElementById('split-point').textContent = this.point
       ? `Segment #${this.point.index}, before character ${this.point.offset}`
       : "Click in a segment's text to point where to split it.";
