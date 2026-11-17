@@ -19,7 +19,7 @@
 <p>Splits are shown here only; they aren't saved yet.</p>
 
 <%# Rendered by segment_splits.js from the segments, which it splits as Split here is pressed. %>
-<div id="split-segments" data-segments="<%= @media_transcript.segments.to_json %>"></div>
+<div id="split-segments" data-segments="<%= @media_transcript.segments.to_json(only: %i[text start_ms end_ms line_break_after]) %>"></div>
 
 <%= link_to t('views.shared.back'), doc_segments_path(@doc) %>
 
