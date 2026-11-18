@@ -25,6 +25,7 @@ class MediaTranscript < ApplicationRecord
   validate :doc_has_matching_medium
   validate :segments_unchanged_without_doc, on: :update
   validate :segments_have_speech, on: :update, if: :doc
+  validate :segments_keep_time_span, on: :update
 
   # Records loaded from the database already have their text.
   after_initialize :default_text_from_segments, if: :new_record?
@@ -244,6 +245,27 @@ class MediaTranscript < ApplicationRecord
   # its segments aren't edited.
   def segments_unchanged_without_doc
     errors.add(:segments, "can't be changed for a transcript with no document") if doc.nil? && segments_changing?
+  end
+
+  # The segments, however they're changed (e.g. split or merged), span the same time of the medium as before:
+  # from the earliest start to the latest end, as they're chronological. A missing time is reported by the
+  # segment's presence check instead.
+  def segments_keep_time_span
+    return unless segments_changing?
+
+    old_segments = segments.reject(&:new_record?)
+    old_span = time_span(old_segments.map(&:start_ms_in_database), old_segments.map(&:end_ms_in_database))
+    new_span = time_span(current_segments.map(&:start_ms), current_segments.map(&:end_ms))
+    return if old_span.nil? || new_span.nil? || new_span == old_span
+
+    errors.add(:segments, "must span the same time as before, #{old_span.first} to #{old_span.last} ms")
+  end
+
+  # From the earliest of `starts` to the latest of `ends`, if there are any.
+  def time_span(starts, ends)
+    earliest = starts.compact.min
+    latest = ends.compact.max
+    [earliest, latest] if earliest && latest
   end
 
   # A doc's transcript can't be left with no speech, since the doc's body follows its speech. One with
