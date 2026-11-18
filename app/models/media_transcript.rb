@@ -30,10 +30,9 @@ class MediaTranscript < ApplicationRecord
   # Records loaded from the database already have their text.
   after_initialize :default_text_from_segments, if: :new_record?
 
-  # Once created, changed segments (e.g. a segment's text edited) rebuild text, and the doc's body
-  # follows it.
+  # Once created, changed segments (e.g. a segment's text edited) rebuild text, and the doc follows it.
   before_update :rebuild_text, if: :segments_changing?
-  after_update :sync_doc_body, if: -> { doc && saved_change_to_text? }
+  after_update :sync_doc, if: -> { doc && saved_change_to_text? }
 
   # A manually registered audio/video document has one segment covering the whole medium.
   def self.create_from_doc!(doc)
@@ -231,10 +230,30 @@ class MediaTranscript < ApplicationRecord
     self.text = speech_text
   end
 
-  # Inside the save's transaction, so a doc failing to save rolls the transcript back too. Its
-  # denotations are left as they are, even those after an edited segment.
+  # Inside the save's transaction, so a doc failing to follow rolls the transcript back too: its body, and its
+  # AudioSegment blocks. Its denotations are left as they are, even those after an edited segment.
+  def sync_doc
+    sync_doc_body
+    rebuild_segment_blocks
+  end
+
   def sync_doc_body
     doc.update!(body: text) if doc.body != text
+  end
+
+  # Rebuilds the AudioSegment blocks in each project that has them on the doc, to span the speech segments as
+  # they now are, unless they already do (e.g. as only a line break changed), since the relations and
+  # attributes on them go with them.
+  def rebuild_segment_blocks
+    spans = speech_segment_spans.map { it.values_at(:begin, :end) }
+
+    doc.project_docs.each do |project_doc|
+      old_spans = project_doc.block_spans_of(SEGMENT_BLOCK_OBJ)
+      next if old_spans.empty? || old_spans == spans
+
+      project_doc.delete_blocks_of(SEGMENT_BLOCK_OBJ)
+      create_segment_blocks!(project_doc.project)
+    end
   end
 
   def doc_has_matching_medium

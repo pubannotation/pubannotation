@@ -113,6 +113,33 @@ class ProjectDoc < ActiveRecord::Base
     end
   end
 
+  # The spans ([begin, end]) of its blocks whose obj is `obj`, in order.
+  def block_spans_of(obj)
+    Block.where(project_id:, doc_id:, obj:).order(:begin, :end).pluck(:begin, :end)
+  end
+
+  # Deletes its blocks whose obj is `obj`, with the relations from or to them and the attributes on those, as
+  # destroying each would, but in a few statements however many there are, uncounting them the same way.
+  def delete_blocks_of(obj)
+    block_ids = Block.where(project_id:, doc_id:, obj:).ids
+    return if block_ids.empty?
+
+    relations = Relation.where(project_id:, doc_id:)
+    relation_ids = relations.where(subj_type: 'Block', subj_id: block_ids)
+                            .or(relations.where(obj_type: 'Block', obj_id: block_ids)).ids
+    attrivutes = Attrivute.where(project_id:, doc_id:)
+    attrivutes.where(subj_type: 'Block', subj_id: block_ids)
+              .or(attrivutes.where(subj_type: 'Relation', subj_id: relation_ids)).delete_all
+    Relation.where(id: relation_ids).delete_all
+    Block.where(id: block_ids).delete_all
+
+    counts = { blocks_num: -block_ids.size, relations_num: -relation_ids.size }
+    ProjectDoc.update_counters(id, counts)
+    Doc.update_counters(doc_id, counts)
+    Project.update_counters(project_id, counts)
+    project.update_updated_at
+  end
+
   # reassign ids to instances in annotations to avoid id confiction
   # ToDo: del the same one in the Project class
   def reid_annotations!(annotations)
