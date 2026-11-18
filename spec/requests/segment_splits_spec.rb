@@ -28,24 +28,10 @@ RSpec.describe 'The segment split editor', type: :request do
       expect(response.body).to include('id="media-player"', 'id="split-here"', 'id="save-splits"')
       segments = media_transcript.segments.map do |segment|
         { text: segment.text, start_ms: segment.start_ms, end_ms: segment.end_ms,
-          line_break_after: segment.line_break_after, speech: true }
+          line_break_after: segment.line_break_after }
       end
       split_segments = Nokogiri::HTML(response.body).at_css('#split-segments')['data-segments']
       expect(JSON.parse(split_segments, symbolize_names: true)).to eq(segments)
-    end
-
-    it 'tells the page which segments are non-speech labels, for it not to split them' do
-      media_transcript.resegment!([
-        { text: 'Hello', start_ms: 0, end_ms: 300, line_break_after: false },
-        { text: '(upbeat music)', start_ms: 300, end_ms: 450, line_break_after: false },
-        { text: 'world', start_ms: 450, end_ms: 600, line_break_after: false }
-      ])
-
-      get "/docs/#{doc.id}/segment_split/edit"
-
-      split_segments = Nokogiri::HTML(response.body).at_css('#split-segments')['data-segments']
-      expect(JSON.parse(split_segments, symbolize_names: true).map { |segment| segment.values_at(:text, :speech) })
-        .to eq([['Hello', true], ['(upbeat music)', false], ['world', true]])
     end
 
     it 'links to it from the segment list' do

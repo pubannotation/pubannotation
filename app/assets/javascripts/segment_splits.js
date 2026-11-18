@@ -78,11 +78,9 @@ class SegmentSplits {
     } else {
       text.textContent = segment.text;
     }
-    // A non-speech label, such as "(music)", can't be pointed to: its fragments wouldn't be labels any more, but
-    // speech in the doc's body.
-    if (segment.speech) text.addEventListener('click', () => this.pointAt(text, index));
+    text.addEventListener('click', () => this.pointAt(text, index));
 
-    const row = this.element('div', segment.speech ? 'split-segment' : 'split-segment non-speech');
+    const row = this.element('div', 'split-segment');
     row.append(time, ' ', text);
     return row;
   }

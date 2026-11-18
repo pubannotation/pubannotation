@@ -11,7 +11,7 @@
 <%= medium_tag(@doc.medium, id: 'media-player') %>
 <p>Playback time: <span id="playback-time">0:00.000 (0 ms)</span></p>
 
-<p id="split-point">Click in a segment's text to point where to split it. Non-speech labels, such as "(music)", can't be split.</p>
+<p id="split-point">Click in a segment's text to point where to split it.</p>
 <p>
   <%= button_tag 'Split here', type: 'button', id: 'split-here', class: 'button', disabled: true %>
   <span id="split-error" class="error"></span>
@@ -27,7 +27,7 @@
 <% end %>
 
 <%# Rendered by segment_splits.js from the segments, which it splits as Split here is pressed. %>
-<div id="split-segments" data-segments="<%= split_segments_json(@media_transcript.segments) %>"></div>
+<div id="split-segments" data-segments="<%= @media_transcript.segments.to_json(only: %i[text start_ms end_ms line_break_after]) %>"></div>
 
 <%= link_to t('views.shared.back'), doc_segments_path(@doc) %>
 

@@ -7,12 +7,6 @@
     cursor: text;
   }
 
-  /* A non-speech label, which can't be split */
-  .non-speech .split-segment-text {
-    color: #888;
-    cursor: default;
-  }
-
   /* Where the segment is pointed to be split */
   .split-mark {
     border-left: 2px solid red;
