@@ -18,12 +18,12 @@
   <span id="split-error" class="error"></span>
 </p>
 
-<%# Filled by segment_splits.js with the segments as split, as Save is pressed. %>
+<%# Filled by segment_splits.js with the segments as split and merged, as Save is pressed. %>
 <%= form_with scope: :segment_split, url: doc_segment_split_path(@doc), method: :patch, id: 'split-form' do |f| %>
   <%= f.hidden_field :segments %>
   <p>
     <%= f.submit 'Save', id: 'save-splits', class: 'button', disabled: true %>
-    Splits are shown here until saved.
+    Splits and merges are shown here until saved.
   </p>
 <% end %>
 

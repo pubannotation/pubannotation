@@ -65,6 +65,7 @@ class SegmentSplits {
   mergeWithNext() {
     this.mergeSegments(this.point.index);
     this.point = null;
+    this.unsaved = true;
     this.render();
   }
 
