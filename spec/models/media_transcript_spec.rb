@@ -600,6 +600,25 @@ RSpec.describe MediaTranscript, type: :model do
       expect(doc.reload.body).to eq('Hello world')
     end
 
+    it 'saves none of them when they start or end at another time than the segments they replace' do
+      [[{ text: 'Hello', start_ms: 100, end_ms: 300 }, { text: 'world', start_ms: 300, end_ms: 600 }],
+       [{ text: 'Hello', start_ms: 0, end_ms: 300 }, { text: 'world', start_ms: 300, end_ms: 500 }],
+       [{ text: 'Hello', start_ms: 0, end_ms: 300 }, { text: 'world', start_ms: 300, end_ms: 700 }]].each do |segments|
+        expect do
+          media_transcript.resegment!(segments.map { it.merge(line_break_after: false) })
+        end.to raise_error(ActiveRecord::RecordInvalid, /Segments must span the same time as before, 0 to 600 ms/)
+        expect(media_transcript.reload.segments.map { [it.start_ms, it.end_ms] }).to eq([[0, 300], [300, 600]])
+      end
+    end
+
+    it 'saves them when they span the same time, even with a gap between them' do
+      media_transcript.resegment!([
+        { text: 'Hello', start_ms: 0, end_ms: 200, line_break_after: false },
+        { text: 'world', start_ms: 400, end_ms: 600, line_break_after: false }
+      ])
+
+      expect(media_transcript.reload.segments.map { [it.start_ms, it.end_ms] }).to eq([[0, 200], [400, 600]])
+    end
   end
 
   describe '#replace_text!' do
