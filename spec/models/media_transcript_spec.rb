@@ -372,6 +372,23 @@ RSpec.describe MediaTranscript, type: :model do
       expect(blocks_nums).to eq([3, 3, 3])
     end
 
+    it 'spans the speech segments as they are merged or split at a space, leaving the text as it is' do
+      media_transcript.resegment!([{ text: 'Hello world', start_ms: 0, end_ms: 600, line_break_after: false }])
+
+      expect(doc.reload.body).to eq('Hello world')
+      expect(segment_blocks).to eq([[project.id, 'B1', 0, 11]])
+      expect(blocks_nums).to eq([1, 1, 1])
+
+      media_transcript.resegment!([
+        { text: 'Hello', start_ms: 0, end_ms: 300, line_break_after: false },
+        { text: 'world', start_ms: 300, end_ms: 600, line_break_after: false }
+      ])
+
+      expect(doc.reload.body).to eq('Hello world')
+      expect(segment_blocks).to eq([[project.id, 'B1', 0, 5], [project.id, 'B2', 6, 11]])
+      expect(blocks_nums).to eq([2, 2, 2])
+    end
+
     it 'spans the one segment the text is replaced with' do
       media_transcript.replace_text!('Hello there world')
 

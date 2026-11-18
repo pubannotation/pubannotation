@@ -30,9 +30,10 @@ class MediaTranscript < ApplicationRecord
   # Records loaded from the database already have their text.
   after_initialize :default_text_from_segments, if: :new_record?
 
-  # Once created, changed segments (e.g. a segment's text edited) rebuild text, and the doc follows it.
+  # Once created, changed segments (e.g. a segment's text edited) rebuild text, and the doc follows them. Not only
+  # as text changes, since segments split or merged at a space leave it as it is but span the doc differently.
   before_update :rebuild_text, if: :segments_changing?
-  after_update :sync_doc, if: -> { doc && saved_change_to_text? }
+  after_update :sync_doc, if: :doc
 
   # A manually registered audio/video document has one segment covering the whole medium.
   def self.create_from_doc!(doc)
@@ -231,7 +232,8 @@ class MediaTranscript < ApplicationRecord
   end
 
   # Inside the save's transaction, so a doc failing to follow rolls the transcript back too: its body, and its
-  # AudioSegment blocks. Its denotations are left as they are, even those after an edited segment.
+  # AudioSegment blocks, each changed only if it no longer follows. Its denotations are left as they are, even
+  # those after an edited segment.
   def sync_doc
     sync_doc_body
     rebuild_segment_blocks
