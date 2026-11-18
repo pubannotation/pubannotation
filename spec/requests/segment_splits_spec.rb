@@ -64,7 +64,7 @@ RSpec.describe 'The segment split editor', type: :request do
       patch "/docs/#{doc.id}/segment_split", params: { segment_split: { segments: segments.to_json } }
 
       expect(response).to redirect_to("/docs/#{doc.id}/segment_split/edit")
-      expect(flash[:notice]).to eq('Segments were successfully split.')
+      expect(flash[:notice]).to eq('Segments were successfully saved.')
       expect(media_transcript.reload.segments.map(&:text)).to eq(%w[Hello wo rld])
       expect(doc.reload.body).to eq('Hello wo rld')
     end
