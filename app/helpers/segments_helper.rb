@@ -15,4 +15,12 @@ module SegmentsHelper
   def segment_time_range(segment)
     "#{segment_time(segment.start_ms)} - #{segment_time(segment.end_ms)}"
   end
+
+  # The segments for the split editor to render, as JSON of their attributes and whether each is speech, as
+  # only speech can be split.
+  def split_segments_json(segments)
+    segments.map do |segment|
+      segment.as_json(only: %i[text start_ms end_ms line_break_after]).merge('speech' => segment.speech?)
+    end.to_json
+  end
 end
