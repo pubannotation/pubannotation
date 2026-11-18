@@ -103,6 +103,17 @@ class SegmentSplits {
     // Selected when pointed in, to be split or merged with the next one.
     row.classList.toggle('selected', this.point?.index === index);
     row.append(time, ' ', text);
+    // A blank one has no text to click in, so it's selected by a button instead, to be merged with the next one.
+    if (segment.text.trim() === '') {
+      const select = this.element('button', 'button');
+      select.type = 'button';
+      select.textContent = 'Select blank segment';
+      select.addEventListener('click', () => {
+        this.point = { index, offset: 0 };
+        this.render();
+      });
+      row.append(' ', select);
+    }
     return row;
   }
 
