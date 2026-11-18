@@ -25,7 +25,7 @@ RSpec.describe 'The segment split editor', type: :request do
       get "/docs/#{doc.id}/segment_split/edit"
 
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include('id="media-player"', 'id="split-here"', 'id="save-splits"')
+      expect(response.body).to include('id="media-player"', 'id="split-here"', 'id="merge-with-next"', 'id="save-splits"')
       segments = media_transcript.segments.map do |segment|
         { text: segment.text, start_ms: segment.start_ms, end_ms: segment.end_ms,
           line_break_after: segment.line_break_after }
@@ -64,7 +64,7 @@ RSpec.describe 'The segment split editor', type: :request do
       patch "/docs/#{doc.id}/segment_split", params: { segment_split: { segments: segments.to_json } }
 
       expect(response).to redirect_to("/docs/#{doc.id}/segment_split/edit")
-      expect(flash[:notice]).to eq('Segments were successfully split.')
+      expect(flash[:notice]).to eq('Segments were successfully saved.')
       expect(media_transcript.reload.segments.map(&:text)).to eq(%w[Hello wo rld])
       expect(doc.reload.body).to eq('Hello wo rld')
     end
@@ -79,6 +79,21 @@ RSpec.describe 'The segment split editor', type: :request do
 
       expect(response).to redirect_to("/docs/#{doc.id}/segment_split/edit")
       expect(flash[:alert]).to include("must be greater than or equal to the previous segment's end_ms")
+      expect(doc.reload.body).to eq('Hello world')
+    end
+
+    it 'saves a segment merged with a blank one without the space joining them' do
+      media_transcript.resegment!([
+        { text: '', start_ms: 0, end_ms: 100, line_break_after: false },
+        { text: 'Hello', start_ms: 100, end_ms: 300, line_break_after: false },
+        { text: 'world', start_ms: 300, end_ms: 600, line_break_after: false }
+      ])
+      segments = [{ text: ' Hello', start_ms: 0, end_ms: 300, line_break_after: false },
+                  { text: 'world', start_ms: 300, end_ms: 600, line_break_after: false }]
+
+      patch "/docs/#{doc.id}/segment_split", params: { segment_split: { segments: segments.to_json } }
+
+      expect(media_transcript.reload.segments.map(&:text)).to eq(%w[Hello world])
       expect(doc.reload.body).to eq('Hello world')
     end
 

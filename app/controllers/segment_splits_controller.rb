@@ -18,7 +18,7 @@ class SegmentSplitsController < ApplicationController
   def update
     @media_transcript.resegment!(segments_param)
 
-    redirect_to edit_doc_segment_split_path(@doc), notice: 'Segments were successfully split.'
+    redirect_to edit_doc_segment_split_path(@doc), notice: 'Segments were successfully saved.'
   rescue JSON::ParserError, ArgumentError, TypeError, ActiveRecord::RecordInvalid => e
     redirect_to edit_doc_segment_split_path(@doc), alert: e.message
   end

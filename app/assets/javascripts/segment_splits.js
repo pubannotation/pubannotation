@@ -16,6 +16,7 @@ class SegmentSplits {
     }
 
     document.getElementById('split-here').addEventListener('click', () => this.splitAtPoint());
+    document.getElementById('merge-with-next').addEventListener('click', () => this.mergeWithNext());
     document.getElementById('split-form').addEventListener('submit', () => this.save());
     // Asks before leaving with splits unsaved, unless leaving by Save.
     window.addEventListener('beforeunload', (event) => {
@@ -60,6 +61,24 @@ class SegmentSplits {
       { ...segment, text: after, start_ms: ms });
   }
 
+  // Merges the pointed segment with the next one.
+  mergeWithNext() {
+    this.mergeSegments(this.point.index);
+    this.point = null;
+    this.unsaved = true;
+    this.render();
+  }
+
+  // Merges the segment at `index` with the next one: from its start to the next one's end, their texts joined
+  // with a space, as a doc's body joins its segments, and with the line break, if any, after the next one.
+  mergeSegments(index) {
+    const segment = this.segments[index];
+    const next = this.segments[index + 1];
+
+    this.segments.splice(index, 2,
+      { ...segment, text: `${segment.text} ${next.text}`, end_ms: next.end_ms, line_break_after: next.line_break_after });
+  }
+
   render() {
     document.getElementById('split-segments').replaceChildren(...this.segments.map((segment, index) => this.segmentRow(segment, index)));
     this.showPoint();
@@ -81,7 +100,20 @@ class SegmentSplits {
     text.addEventListener('click', () => this.pointAt(text, index));
 
     const row = this.element('div', 'split-segment');
+    // Selected when pointed in, to be split or merged with the next one.
+    row.classList.toggle('selected', this.point?.index === index);
     row.append(time, ' ', text);
+    // A blank one has no text to click in, so it's selected by a button instead, to be merged with the next one.
+    if (segment.text.trim() === '') {
+      const select = this.element('button', 'button');
+      select.type = 'button';
+      select.textContent = 'Select blank segment';
+      select.addEventListener('click', () => {
+        this.point = { index, offset: 0 };
+        this.render();
+      });
+      row.append(' ', select);
+    }
     return row;
   }
 
@@ -102,13 +134,14 @@ class SegmentSplits {
     return range.toString().length;
   }
 
-  // Where it's pointed to split, if it is, enabling Split here.
+  // Where it's pointed to split, if it is, enabling Split here, and Merge with next unless it's the last one.
   showPoint() {
     document.getElementById('split-here').disabled = !this.point;
+    document.getElementById('merge-with-next').disabled = !this.point || this.point.index >= this.segments.length - 1;
     document.getElementById('save-splits').disabled = !this.unsaved;
     document.getElementById('split-point').textContent = this.point
       ? `Segment #${this.point.index}, before character ${this.point.offset}`
-      : "Click in a segment's text to point where to split it.";
+      : "Click in a segment's text to point where to split it, or to select it to merge with the next one.";
   }
 
   // The playback time Split here would split at.

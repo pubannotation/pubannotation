@@ -11,18 +11,19 @@
 <%= medium_tag(@doc.medium, id: 'media-player') %>
 <p>Playback time: <span id="playback-time">0:00.000 (0 ms)</span></p>
 
-<p id="split-point">Click in a segment's text to point where to split it.</p>
+<p id="split-point">Click in a segment's text to point where to split it, or to select it to merge with the next one.</p>
 <p>
   <%= button_tag 'Split here', type: 'button', id: 'split-here', class: 'button', disabled: true %>
+  <%= button_tag 'Merge with next', type: 'button', id: 'merge-with-next', class: 'button', disabled: true %>
   <span id="split-error" class="error"></span>
 </p>
 
-<%# Filled by segment_splits.js with the segments as split, as Save is pressed. %>
+<%# Filled by segment_splits.js with the segments as split and merged, as Save is pressed. %>
 <%= form_with scope: :segment_split, url: doc_segment_split_path(@doc), method: :patch, id: 'split-form' do |f| %>
   <%= f.hidden_field :segments %>
   <p>
     <%= f.submit 'Save', id: 'save-splits', class: 'button', disabled: true %>
-    Splits are shown here until saved.
+    Splits and merges are shown here until saved.
   </p>
 <% end %>
 
