@@ -82,6 +82,19 @@ RSpec.describe 'The segment split editor', type: :request do
       expect(doc.reload.body).to eq('Hello world')
     end
 
+    it 'saves nothing for a later segment with a missing start, telling why back on the editor' do
+      [{ text: 'world', end_ms: 600, line_break_after: false },
+       { text: 'world', start_ms: nil, end_ms: 600, line_break_after: false }].each do |later|
+        segments = [{ text: 'Hello', start_ms: 0, end_ms: 300, line_break_after: false }, later]
+
+        patch "/docs/#{doc.id}/segment_split", params: { segment_split: { segments: segments.to_json } }
+
+        expect(response).to redirect_to("/docs/#{doc.id}/segment_split/edit")
+        expect(flash[:alert]).to eq("Validation failed: Segments start ms can't be blank")
+      end
+      expect(doc.reload.body).to eq('Hello world')
+    end
+
     it 'saves nothing for segments that are not a JSON array of objects, telling why back on the editor' do
       ['{"text": "Hello"}', '["Hello"]'].each do |segments|
         patch "/docs/#{doc.id}/segment_split", params: { segment_split: { segments: } }
