@@ -60,6 +60,20 @@ RSpec.describe Segment, type: :model do
         expect(segment.errors[:start_ms]).to include("must be greater than or equal to the previous segment's end_ms (600)")
       end
 
+      it 'leaves a missing start to its presence check' do
+        segment = media_transcript.segments.build(sort_order: 2, text: 'again', start_ms: nil, end_ms: 900)
+
+        expect(segment).not_to be_valid
+        expect(segment.errors[:start_ms]).to eq(["can't be blank"])
+      end
+
+      it "leaves the previous segment's missing end to its presence check" do
+        media_transcript.segments.last.end_ms = nil
+        segment = media_transcript.segments.build(sort_order: 2, text: 'again', start_ms: 700, end_ms: 900)
+
+        expect(segment).to be_valid
+      end
+
       it 'allows it to start right at its end' do
         expect(media_transcript.segments.build(sort_order: 2, text: 'again', start_ms: 600, end_ms: 900)).to be_valid
       end

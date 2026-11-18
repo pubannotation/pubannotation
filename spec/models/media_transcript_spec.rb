@@ -553,6 +553,55 @@ RSpec.describe MediaTranscript, type: :model do
     end
   end
 
+  describe '#resegment!' do
+    let(:medium) { create(:medium, media_type: :audio, content_type: 'audio/mpeg') }
+    let(:doc) { create(:doc, body: 'Hello world', medium:) }
+    let!(:media_transcript) { create(:media_transcript, medium:, doc:, text: 'Hello world') }
+
+    it "replaces all the segments, numbered in order, and rebuilds the text and the doc's body" do
+      old_ids = media_transcript.segments.map(&:id)
+
+      media_transcript.resegment!([
+        { text: 'Hello', start_ms: 0, end_ms: 300, line_break_after: false },
+        { text: 'wo', start_ms: 300, end_ms: 450, line_break_after: false },
+        { text: 'rld', start_ms: 450, end_ms: 600, line_break_after: false }
+      ])
+
+      expect(media_transcript.reload.segments).to match([
+        have_attributes(sort_order: 0, text: 'Hello', start_ms: 0, end_ms: 300),
+        have_attributes(sort_order: 1, text: 'wo', start_ms: 300, end_ms: 450),
+        have_attributes(sort_order: 2, text: 'rld', start_ms: 450, end_ms: 600)
+      ])
+      expect(media_transcript.segments.map(&:id)).not_to include(*old_ids)
+      expect(doc.reload.body).to eq('Hello wo rld')
+    end
+
+    it 'takes only the text, the times, and the line break of each' do
+      media_transcript.resegment!([{ text: 'Hello world', start_ms: 0, end_ms: 600, line_break_after: false,
+                                     sort_order: 5, media_transcript_id: 0 }])
+
+      expect(media_transcript.reload.segments).to match([have_attributes(sort_order: 0, text: 'Hello world')])
+    end
+
+    it 'locks itself while replacing the segments' do
+      expect(media_transcript).to receive(:with_lock).and_call_original
+
+      media_transcript.resegment!([{ text: 'Hello world', start_ms: 0, end_ms: 600, line_break_after: false }])
+    end
+
+    it 'saves none of them when one is invalid' do
+      expect do
+        media_transcript.resegment!([
+          { text: 'Hello', start_ms: 0, end_ms: 400, line_break_after: false },
+          { text: 'world', start_ms: 300, end_ms: 600, line_break_after: false }
+        ])
+      end.to raise_error(ActiveRecord::RecordInvalid)
+      expect(media_transcript.reload.segments.map(&:text)).to eq(%w[Hello world])
+      expect(doc.reload.body).to eq('Hello world')
+    end
+
+  end
+
   describe '#replace_text!' do
     it 'merges the segments into one spanning them all' do
       medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')

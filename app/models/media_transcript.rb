@@ -160,6 +160,20 @@ class MediaTranscript < ApplicationRecord
     end
   end
 
+  # Replaces all the segments with ones made from `segment_attributes` (each a {text:, start_ms:, end_ms:,
+  # line_break_after:} hash, in order), and saves it, rebuilding text and the doc's body. The new segments are
+  # checked as any are (e.g. not overlapping), saving none of them if one fails. Like #update_segment!, reloads
+  # and locks itself first.
+  def resegment!(segment_attributes)
+    new_segments = segment_attributes.map.with_index do |attributes, sort_order|
+      Segment.new(**attributes.slice(:text, :start_ms, :end_ms, :line_break_after), sort_order:)
+    end
+    with_lock do
+      replace_segments(new_segments)
+      save!
+    end
+  end
+
   # Avoid replacing segments when the document is following this transcript.
   def sync_text!(new_text)
     replace_text!(new_text) unless text == new_text

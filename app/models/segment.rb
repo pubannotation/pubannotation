@@ -32,7 +32,9 @@ class Segment < ApplicationRecord
   # Against the segment before it in its transcript, so the segments don't overlap.
   def start_not_before_previous_end
     previous = previous_segment
-    return unless previous && start_ms < previous.end_ms
+    # A missing time is reported by its presence check instead.
+    return if previous.nil? || start_ms.nil? || previous.end_ms.nil?
+    return if start_ms >= previous.end_ms
 
     errors.add(:start_ms, "must be greater than or equal to the previous segment's end_ms (#{previous.end_ms})")
   end
