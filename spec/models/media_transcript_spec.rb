@@ -333,6 +333,17 @@ RSpec.describe MediaTranscript, type: :model do
       expect(doc.reload.blocks_num).to eq(2)
       expect(project.reload.blocks_num).to eq(2)
     end
+
+    it "advances the project's annotations_updated_at, for its exports to be updated, but not its doc's" do
+      project = create(:project, annotations_updated_at: 1.day.ago)
+      medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
+      doc = create(:doc, body: 'Hello world', medium:).tap { project.add_doc!(it) }
+      media_transcript = create(:media_transcript, medium:, doc:, text: 'Hello world')
+
+      expect { media_transcript.create_segment_blocks!(project) }
+        .to change { project.reload.annotations_updated_at }.to(be_within(1.minute).of(Time.current))
+      expect(ProjectDoc.find_by(project:, doc:).annotations_updated_at).to be_nil
+    end
   end
 
   describe 'rebuilding the AudioSegment blocks as the segments change' do
@@ -408,6 +419,14 @@ RSpec.describe MediaTranscript, type: :model do
       expect(Attrivute.where(doc:)).to be_empty
       expect([ProjectDoc.find_by(project:, doc:).relations_num, doc.reload.relations_num, project.reload.relations_num])
         .to eq([0, 0, 0])
+    end
+
+    it "advances the project's annotations_updated_at, for its exports to be updated, but not its doc's" do
+      project.update_columns(annotations_updated_at: 1.day.ago)
+
+      expect { media_transcript.update_segment!(media_transcript.segments.first, { text: 'Hi' }) }
+        .to change { project.reload.annotations_updated_at }.to(be_within(1.minute).of(Time.current))
+      expect(ProjectDoc.find_by(project:, doc:).annotations_updated_at).to be_nil
     end
 
     it 'leaves the other blocks on the doc as they are' do

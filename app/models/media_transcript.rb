@@ -117,6 +117,9 @@ class MediaTranscript < ApplicationRecord
     doc.increment!(:blocks_num, records.size)
     project.increment!(:blocks_num, records.size)
     project.update_updated_at
+    # For the project's exports (e.g. its RDF and annotation archive) to be updated. Its doc's is left as it is, so
+    # the doc is still taken as yet to be annotated (e.g. by the annotators obtaining missing annotations).
+    project.update_annotations_updated_at
   end
 
   # generation_model as AudioTranscriptionService.generation_model records it, e.g. "whisper:ggml-base.en".
