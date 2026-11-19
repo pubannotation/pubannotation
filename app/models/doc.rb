@@ -173,6 +173,28 @@ class Doc < ActiveRecord::Base
     d_num = ActiveRecord::Base.connection.delete("DELETE FROM docs WHERE sourcedb LIKE '%#{Doc::UserSourcedbSeparator}%' AND NOT EXISTS (SELECT 1 FROM project_docs WHERE project_docs.doc_id = docs.id)")
   end
 
+  # Its denotations, in every project, wholly within [span_begin, span_end) of its body.
+  def denotations_within(span_begin, span_end)
+    denotations.includes(:project).where('"begin" >= ? AND "end" <= ?', span_begin, span_end)
+  end
+
+  # Moves its denotations, in every project, to follow its body changed by `delta` chars just before
+  # `position`: each begin or end at or after `position` moves by `delta`, so one ending there grows or shrinks,
+  # and those after it shift. Updated in place rather than recreated, keeping the relations and attributes on
+  # them. The projects whose denotations moved have their annotations_updated_at advanced, for their exports
+  # to be updated.
+  def shift_denotations(position, delta)
+    return if delta.zero?
+
+    moved = denotations.where('"end" >= ?', position)
+    project_ids = moved.distinct.pluck(:project_id)
+    denotations.where('"begin" >= ?', position).update_all(['"begin" = "begin" + ?', delta])
+    moved.update_all(['"end" = "end" + ?', delta])
+
+    Project.where(id: project_ids).find_each(&:update_annotations_updated_at)
+    project_docs.where(project_id: project_ids).find_each(&:update_annotations_updated_at)
+  end
+
   private
 
   def document_text

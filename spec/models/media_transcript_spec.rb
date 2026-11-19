@@ -643,6 +643,58 @@ RSpec.describe MediaTranscript, type: :model do
     end
   end
 
+  describe 'moving the denotations as segment text is edited' do
+    let(:medium) { create(:medium, media_type: :audio, content_type: 'audio/mpeg') }
+    let(:doc) { create(:doc, body: 'Hello world', medium:) }
+    let!(:media_transcript) { create(:media_transcript, medium:, doc:, text: 'Hello world') }
+    let(:hello) { media_transcript.segments.first }
+    let(:world) { media_transcript.segments.last }
+    let!(:a) { create(:denotation, project: create(:project), doc:, begin: 0, end: 5) }
+    let!(:b) { create(:denotation, project: create(:project), doc:, begin: 6, end: 11) }
+
+    def span(denotation) = denotation.reload.attributes.values_at('begin', 'end')
+
+    describe '#update_segment! with text' do
+      it 'shifts the denotations after a segment with none, as its whole text is edited' do
+        a.destroy
+
+        media_transcript.update_segment!(hello, { text: 'Hi' })
+
+        expect(doc.reload.body).to eq('Hi world')
+        expect(span(b)).to eq([3, 8])
+      end
+
+      it 'refuses the whole text of a segment with denotations' do
+        expect { media_transcript.update_segment!(hello, { text: 'Hi' }) }
+          .to raise_error(ArgumentError, "A segment with denotations on it can't be edited as a whole.")
+        expect(doc.reload.body).to eq('Hello world')
+      end
+
+      it 'shifts the denotations after a speech segment edited into a label' do
+        a.destroy
+
+        media_transcript.update_segment!(hello, { text: '(music)' })
+
+        expect(doc.reload.body).to eq('world')
+        expect(span(b)).to eq([0, 5])
+      end
+    end
+
+    it 'shifts the denotations after a non-speech segment edited into speech, separator included' do
+      music_doc = create(:doc, body: 'world', medium:)
+      transcript = create(:media_transcript, medium:, doc: music_doc, text: 'world', segments: [
+        build(:segment, :without_transcript, sort_order: 0, text: '(music)', start_ms: 0, end_ms: 300),
+        build(:segment, :without_transcript, sort_order: 1, text: 'world', start_ms: 300, end_ms: 600)
+      ])
+      world_denotation = create(:denotation, project: create(:project), doc: music_doc, begin: 0, end: 5)
+
+      transcript.update_segment!(transcript.segments.first, { text: 'Hello' })
+
+      expect(music_doc.reload.body).to eq('Hello world')
+      expect(span(world_denotation)).to eq([6, 11])
+    end
+  end
+
   describe '#update_segment!' do
     let(:medium) { create(:medium, media_type: :audio, content_type: 'audio/mpeg') }
     let(:doc) { create(:doc, body: 'Hello world', medium:) }

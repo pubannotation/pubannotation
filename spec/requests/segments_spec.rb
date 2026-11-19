@@ -111,6 +111,14 @@ RSpec.describe 'The segments page', type: :request do
       end
     end
 
+    describe 'GET /docs/:doc_id/segments with denotations' do
+      it 'no longer says the annotations after an edited segment are not moved' do
+        get "/docs/#{doc.id}/segments"
+
+        expect(response.body).not_to include('The annotations after it are not moved.')
+      end
+    end
+
     describe 'PATCH /docs/:doc_id/segments/:id' do
       it "updates the segment's text and the doc's body, then goes back to the list" do
         patch "/docs/#{doc.id}/segments/#{world.id}", params: { segment: { text: 'there' } }

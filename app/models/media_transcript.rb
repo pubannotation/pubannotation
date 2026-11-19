@@ -111,8 +111,7 @@ class MediaTranscript < ApplicationRecord
   # these ones, which may have been reloaded since `segment` was loaded (e.g. as the transcript was locked),
   # so fails for one since replaced, e.g. by #replace_segments, which gives the new ones new ids.
   def set_segment_text(segment, new_text)
-    current = current_segments.find { it == segment }
-    raise ActiveRecord::RecordNotFound, "No segment with id #{segment.id}." unless current
+    current = current_segment(segment)
 
     # Checked once stripped, since strip also removes chars blank? doesn't count as blank, e.g. "\0".
     stripped_text = new_text&.strip
@@ -130,11 +129,15 @@ class MediaTranscript < ApplicationRecord
   # Changes `segment` by `attributes`, its text and/or whether a line break follows it, and saves it, rebuilding
   # text and the doc's body. Reloads and locks itself first, so a concurrent edit of another segment isn't
   # overwritten.
+  #
+  # Its whole text is edited only for a segment with no denotations on it, whose positions inside it couldn't be
+  # followed; the denotations after it, in every project, move to follow.
   def update_segment!(segment, attributes)
     with_lock do
+      position = whole_text_edit_position(segment) if attributes.key?(:text)
       set_segment_text(segment, attributes[:text]) if attributes.key?(:text)
       set_segment_line_break_after(segment, attributes[:line_break_after]) if attributes.key?(:line_break_after)
-      save!
+      save_moving_denotations!(position)
     end
   end
 
@@ -179,6 +182,43 @@ class MediaTranscript < ApplicationRecord
     raise ArgumentError, 'No line break can follow this segment.' unless line_break_settable_after?(current)
 
     current.line_break_after = line_break_after
+  end
+
+  # The current one of `segment` among these (see #set_segment_text).
+  def current_segment(segment)
+    current_segments.find { it == segment } or
+      raise ActiveRecord::RecordNotFound, "No segment with id #{segment.id}."
+  end
+
+  # Where in the doc's body editing `segment`'s whole text changes it, as the denotations at or after it move:
+  # the end of its text in the body, or, for one not in the body yet (not speech), where it would go, the start
+  # of the next speech segment, or past the end of the body. Refused for a segment with denotations on it, whose
+  # positions inside it couldn't be followed.
+  def whole_text_edit_position(segment)
+    current = current_segment(segment)
+    span = body_span_of(current)
+    if span && doc.denotations_within(span[:begin], span[:end]).exists?
+      raise ArgumentError, "A segment with denotations on it can't be edited as a whole."
+    end
+    return span[:end] if span
+
+    following = current_segments.drop(current_segments.index(current) + 1).find(&:speech?)
+    following ? body_span_of(following)[:begin] : text.length + 1
+  end
+
+  # Saves it, moving the doc's denotations at or after `position` in its body, if given, by how much the body
+  # changed in length.
+  def save_moving_denotations!(position)
+    old_length = text.length
+    save!
+    doc.shift_denotations(position, text.length - old_length) if position
+  end
+
+  # `segment`'s char offset ({begin:, end:}) into the doc's body, as #speech_segment_spans has it, or nil for one
+  # not in the body, i.e. not speech.
+  def body_span_of(segment)
+    index = speech_segments.index(segment)
+    speech_segment_spans[index] if index
   end
 
   # The segments as they'll be once saved: without those marked for destruction.
