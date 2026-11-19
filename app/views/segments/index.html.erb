@@ -3,7 +3,7 @@
 <h1>Segments</h1>
 
 <% if @editable -%>
-  <p>Editing a segment's text rebuilds the document's text from the segments, moving the annotations after it to follow. A segment with denotations on it can't be edited as a whole.</p>
+  <p>Editing a segment's text rebuilds the document's text from the segments, moving the annotations after it to follow. A segment with denotations on it is edited piece by piece, between the boundaries of its denotations, which follow the text.</p>
 <% end -%>
 
 <div class="segments-table-container">
@@ -49,7 +49,8 @@
         <td>
           <%= button_tag 'Edit', type: 'button', class: 'button edit-segment',
             data: { url: doc_segment_path(@doc, segment), index:, text: segment.text,
-                    time: segment_time_range(segment) } %>
+                    time: segment_time_range(segment),
+                    pieces: segment_pieces_json(@media_transcript.segment_pieces(segment), current_user) } %>
         </td>
       <% end -%>
     </tr>
@@ -60,8 +61,10 @@
 <%= link_to t('views.shared.back'), doc_sourcedb_sourceid_show_path(@doc.sourcedb, @doc.sourceid) %>
 
 <% if @editable -%>
-  <%# Filled in from the clicked Edit button; rendered open with the entered text after a failed save. %>
-  <dialog id="segment-dialog" aria-labelledby="segment-dialog-title" data-open-on-load="<%= @segment.present? %>">
+  <%# Filled in from the clicked Edit button; rendered open with the entered text after a failed save. A segment
+      with denotations on it lists its pieces in the table instead, each edited in the text field once chosen. %>
+  <dialog id="segment-dialog" aria-labelledby="segment-dialog-title" data-open-on-load="<%= @segment.present? %>"
+          data-pieces="<%= segment_pieces_json(@segment ? @media_transcript.segment_pieces(@segment) : [], current_user) %>">
     <div class="segment-dialog-content">
       <h2 id="segment-dialog-title">Edit segment text</h2>
       <%= form_with scope: :segment, url: (doc_segment_path(@doc, @segment) if @segment), method: :patch do |f| %>
@@ -70,10 +73,20 @@
           <span id="segment-dialog-index"><%= "##{@index}" if @segment %></span> /
           <span id="segment-dialog-time"><%= segment_time_range(@segment) if @segment %></span>
         </p>
-        <%= f.label :text, 'Text' %>
-        <%= f.text_field :text, value: @text, size: 60 %>
+        <table id="segment-dialog-pieces" class="segment-pieces" hidden>
+          <thead><tr><th>Text</th><th>Denotations</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <%# Sent only for a piece's edit. %>
+        <% %i[piece_begin piece_end piece_text].each do |name| -%>
+          <%= f.hidden_field name, value: @piece&.[](name), disabled: @piece.nil? %>
+        <% end -%>
+        <div id="segment-dialog-text">
+          <%= f.label :text, 'Text' %>
+          <%= f.text_field :text, value: @text, size: 60 %>
+        </div>
         <div class="actions">
-          <%= f.submit 'Save' %>
+          <%= f.submit 'Save', id: 'segment-dialog-save' %>
           <%= button_tag 'Cancel', type: 'button', id: 'segment-dialog-cancel' %>
         </div>
       <% end %>

@@ -257,9 +257,7 @@ class MediaTranscript < ApplicationRecord
   # positions inside it couldn't be followed.
   def whole_text_edit_position(segment)
     current = current_segment(segment)
-    if segment_pieces(current).any?
-      raise ArgumentError, "A segment with denotations on it can't be edited as a whole."
-    end
+    raise ArgumentError, 'Edit a segment with denotations piece by piece.' if segment_pieces(current).any?
 
     span = body_span_of(current)
     return span[:end] if span

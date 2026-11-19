@@ -783,7 +783,7 @@ RSpec.describe MediaTranscript, type: :model do
 
       it 'refuses the whole text of a segment with denotations' do
         expect { media_transcript.update_segment!(hello, { text: 'Hi' }) }
-          .to raise_error(ArgumentError, "A segment with denotations on it can't be edited as a whole.")
+          .to raise_error(ArgumentError, 'Edit a segment with denotations piece by piece.')
         expect(doc.reload.body).to eq('Hello world')
       end
 

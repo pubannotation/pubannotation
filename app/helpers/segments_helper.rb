@@ -17,6 +17,12 @@ module SegmentsHelper
     format('%d:%02d.%03d', minutes, seconds, ms)
   end
 
+  # A segment's pieces (see MediaTranscript#segment_pieces) for the segment dialog to list, as JSON of each one's
+  # place in the segment's text, its text, and the labels of the denotations on it as `user` may see them.
+  def segment_pieces_json(pieces, user)
+    pieces.map { { begin: it.begin, end: it.end, text: it.text, labels: it.labels(user) } }.to_json
+  end
+
   # A segment's start and end times as "m:ss.mmm - m:ss.mmm", e.g. "0:00.000 - 0:03.000".
   def segment_time_range(segment)
     "#{segment_time(segment.start_ms)} - #{segment_time(segment.end_ms)}"
