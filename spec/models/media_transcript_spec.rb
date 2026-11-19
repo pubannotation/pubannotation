@@ -312,6 +312,70 @@ RSpec.describe MediaTranscript, type: :model do
     end
   end
 
+  describe '#segment_pieces' do
+    let(:medium) { create(:medium, media_type: :audio, content_type: 'audio/mpeg') }
+    let(:doc) { create(:doc, body: 'Hello big world', medium:) }
+    let(:media_transcript) do
+      create(:media_transcript, medium:, doc:, text: 'Hello big world', segments: [
+        build(:segment, :without_transcript, sort_order: 0, text: 'Hello big', start_ms: 0, end_ms: 300),
+        build(:segment, :without_transcript, sort_order: 1, text: 'world', start_ms: 300, end_ms: 600)
+      ])
+    end
+    let(:hello_big) { media_transcript.segments.first }
+    let(:project_a) { create(:project) }
+    let(:project_b) { create(:project) }
+
+    def pieces_of(segment)
+      media_transcript.segment_pieces(segment).map { [it.text, it.begin, it.end, it.denotations] }
+    end
+
+    it 'splits a segment at every denotation boundary, without the spaces around the pieces' do
+      a = create(:denotation, project: project_a, doc:, begin: 0, end: 5)
+      b = create(:denotation, project: project_b, doc:, begin: 6, end: 9)
+
+      expect(pieces_of(hello_big)).to eq([['Hello', 0, 5, [a]], ['big', 6, 9, [b]]])
+    end
+
+    it 'makes more pieces of overlapping denotations' do
+      a = create(:denotation, project: project_a, doc:, begin: 0, end: 9)
+      b = create(:denotation, project: project_b, doc:, begin: 0, end: 5)
+
+      expect(pieces_of(hello_big).map { [it[0], it[1], it[2], it[3].to_set] })
+        .to eq([['Hello', 0, 5, Set[a, b]], ['big', 6, 9, Set[a]]])
+    end
+
+    it 'leaves out the pieces of spaces only' do
+      create(:denotation, project: project_a, doc:, begin: 0, end: 5)
+      create(:denotation, project: project_b, doc:, begin: 6, end: 9)
+
+      expect(pieces_of(hello_big).map(&:first)).not_to include(' ', '')
+    end
+
+    it 'makes the text outside the denotations a piece of its own' do
+      a = create(:denotation, project: project_a, doc:, begin: 0, end: 5)
+
+      expect(pieces_of(hello_big)).to eq([['Hello', 0, 5, [a]], ['big', 6, 9, []]])
+    end
+
+    it 'gives no pieces to a segment with no denotations, or no speech' do
+      create(:denotation, project: project_a, doc:, begin: 0, end: 5)
+      music = media_transcript.segments.build(sort_order: 2, text: '(music)', start_ms: 600, end_ms: 700)
+
+      expect(media_transcript.segment_pieces(media_transcript.segments.second)).to eq([])
+      expect(media_transcript.segment_pieces(music)).to eq([])
+    end
+
+    it 'labels the denotations of projects the user cannot access as private' do
+      private_project = create(:project, accessibility: 2)
+      create(:denotation, project: private_project, doc:, begin: 0, end: 5, obj: 'Protein')
+      create(:denotation, project: project_a, doc:, begin: 6, end: 9, obj: 'Gene')
+      pieces = media_transcript.segment_pieces(hello_big)
+
+      expect(pieces.map { it.labels(create(:user)) }).to eq([['(private project)'], ["#{project_a.name}: Gene"]])
+      expect(pieces.first.labels(private_project.user)).to eq(["#{private_project.name}: Protein"])
+    end
+  end
+
   describe '#create_segment_blocks!' do
     before { allow(Elasticsearch::IndexQueue).to receive(:index_doc) }
 
@@ -653,6 +717,60 @@ RSpec.describe MediaTranscript, type: :model do
     let!(:b) { create(:denotation, project: create(:project), doc:, begin: 6, end: 11) }
 
     def span(denotation) = denotation.reload.attributes.values_at('begin', 'end')
+
+    describe '#update_segment_piece!' do
+      it 'replaces the piece, growing the denotation on it and shifting those after it' do
+        ids = [a.id, b.id]
+
+        media_transcript.update_segment_piece!(hello, 0, 5, 'Hello', 'Goodbye')
+
+        expect(doc.reload.body).to eq('Goodbye world')
+        expect([span(a), span(b)]).to eq([[0, 7], [8, 13]])
+        expect(Denotation.where(doc:).ids).to match_array(ids)
+      end
+
+      it 'normalizes the new text of the piece' do
+        media_transcript.update_segment_piece!(hello, 0, 5, 'Hello', '  Good   bye ')
+
+        expect(doc.reload.body).to eq('Good bye world')
+        expect(span(a)).to eq([0, 8])
+      end
+
+      it 'rejects a blank piece, changing nothing' do
+        expect { media_transcript.update_segment_piece!(hello, 0, 5, 'Hello', ' ') }
+          .to raise_error(ArgumentError, 'Text is missing.')
+        expect(doc.reload.body).to eq('Hello world')
+        expect([span(a), span(b)]).to eq([[0, 5], [6, 11]])
+      end
+
+      it 'rejects a piece edited into a non-speech label, which would take the segment out of the body' do
+        expect { media_transcript.update_segment_piece!(hello, 0, 5, 'Hello', '(music)') }
+          .to raise_error(ArgumentError, "A segment with denotations on it can't become a non-speech label.")
+        expect(doc.reload.body).to eq('Hello world')
+        expect([span(a), span(b)]).to eq([[0, 5], [6, 11]])
+      end
+
+      it 'rejects a range that is no longer a piece, e.g. split by a denotation added since the page was loaded' do
+        create(:denotation, project: create(:project), doc:, begin: 0, end: 3)
+
+        expect { media_transcript.update_segment_piece!(hello, 0, 5, 'Hello', 'Goodbye') }
+          .to raise_error(ArgumentError, /The segment has changed since the page was loaded/)
+        expect(doc.reload.body).to eq('Hello world')
+      end
+
+      it 'rejects a range that is not a piece, e.g. counted from the end' do
+        expect { media_transcript.update_segment_piece!(hello, -3, -1, 'll', 'xx') }
+          .to raise_error(ArgumentError, /The segment has changed since the page was loaded/)
+        expect(doc.reload.body).to eq('Hello world')
+      end
+
+      it 'rejects a piece from a stale page, changing nothing' do
+        expect { media_transcript.update_segment_piece!(hello, 0, 5, 'Hallo', 'Goodbye') }
+          .to raise_error(ArgumentError, 'The segment has changed since the page was loaded. Reload it and try again.')
+        expect(doc.reload.body).to eq('Hello world')
+        expect([span(a), span(b)]).to eq([[0, 5], [6, 11]])
+      end
+    end
 
     describe '#update_segment! with text' do
       it 'shifts the denotations after a segment with none, as its whole text is edited' do
