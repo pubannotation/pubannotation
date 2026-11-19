@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'The segment split editor', type: :request do
+RSpec.describe 'The segmentation editor', type: :request do
   include Devise::Test::IntegrationHelpers
 
   before do
@@ -22,34 +22,45 @@ RSpec.describe 'The segment split editor', type: :request do
     before { sign_in create(:user, root: true).tap(&:confirm) }
 
     it 'shows the media, a Split here button, and the segments for the page to render' do
-      get "/docs/#{doc.id}/segment_split/edit"
+      get "/docs/#{doc.id}/segmentation/edit"
 
       expect(response).to have_http_status(:ok)
-      expect(response.body).to include('id="media-player"', 'id="split-here"', 'id="merge-with-next"', 'id="save-splits"')
+      expect(response.body).to include('id="media-player"', 'id="split-here"', 'id="merge-with-next"', 'id="save-segmentation"')
       segments = media_transcript.segments.map do |segment|
         { text: segment.text, start_ms: segment.start_ms, end_ms: segment.end_ms,
           line_break_after: segment.line_break_after }
       end
-      split_segments = Nokogiri::HTML(response.body).at_css('#split-segments')['data-segments']
+      split_segments = Nokogiri::HTML(response.body).at_css('#segmentation-segments')['data-segments']
       expect(JSON.parse(split_segments, symbolize_names: true)).to eq(segments)
     end
 
-    it 'links to it from the segment list' do
+    it 'links to it from the doc page, next to Edit segment text, to come back there on save' do
+      doc_page = "/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}"
+
+      get doc_page
+
+      links = Nokogiri::HTML(response.body).css('a.button').to_h { [it.text, it['href']] }
+      expect(links).to include('Edit segment text' => "/docs/#{doc.id}/segments",
+                               'Segmentation' => "/docs/#{doc.id}/segmentation/edit?return_to=#{CGI.escape(doc_page)}")
+      expect(links.keys.each_cons(2)).to include(['Edit segment text', 'Segmentation'])
+    end
+
+    it 'has no link to it from the segment list' do
       get "/docs/#{doc.id}/segments"
 
-      expect(response.body).to include(%(href="/docs/#{doc.id}/segment_split/edit"))
+      expect(response.body).not_to include('/segmentation/edit', 'Split segments')
     end
 
     it 'responds with not found for a doc with no segments' do
       image_doc = create(:doc, medium: create(:medium, media_type: :image, content_type: 'image/png'))
 
-      get "/docs/#{image_doc.id}/segment_split/edit"
+      get "/docs/#{image_doc.id}/segmentation/edit"
 
       expect(response).to have_http_status(:not_found)
     end
 
     it 'responds with not found for a doc that does not exist' do
-      get '/docs/0/segment_split/edit'
+      get '/docs/0/segmentation/edit'
 
       expect(response).to have_http_status(:not_found)
     end
@@ -61,12 +72,42 @@ RSpec.describe 'The segment split editor', type: :request do
         { text: 'rld', start_ms: 450, end_ms: 600, line_break_after: false }
       ]
 
-      patch "/docs/#{doc.id}/segment_split", params: { segment_split: { segments: segments.to_json } }
+      patch "/docs/#{doc.id}/segmentation",
+            params: { segmentation: { segments: segments.to_json }, return_to: '/projects/p1/docs/sourcedb/A/sourceid/1' }
 
-      expect(response).to redirect_to("/docs/#{doc.id}/segment_split/edit")
+      expect(response).to redirect_to('/projects/p1/docs/sourcedb/A/sourceid/1')
       expect(flash[:notice]).to eq('Segments were successfully saved.')
       expect(media_transcript.reload.segments.map(&:text)).to eq(%w[Hello wo rld])
       expect(doc.reload.body).to eq('Hello wo rld')
+    end
+
+    it 'goes back to the doc page for saved segments, given nowhere or another site to go back to' do
+      segments = [{ text: 'Hello world', start_ms: 0, end_ms: 600, line_break_after: false }]
+
+      [nil, 'https://example.com/docs', '//example.com/docs'].each do |return_to|
+        patch "/docs/#{doc.id}/segmentation", params: { segmentation: { segments: segments.to_json }, return_to: }
+
+        expect(response).to redirect_to("/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}")
+      end
+    end
+
+    it 'keeps where to go back to, as it tells why it saved nothing back on the editor' do
+      segments = [{ text: 'Hello world', start_ms: 0, end_ms: 900, line_break_after: false }]
+
+      patch "/docs/#{doc.id}/segmentation",
+            params: { segmentation: { segments: segments.to_json }, return_to: '/projects/p1/docs/sourcedb/A/sourceid/1' }
+
+      expect(response).to redirect_to(
+        "/docs/#{doc.id}/segmentation/edit?return_to=#{CGI.escape('/projects/p1/docs/sourcedb/A/sourceid/1')}"
+      )
+    end
+
+    it 'sends where to go back to with Save, and links back there' do
+      get "/docs/#{doc.id}/segmentation/edit", params: { return_to: '/projects/p1/docs/sourcedb/A/sourceid/1' }
+
+      html = Nokogiri::HTML(response.body)
+      expect(html.at_css('#segmentation-form input[name="return_to"]')['value']).to eq('/projects/p1/docs/sourcedb/A/sourceid/1')
+      expect(html.css('a').map { it['href'] }).to include('/projects/p1/docs/sourcedb/A/sourceid/1')
     end
 
     it 'saves nothing for invalid segments, telling why back on the editor' do
@@ -75,9 +116,9 @@ RSpec.describe 'The segment split editor', type: :request do
         { text: 'world', start_ms: 300, end_ms: 600, line_break_after: false }
       ]
 
-      patch "/docs/#{doc.id}/segment_split", params: { segment_split: { segments: segments.to_json } }
+      patch "/docs/#{doc.id}/segmentation", params: { segmentation: { segments: segments.to_json } }
 
-      expect(response).to redirect_to("/docs/#{doc.id}/segment_split/edit")
+      expect(response).to redirect_to("/docs/#{doc.id}/segmentation/edit")
       expect(flash[:alert]).to include("must be greater than or equal to the previous segment's end_ms")
       expect(doc.reload.body).to eq('Hello world')
     end
@@ -91,7 +132,7 @@ RSpec.describe 'The segment split editor', type: :request do
       segments = [{ text: ' Hello', start_ms: 0, end_ms: 300, line_break_after: false },
                   { text: 'world', start_ms: 300, end_ms: 600, line_break_after: false }]
 
-      patch "/docs/#{doc.id}/segment_split", params: { segment_split: { segments: segments.to_json } }
+      patch "/docs/#{doc.id}/segmentation", params: { segmentation: { segments: segments.to_json } }
 
       expect(media_transcript.reload.segments.map(&:text)).to eq(%w[Hello world])
       expect(doc.reload.body).to eq('Hello world')
@@ -102,9 +143,9 @@ RSpec.describe 'The segment split editor', type: :request do
        { text: 'world', start_ms: nil, end_ms: 600, line_break_after: false }].each do |later|
         segments = [{ text: 'Hello', start_ms: 0, end_ms: 300, line_break_after: false }, later]
 
-        patch "/docs/#{doc.id}/segment_split", params: { segment_split: { segments: segments.to_json } }
+        patch "/docs/#{doc.id}/segmentation", params: { segmentation: { segments: segments.to_json } }
 
-        expect(response).to redirect_to("/docs/#{doc.id}/segment_split/edit")
+        expect(response).to redirect_to("/docs/#{doc.id}/segmentation/edit")
         expect(flash[:alert]).to eq("Validation failed: Segments start ms can't be blank")
       end
       expect(doc.reload.body).to eq('Hello world')
@@ -114,27 +155,27 @@ RSpec.describe 'The segment split editor', type: :request do
       segments = [{ text: 'Hello', start_ms: 0, end_ms: 300, line_break_after: false },
                   { text: 'world', start_ms: 300, end_ms: 900, line_break_after: false }]
 
-      patch "/docs/#{doc.id}/segment_split", params: { segment_split: { segments: segments.to_json } }
+      patch "/docs/#{doc.id}/segmentation", params: { segmentation: { segments: segments.to_json } }
 
-      expect(response).to redirect_to("/docs/#{doc.id}/segment_split/edit")
+      expect(response).to redirect_to("/docs/#{doc.id}/segmentation/edit")
       expect(flash[:alert]).to eq('Validation failed: Segments must span the same time as before, 0 to 600 ms')
       expect(media_transcript.reload.segments.last.end_ms).to eq(600)
     end
 
     it 'saves nothing for segments that are not a JSON array of objects, telling why back on the editor' do
       ['{"text": "Hello"}', '["Hello"]'].each do |segments|
-        patch "/docs/#{doc.id}/segment_split", params: { segment_split: { segments: } }
+        patch "/docs/#{doc.id}/segmentation", params: { segmentation: { segments: } }
 
-        expect(response).to redirect_to("/docs/#{doc.id}/segment_split/edit")
+        expect(response).to redirect_to("/docs/#{doc.id}/segmentation/edit")
         expect(flash[:alert]).to eq('Segments must be sent as a JSON array of objects.')
       end
       expect(doc.reload.body).to eq('Hello world')
     end
 
     it 'saves nothing for segments that are not JSON, telling why back on the editor' do
-      patch "/docs/#{doc.id}/segment_split", params: { segment_split: { segments: 'not JSON' } }
+      patch "/docs/#{doc.id}/segmentation", params: { segmentation: { segments: 'not JSON' } }
 
-      expect(response).to redirect_to("/docs/#{doc.id}/segment_split/edit")
+      expect(response).to redirect_to("/docs/#{doc.id}/segmentation/edit")
       expect(flash[:alert]).to be_present
       expect(doc.reload.body).to eq('Hello world')
     end
@@ -144,7 +185,7 @@ RSpec.describe 'The segment split editor', type: :request do
     before { sign_in create(:user).tap(&:confirm) }
 
     it 'is forbidden' do
-      get "/docs/#{doc.id}/segment_split/edit"
+      get "/docs/#{doc.id}/segmentation/edit"
 
       expect(response).to have_http_status(:forbidden)
     end
@@ -152,16 +193,18 @@ RSpec.describe 'The segment split editor', type: :request do
     it 'forbids saving the segments' do
       segments = [{ text: 'Hello world', start_ms: 0, end_ms: 600, line_break_after: false }]
 
-      patch "/docs/#{doc.id}/segment_split", params: { segment_split: { segments: segments.to_json } }
+      patch "/docs/#{doc.id}/segmentation", params: { segmentation: { segments: segments.to_json } }
 
       expect(response).to have_http_status(:forbidden)
       expect(media_transcript.reload.segments.map(&:text)).to eq(%w[Hello world])
     end
 
-    it 'has no link to it from the segment list' do
-      get "/docs/#{doc.id}/segments"
+    it 'has no link to it from the doc page, which links to the segments only' do
+      get "/docs/sourcedb/#{doc.sourcedb}/sourceid/#{doc.sourceid}"
 
-      expect(response.body).not_to include('/segment_split/edit')
+      links = Nokogiri::HTML(response.body).css('a.button').to_h { [it.text, it['href']] }
+      expect(links).to include('Segments' => "/docs/#{doc.id}/segments")
+      expect(links.keys).not_to include('Segmentation', 'Edit segment text')
     end
   end
 
@@ -169,13 +212,13 @@ RSpec.describe 'The segment split editor', type: :request do
     sign_in create(:user, root: true).tap(&:confirm)
     allow_any_instance_of(User).to receive(:can_access_media?).and_return(false)
 
-    get "/docs/#{doc.id}/segment_split/edit"
+    get "/docs/#{doc.id}/segmentation/edit"
 
     expect(response).to have_http_status(:forbidden)
   end
 
   it 'requires signing in' do
-    get "/docs/#{doc.id}/segment_split/edit"
+    get "/docs/#{doc.id}/segmentation/edit"
 
     expect(response).to redirect_to('/users/sign_in')
   end

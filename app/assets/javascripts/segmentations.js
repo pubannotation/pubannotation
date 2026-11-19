@@ -1,8 +1,8 @@
-// Loaded with defer only by segment_splits/edit, so the DOM is already parsed when this runs.
-class SegmentSplits {
+// Loaded with defer only by segmentations/edit, so the DOM is already parsed when this runs.
+class SegmentationEditor {
   constructor() {
     // The segments as split on this page so far; saved all at once by Save, replacing them all.
-    this.segments = JSON.parse(document.getElementById('split-segments').dataset.segments);
+    this.segments = JSON.parse(document.getElementById('segmentation-segments').dataset.segments);
     // Whether any is split but not saved yet.
     this.unsaved = false;
     // Where to split: the index of the segment and the character offset into its text.
@@ -17,7 +17,7 @@ class SegmentSplits {
 
     document.getElementById('split-here').addEventListener('click', () => this.splitAtPoint());
     document.getElementById('merge-with-next').addEventListener('click', () => this.mergeWithNext());
-    document.getElementById('split-form').addEventListener('submit', () => this.save());
+    document.getElementById('segmentation-form').addEventListener('submit', () => this.save());
     // Asks before leaving with splits unsaved, unless leaving by Save.
     window.addEventListener('beforeunload', (event) => {
       if (this.unsaved) event.preventDefault();
@@ -26,7 +26,7 @@ class SegmentSplits {
 
   // Puts the segments as split into the form Save submits, and leaves without asking.
   save() {
-    document.getElementById('segment_split_segments').value = JSON.stringify(
+    document.getElementById('segmentation_segments').value = JSON.stringify(
       this.segments.map(({ text, start_ms, end_ms, line_break_after }) => ({ text, start_ms, end_ms, line_break_after })));
     this.unsaved = false;
   }
@@ -80,7 +80,7 @@ class SegmentSplits {
   }
 
   render() {
-    document.getElementById('split-segments').replaceChildren(...this.segments.map((segment, index) => this.segmentRow(segment, index)));
+    document.getElementById('segmentation-segments').replaceChildren(...this.segments.map((segment, index) => this.segmentRow(segment, index)));
     this.showPoint();
     this.showError('');
   }
@@ -138,7 +138,7 @@ class SegmentSplits {
   showPoint() {
     document.getElementById('split-here').disabled = !this.point;
     document.getElementById('merge-with-next').disabled = !this.point || this.point.index >= this.segments.length - 1;
-    document.getElementById('save-splits').disabled = !this.unsaved;
+    document.getElementById('save-segmentation').disabled = !this.unsaved;
     document.getElementById('split-point').textContent = this.point
       ? `Segment #${this.point.index}, before character ${this.point.offset}`
       : "Click in a segment's text to point where to split it, or to select it to merge with the next one.";
@@ -175,4 +175,4 @@ class SegmentSplits {
   }
 }
 
-new SegmentSplits();
+new SegmentationEditor();
