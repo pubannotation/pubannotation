@@ -374,6 +374,16 @@ RSpec.describe MediaTranscript, type: :model do
       expect(pieces.map { it.labels(create(:user)) }).to eq([['(private project)'], ["#{project_a.name}: Gene"]])
       expect(pieces.first.labels(private_project.user)).to eq(["#{private_project.name}: Protein"])
     end
+
+    it "labels the denotations of blind projects as private but to their owner, the project being accessible but not its annotations" do
+      blind_project = create(:project, accessibility: 3)
+      create(:denotation, project: blind_project, doc:, begin: 0, end: 5, obj: 'Protein')
+      piece = media_transcript.segment_pieces(hello_big).first
+
+      expect(piece.labels(create(:user))).to eq(['(private project)'])
+      expect(piece.labels(nil)).to eq(['(private project)'])
+      expect(piece.labels(blind_project.user)).to eq(["#{blind_project.name}: Protein"])
+    end
   end
 
   describe '#create_segment_blocks!' do
