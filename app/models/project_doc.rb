@@ -113,6 +113,42 @@ class ProjectDoc < ActiveRecord::Base
     end
   end
 
+  # The spans ([begin, end]) of its blocks whose obj is `obj`, in order.
+  def block_spans_of(obj)
+    Block.where(project_id:, doc_id:, obj:).order(:begin, :end).pluck(:begin, :end)
+  end
+
+  # Deletes its blocks whose obj is `obj`, with the relations from or to them and the attributes on those, as
+  # destroying each would, but in a few statements however many there are, uncounting them the same way.
+  def delete_blocks_of(obj)
+    block_ids = Block.where(project_id:, doc_id:, obj:).ids
+    return if block_ids.empty?
+
+    relations_num = Relation.where(project_id:, doc_id:).delete_on_blocks(block_ids)
+    Attrivute.where(project_id:, doc_id:, subj_type: 'Block', subj_id: block_ids).delete_all
+    Block.where(id: block_ids).delete_all
+
+    change_counts({ blocks_num: -block_ids.size, relations_num: -relations_num })
+  end
+
+  # Creates a block whose obj is `obj` for each of `spans` ([begin, end]), numbering their hids from B1.
+  #
+  # insert_all (not Block.create! in a loop) so it's one INSERT, but that skips after_create's counter callbacks,
+  # counted here instead. hids are numbered locally rather than via Block.new_id, which uses process-shared state.
+  def create_blocks_of(obj, spans)
+    return if spans.empty?
+
+    records = spans.map.with_index(1) do |(span_begin, span_end), index|
+      { hid: "#{Block::HID_PREFIX}#{index}", begin: span_begin, end: span_end, obj:, project_id:, doc_id: }
+    end
+    Block.insert_all(records, record_timestamps: true)
+
+    change_counts({ blocks_num: records.size })
+    # For the project's exports (e.g. its RDF and annotation archive) to be updated. Its own is left as it is, so
+    # its doc is still taken as yet to be annotated (e.g. by the annotators obtaining missing annotations).
+    project.update_annotations_updated_at
+  end
+
   # reassign ids to instances in annotations to avoid id confiction
   # ToDo: del the same one in the Project class
   def reid_annotations!(annotations)
@@ -414,5 +450,13 @@ private
     query = query.where(pred: predicates) if predicates
 
     query
+  end
+
+  # Changes its annotation counters by `counts` (e.g. { blocks_num: -2 }), and those of its doc and project.
+  def change_counts(counts)
+    ProjectDoc.update_counters(id, counts)
+    Doc.update_counters(doc_id, counts)
+    Project.update_counters(project_id, counts)
+    project.update_updated_at
   end
 end

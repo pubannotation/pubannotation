@@ -30,10 +30,10 @@ class MediaTranscript < ApplicationRecord
   # Records loaded from the database already have their text.
   after_initialize :default_text_from_segments, if: :new_record?
 
-  # Once created, changed segments (e.g. a segment's text edited) rebuild text, and the doc's body
-  # follows it.
+  # Once created, changed segments (e.g. a segment's text edited) rebuild text, and the doc follows them. Not only
+  # as text changes, since segments split or merged at a space leave it as it is but span the doc differently.
   before_update :rebuild_text, if: :segments_changing?
-  after_update :sync_doc_body, if: -> { doc && saved_change_to_text? }
+  after_update :sync_doc, if: :doc
 
   # A manually registered audio/video document has one segment covering the whole medium.
   def self.create_from_doc!(doc)
@@ -92,31 +92,8 @@ class MediaTranscript < ApplicationRecord
 
   # Creates, in `project`, a Block for each speech segment on its doc, which is expected to be already added
   # to `project`.
-  #
-  # insert_all (not Block.create! in a loop) so it's one INSERT, but that skips after_create's
-  # counter callbacks — replicated manually below instead. hids are numbered locally rather than via
-  # Block.new_id, which uses process-shared state.
   def create_segment_blocks!(project)
-    spans = speech_segment_spans
-    return if spans.empty?
-
-    records = spans.map.with_index(1) do |span, index|
-      {
-        hid: "#{Block::HID_PREFIX}#{index}",
-        begin: span[:begin],
-        end: span[:end],
-        obj: SEGMENT_BLOCK_OBJ,
-        project_id: project.id,
-        doc_id: doc.id
-      }
-    end
-
-    Block.insert_all(records, record_timestamps: true)
-
-    ProjectDoc.find_by!(project:, doc:).increment!(:blocks_num, records.size)
-    doc.increment!(:blocks_num, records.size)
-    project.increment!(:blocks_num, records.size)
-    project.update_updated_at
+    ProjectDoc.find_by!(project:, doc:).create_blocks_of(SEGMENT_BLOCK_OBJ, segment_block_spans)
   end
 
   # generation_model as AudioTranscriptionService.generation_model records it, e.g. "whisper:ggml-base.en".
@@ -231,10 +208,36 @@ class MediaTranscript < ApplicationRecord
     self.text = speech_text
   end
 
-  # Inside the save's transaction, so a doc failing to save rolls the transcript back too. Its
-  # denotations are left as they are, even those after an edited segment.
+  # Inside the save's transaction, so a doc failing to follow rolls the transcript back too: its body, and its
+  # AudioSegment blocks, each changed only if it no longer follows. Its denotations are left as they are, even
+  # those after an edited segment.
+  def sync_doc
+    sync_doc_body
+    rebuild_segment_blocks
+  end
+
   def sync_doc_body
     doc.update!(body: text) if doc.body != text
+  end
+
+  # Rebuilds the AudioSegment blocks in each project that has them on the doc, to span the speech segments as
+  # they now are, unless they already do (e.g. as only a line break changed), since the relations and
+  # attributes on them go with them.
+  def rebuild_segment_blocks
+    spans = segment_block_spans
+
+    doc.project_docs.each do |project_doc|
+      old_spans = project_doc.block_spans_of(SEGMENT_BLOCK_OBJ)
+      next if old_spans.empty? || old_spans == spans
+
+      project_doc.delete_blocks_of(SEGMENT_BLOCK_OBJ)
+      project_doc.create_blocks_of(SEGMENT_BLOCK_OBJ, spans)
+    end
+  end
+
+  # The spans ([begin, end]) of the speech segments in the doc's body, for their AudioSegment blocks.
+  def segment_block_spans
+    speech_segment_spans.map { it.values_at(:begin, :end) }
   end
 
   def doc_has_matching_medium

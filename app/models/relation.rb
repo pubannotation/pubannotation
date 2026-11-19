@@ -47,6 +47,20 @@ class Relation < ActiveRecord::Base
     project_id ? matching.where(project_id: project_id) : matching
   end
 
+  # From or to any of the blocks of `block_ids`.
+  scope :on_blocks, ->(block_ids) {
+    where(subj_type: 'Block', subj_id: block_ids).or(where(obj_type: 'Block', obj_id: block_ids))
+  }
+
+  # Deletes the ones from or to any of the blocks of `block_ids`, with the attributes on them, as destroying each
+  # would, but in a couple of statements however many there are. Returns how many were deleted, for the caller
+  # to uncount them, as their counter callbacks are skipped.
+  def self.delete_on_blocks(block_ids)
+    relation_ids = on_blocks(block_ids).ids
+    Attrivute.where(subj_type: 'Relation', subj_id: relation_ids).delete_all
+    where(id: relation_ids).delete_all
+  end
+
   scope :among_denotations, -> (denotation_ids) {
     case denotation_ids
     when nil

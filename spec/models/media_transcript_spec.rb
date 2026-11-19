@@ -333,6 +333,128 @@ RSpec.describe MediaTranscript, type: :model do
       expect(doc.reload.blocks_num).to eq(2)
       expect(project.reload.blocks_num).to eq(2)
     end
+
+    it "advances the project's annotations_updated_at, for its exports to be updated, but not its doc's" do
+      project = create(:project, annotations_updated_at: 1.day.ago)
+      medium = create(:medium, media_type: :audio, content_type: 'audio/mpeg')
+      doc = create(:doc, body: 'Hello world', medium:).tap { project.add_doc!(it) }
+      media_transcript = create(:media_transcript, medium:, doc:, text: 'Hello world')
+
+      expect { media_transcript.create_segment_blocks!(project) }
+        .to change { project.reload.annotations_updated_at }.to(be_within(1.minute).of(Time.current))
+      expect(ProjectDoc.find_by(project:, doc:).annotations_updated_at).to be_nil
+    end
+  end
+
+  describe 'rebuilding the AudioSegment blocks as the segments change' do
+    before { allow(Elasticsearch::IndexQueue).to receive(:index_doc) }
+
+    let(:project) { create(:project) }
+    let(:medium) { create(:medium, media_type: :audio, content_type: 'audio/mpeg') }
+    let(:doc) { create(:doc, body: 'Hello world', medium:).tap { project.add_doc!(it) } }
+    let!(:media_transcript) do
+      create(:media_transcript, medium:, doc:, text: 'Hello world').tap { it.create_segment_blocks!(project) }
+    end
+
+    def segment_blocks
+      doc.blocks.where(obj: 'AudioSegment').order(:hid).pluck(:project_id, :hid, :begin, :end)
+    end
+
+    def blocks_nums
+      [ProjectDoc.find_by(project:, doc:).blocks_num, doc.reload.blocks_num, project.reload.blocks_num]
+    end
+
+    it "spans the speech segments as a segment's text is edited" do
+      media_transcript.update_segment!(media_transcript.segments.first, { text: 'Hi there' })
+
+      expect(segment_blocks).to eq([[project.id, 'B1', 0, 8], [project.id, 'B2', 9, 14]])
+      expect(blocks_nums).to eq([2, 2, 2])
+    end
+
+    it 'spans the speech segments as they are resegmented, counting them anew' do
+      media_transcript.resegment!([
+        { text: 'Hello', start_ms: 0, end_ms: 300, line_break_after: false },
+        { text: 'wo', start_ms: 300, end_ms: 450, line_break_after: false },
+        { text: '(music)', start_ms: 450, end_ms: 500, line_break_after: false },
+        { text: 'rld', start_ms: 500, end_ms: 600, line_break_after: false }
+      ])
+
+      expect(segment_blocks).to eq([[project.id, 'B1', 0, 5], [project.id, 'B2', 6, 8], [project.id, 'B3', 9, 12]])
+      expect(blocks_nums).to eq([3, 3, 3])
+    end
+
+    it 'spans the speech segments as they are merged or split at a space, leaving the text as it is' do
+      media_transcript.resegment!([{ text: 'Hello world', start_ms: 0, end_ms: 600, line_break_after: false }])
+
+      expect(doc.reload.body).to eq('Hello world')
+      expect(segment_blocks).to eq([[project.id, 'B1', 0, 11]])
+      expect(blocks_nums).to eq([1, 1, 1])
+
+      media_transcript.resegment!([
+        { text: 'Hello', start_ms: 0, end_ms: 300, line_break_after: false },
+        { text: 'world', start_ms: 300, end_ms: 600, line_break_after: false }
+      ])
+
+      expect(doc.reload.body).to eq('Hello world')
+      expect(segment_blocks).to eq([[project.id, 'B1', 0, 5], [project.id, 'B2', 6, 11]])
+      expect(blocks_nums).to eq([2, 2, 2])
+    end
+
+    it 'spans the one segment the text is replaced with' do
+      media_transcript.replace_text!('Hello there world')
+
+      expect(segment_blocks).to eq([[project.id, 'B1', 0, 17]])
+      expect(blocks_nums).to eq([1, 1, 1])
+    end
+
+    it "deletes the relations and attributes on the old blocks, uncounting the relations" do
+      first, second = doc.blocks.order(:hid).to_a
+      relation = create(:relation, project:, doc:, subj: first, obj: second)
+      Attrivute.create!(project:, doc:, hid: 'A1', subj: first, obj: 'true', pred: 'checked')
+      Attrivute.create!(project:, doc:, hid: 'A2', subj: relation, obj: 'true', pred: 'checked')
+
+      media_transcript.update_segment!(media_transcript.segments.first, { text: 'Hi' })
+
+      expect(Relation.where(doc:)).to be_empty
+      expect(Attrivute.where(doc:)).to be_empty
+      expect([ProjectDoc.find_by(project:, doc:).relations_num, doc.reload.relations_num, project.reload.relations_num])
+        .to eq([0, 0, 0])
+    end
+
+    it "advances the project's annotations_updated_at, for its exports to be updated, but not its doc's" do
+      project.update_columns(annotations_updated_at: 1.day.ago)
+
+      expect { media_transcript.update_segment!(media_transcript.segments.first, { text: 'Hi' }) }
+        .to change { project.reload.annotations_updated_at }.to(be_within(1.minute).of(Time.current))
+      expect(ProjectDoc.find_by(project:, doc:).annotations_updated_at).to be_nil
+    end
+
+    it 'leaves the other blocks on the doc as they are' do
+      other = create(:block, project:, doc:, hid: 'B10', obj: 'Other', begin: 0, end: 5)
+
+      media_transcript.update_segment!(media_transcript.segments.first, { text: 'Hi' })
+
+      expect(other.reload.attributes.values_at('begin', 'end', 'obj')).to eq([0, 5, 'Other'])
+    end
+
+    it 'gives none to a project the doc is in without them' do
+      other_project = create(:project).tap { it.add_doc!(doc) }
+
+      media_transcript.update_segment!(media_transcript.segments.first, { text: 'Hi' })
+
+      expect(doc.blocks.where(project: other_project)).to be_empty
+    end
+
+    it 'leaves them, with the relations on them, as they are as only the separators change, keeping their spans' do
+      block_ids = doc.blocks.ids
+      first, second = doc.blocks.order(:hid).to_a
+      relation = create(:relation, project:, doc:, subj: first, obj: second)
+
+      media_transcript.update_segment!(media_transcript.segments.first, { line_break_after: true })
+
+      expect(doc.blocks.ids).to match_array(block_ids)
+      expect(relation.reload).to be_present
+    end
   end
 
   describe '#allows_doc_body?' do
