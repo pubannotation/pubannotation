@@ -143,4 +143,55 @@ RSpec.describe Doc, type: :model do
       expect(queries.first).to match(/JOIN.*denotations/i)
     end
   end
+
+  describe 'shifting and finding denotations' do
+    let(:doc) { create(:doc, body: 'Hello big world') }
+    let(:project_a) { create(:project, annotations_updated_at: 1.day.ago).tap { it.add_doc!(doc) } }
+    let(:project_b) { create(:project, annotations_updated_at: 1.day.ago).tap { it.add_doc!(doc) } }
+    let!(:hello) { create(:denotation, project: project_a, doc:, begin: 0, end: 5) }
+    let!(:world) { create(:denotation, project: project_b, doc:, begin: 10, end: 15) }
+    let!(:big_world) { create(:denotation, project: project_b, doc:, begin: 6, end: 15) }
+
+    before { ProjectDoc.where(doc:).update_all(annotations_updated_at: 1.day.ago) }
+
+    def spans
+      [hello, world, big_world].map { it.reload.attributes.values_at('id', 'begin', 'end') }
+    end
+
+    def timestamps(project)
+      [project.reload.annotations_updated_at, ProjectDoc.find_by(project:, doc:).annotations_updated_at]
+    end
+
+    describe '#shift_denotations' do
+      it 'moves the positions at or after the position by delta, in every project, keeping the denotations' do
+        doc.shift_denotations(5, -2)
+
+        expect(spans).to eq([[hello.id, 0, 3], [world.id, 8, 13], [big_world.id, 4, 13]])
+      end
+
+      it "advances the annotations_updated_at of the projects whose denotations moved, and their docs'" do
+        before_a = timestamps(project_a)
+
+        doc.shift_denotations(9, 1)
+
+        expect(timestamps(project_b)).to all(be_within(1.minute).of(Time.current))
+        expect(timestamps(project_a)).to eq(before_a)
+      end
+
+      it 'does nothing for a delta of zero' do
+        before_b = timestamps(project_b)
+
+        doc.shift_denotations(0, 0)
+
+        expect(spans).to eq([[hello.id, 0, 5], [world.id, 10, 15], [big_world.id, 6, 15]])
+        expect(timestamps(project_b)).to eq(before_b)
+      end
+    end
+
+    describe '#denotations_within' do
+      it 'finds the denotations within a span' do
+        expect(doc.denotations_within(6, 15)).to contain_exactly(world, big_world)
+      end
+    end
+  end
 end
