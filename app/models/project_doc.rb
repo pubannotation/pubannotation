@@ -124,16 +124,11 @@ class ProjectDoc < ActiveRecord::Base
     block_ids = Block.where(project_id:, doc_id:, obj:).ids
     return if block_ids.empty?
 
-    relations = Relation.where(project_id:, doc_id:)
-    relation_ids = relations.where(subj_type: 'Block', subj_id: block_ids)
-                            .or(relations.where(obj_type: 'Block', obj_id: block_ids)).ids
-    attrivutes = Attrivute.where(project_id:, doc_id:)
-    attrivutes.where(subj_type: 'Block', subj_id: block_ids)
-              .or(attrivutes.where(subj_type: 'Relation', subj_id: relation_ids)).delete_all
-    Relation.where(id: relation_ids).delete_all
+    relations_num = Relation.where(project_id:, doc_id:).delete_on_blocks(block_ids)
+    Attrivute.where(project_id:, doc_id:, subj_type: 'Block', subj_id: block_ids).delete_all
     Block.where(id: block_ids).delete_all
 
-    change_counts({ blocks_num: -block_ids.size, relations_num: -relation_ids.size })
+    change_counts({ blocks_num: -block_ids.size, relations_num: -relations_num })
   end
 
   # Creates a block whose obj is `obj` for each of `spans` ([begin, end]), numbering their hids from B1.
