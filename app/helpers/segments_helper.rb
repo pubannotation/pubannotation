@@ -4,6 +4,12 @@ module SegmentsHelper
     current_user&.can_access_media? && doc.segments_available?
   end
 
+  # Whether to link to editing `doc`'s segments (SegmentsController's edits and SegmentationsController), by the
+  # same decisions they're opened with.
+  def segments_editable?(doc)
+    segments_listable?(doc) && doc.segment_editable_by?(current_user)
+  end
+
   # A segment's playback time in ms as "m:ss.mmm", e.g. 61_234 as "1:01.234".
   def segment_time(ms)
     minutes, ms = ms.divmod(60_000)
