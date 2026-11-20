@@ -84,16 +84,9 @@ class MediaTranscript < ApplicationRecord
     denotations = doc.denotations_within(span[:begin], span[:end]).to_a
     return [] if denotations.empty?
 
-    offsets = denotations.flat_map { [it.begin - span[:begin], it.end - span[:begin]] }
-    (offsets + [0, segment.text.length]).uniq.sort.each_cons(2).filter_map do |from, to|
-      raw = segment.text[from...to]
-      text = raw.strip
-      next if text.empty?
-
-      piece_begin = from + raw.length - raw.lstrip.length
-      piece_end = piece_begin + text.length
-      covering = denotations.select { it.begin - span[:begin] <= piece_begin && it.end - span[:begin] >= piece_end }
-      SegmentPiece.new(piece_begin, piece_end, text, covering)
+    # Each two boundaries next to each other make a piece, e.g. [0, 9, 19] to [0, 9] and [9, 19].
+    piece_boundaries(segment, span[:begin], denotations).each_cons(2).filter_map do |from, to|
+      segment_piece(segment, span[:begin], denotations, from, to)
     end
   end
 
@@ -229,6 +222,26 @@ class MediaTranscript < ApplicationRecord
     raise ArgumentError, 'No line break can follow this segment.' unless line_break_settable_after?(current)
 
     current.line_break_after = line_break_after
+  end
+
+  # The offsets in `segment`'s text where it's split: its beginning and end and the denotations' boundaries, in
+  # order without duplicates. `segment_begin` is where `segment` begins in the doc's body.
+  def piece_boundaries(segment, segment_begin, denotations)
+    denotation_boundaries = denotations.flat_map { [it.begin - segment_begin, it.end - segment_begin] }
+    (denotation_boundaries + [0, segment.text.length]).uniq.sort
+  end
+
+  # The piece of `segment`'s text in [`from`, `to`) without the spaces around it, with the denotations covering
+  # it, or nil for spaces only.
+  def segment_piece(segment, segment_begin, denotations, from, to)
+    raw = segment.text[from...to]
+    text = raw.strip
+    return if text.empty?
+
+    piece_begin = from + raw.length - raw.lstrip.length
+    piece_end = piece_begin + text.length
+    covering = denotations.select { it.begin - segment_begin <= piece_begin && it.end - segment_begin >= piece_end }
+    SegmentPiece.new(piece_begin, piece_end, text, covering)
   end
 
   # The current one of `segment` among these (see #set_segment_text).
