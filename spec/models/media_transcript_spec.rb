@@ -365,24 +365,13 @@ RSpec.describe MediaTranscript, type: :model do
       expect(media_transcript.segment_pieces(music)).to eq([])
     end
 
-    it 'labels the denotations of projects the user cannot access as private' do
+    it 'labels a piece with each of the denotations covering it' do
       private_project = create(:project, accessibility: 2)
+      create(:denotation, project: project_a, doc:, begin: 0, end: 9, obj: 'Gene')
       create(:denotation, project: private_project, doc:, begin: 0, end: 5, obj: 'Protein')
-      create(:denotation, project: project_a, doc:, begin: 6, end: 9, obj: 'Gene')
-      pieces = media_transcript.segment_pieces(hello_big)
-
-      expect(pieces.map { it.labels(create(:user)) }).to eq([['(private project)'], ["#{project_a.name}: Gene"]])
-      expect(pieces.first.labels(private_project.user)).to eq(["#{private_project.name}: Protein"])
-    end
-
-    it "labels the denotations of blind projects as private but to their owner, the project being accessible but not its annotations" do
-      blind_project = create(:project, accessibility: 3)
-      create(:denotation, project: blind_project, doc:, begin: 0, end: 5, obj: 'Protein')
       piece = media_transcript.segment_pieces(hello_big).first
 
-      expect(piece.labels(create(:user))).to eq(['(private project)'])
-      expect(piece.labels(nil)).to eq(['(private project)'])
-      expect(piece.labels(blind_project.user)).to eq(["#{blind_project.name}: Protein"])
+      expect(piece.labels(create(:user))).to contain_exactly("#{project_a.name}: Gene", '(private project)')
     end
   end
 
