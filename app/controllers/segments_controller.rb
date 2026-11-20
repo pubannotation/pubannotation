@@ -13,14 +13,22 @@ class SegmentsController < ApplicationController
   end
 
   # PATCH /docs/:doc_id/segments/:id
-  # Takes the segment's text (from the dialog) or whether a line break follows it (from its checkbox).
+  # Takes the segment's text (from the dialog), a piece of it and that piece's new text (from the dialog's table
+  # of pieces, for a segment with denotations on it), or whether a line break follows it (from its checkbox).
   def update
     attributes = segment_params
     @text = attributes[:text]
-    @media_transcript.update_segment!(@segment, attributes)
+    # Reopened, for a failed piece edit, on that piece.
+    @piece = attributes.slice(:piece_begin, :piece_end, :piece_text) if attributes.key?(:piece_begin)
+    if attributes.key?(:piece_begin)
+      @media_transcript.update_segment_piece!(@segment, Integer(attributes[:piece_begin]), Integer(attributes[:piece_end]),
+                                              attributes[:piece_text], attributes[:text])
+    else
+      @media_transcript.update_segment!(@segment, attributes)
+    end
 
     redirect_to doc_segments_path(@doc), notice: 'Segment was successfully updated.'
-  rescue ArgumentError, ActiveRecord::RecordInvalid => e
+  rescue ArgumentError, TypeError, ActiveRecord::RecordInvalid => e
     if attributes.key?(:text)
       # Reopens the dialog with the entered text and the error, for it to be fixed and saved again.
       @error = e.message
@@ -35,7 +43,7 @@ class SegmentsController < ApplicationController
   private
 
   def segment_params
-    params.expect(segment: %i[text line_break_after])
+    params.expect(segment: %i[text line_break_after piece_begin piece_end piece_text])
   end
 
   def set_media_transcript

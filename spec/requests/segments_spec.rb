@@ -42,7 +42,9 @@ RSpec.describe 'The segments page', type: :request do
         get "/docs/#{doc.id}/segments"
 
         expect(response.body).to include(%(data-url="/docs/#{doc.id}/segments/#{world.id}"), 'data-index="1"', 'data-text="world"')
-        expect(response.body).to include('<dialog id="segment-dialog" aria-labelledby="segment-dialog-title" data-open-on-load="false">')
+        dialog = Nokogiri::HTML(response.body).at_css('dialog#segment-dialog')
+        expect(dialog.attributes.transform_values(&:value)).to include('aria-labelledby' => 'segment-dialog-title',
+                                                                       'data-open-on-load' => 'false')
       end
 
       it "names the dialog by its heading and labels the dialog's text field" do
@@ -112,10 +114,50 @@ RSpec.describe 'The segments page', type: :request do
     end
 
     describe 'GET /docs/:doc_id/segments with denotations' do
+      it 'gives each Edit button the pieces of its segment' do
+        project = create(:project)
+        create(:denotation, project:, doc:, begin: 0, end: 5, obj: 'Protein')
+
+        get "/docs/#{doc.id}/segments"
+
+        pieces = Nokogiri::HTML(response.body).css('button.edit-segment').map { JSON.parse(it['data-pieces']) }
+        expect(pieces).to eq([[{ 'begin' => 0, 'end' => 5, 'text' => 'Hello', 'labels' => ["#{project.name}: Protein"] }], []])
+      end
+
       it 'no longer says the annotations after an edited segment are not moved' do
         get "/docs/#{doc.id}/segments"
 
         expect(response.body).not_to include('The annotations after it are not moved.')
+      end
+    end
+
+    describe 'PATCH /docs/:doc_id/segments/:id with a piece' do
+      let!(:denotation) { create(:denotation, project: create(:project), doc:, begin: 0, end: 5) }
+
+      it 'replaces the piece and shifts the denotations, then goes back to the list' do
+        patch "/docs/#{doc.id}/segments/#{hello.id}",
+              params: { segment: { piece_begin: 0, piece_end: 5, piece_text: 'Hello', text: 'Goodbye' } }
+
+        expect(response).to redirect_to("/docs/#{doc.id}/segments")
+        expect(doc.reload.body).to eq('Goodbye world')
+        expect(denotation.reload.attributes.values_at('begin', 'end')).to eq([0, 7])
+      end
+
+      it 'reopens the dialog with the error for a stale piece' do
+        patch "/docs/#{doc.id}/segments/#{hello.id}",
+              params: { segment: { piece_begin: 0, piece_end: 5, piece_text: 'Hallo', text: 'Goodbye' } }
+
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.body).to include('The segment has changed since the page was loaded.', 'data-open-on-load="true"')
+        expect(doc.reload.body).to eq('Hello world')
+      end
+
+      it 'refuses the whole text of a segment with denotations' do
+        patch "/docs/#{doc.id}/segments/#{hello.id}", params: { segment: { text: 'Hi' } }
+
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.body).to include('Edit a segment with denotations piece by piece.')
+        expect(doc.reload.body).to eq('Hello world')
       end
     end
 
