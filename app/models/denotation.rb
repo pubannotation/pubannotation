@@ -85,6 +85,11 @@ class Denotation < ActiveRecord::Base
     [self.begin, self.end]
   end
 
+  # "project: obj", or, for a denotation in a project whose annotations `user` can't access, only that it's there.
+  def label(user)
+    project.annotations_accessible?(user) ? "#{project.name}: #{obj}" : '(private project)'
+  end
+
   def as_json(options={})
     {
       id: hid,

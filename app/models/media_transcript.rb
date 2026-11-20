@@ -74,6 +74,22 @@ class MediaTranscript < ApplicationRecord
     leading.map { |segment| segment.text + segment.separator_after }.join + last&.text.to_s
   end
 
+  # `segment`'s text split at every boundary of the denotations, in every project, on it in the doc's body, as
+  # SegmentPieces in order, leaving out the pieces of spaces only. None for a segment with no denotations on it,
+  # or one not in the body, which only speech segments are. Denotations don't cross segments.
+  def segment_pieces(segment)
+    span = body_span_of(segment)
+    return [] unless span
+
+    denotations = doc.denotations_within(span[:begin], span[:end]).to_a
+    return [] if denotations.empty?
+
+    # Each two boundaries next to each other make a piece, e.g. [0, 9, 19] to [0, 9] and [9, 19].
+    piece_boundaries(segment, span[:begin], denotations).each_cons(2).filter_map do |from, to|
+      segment_piece(segment, span[:begin], denotations, from, to)
+    end
+  end
+
   # Each speech segment's char offset ({begin:, end:}) into what #speech_text builds from them (one
   # separating char, a space or a line break, between consecutive speech segments, regardless of
   # non-speech segments between them in `segments`), in the same order as #speech_segments, paired with
@@ -130,13 +146,37 @@ class MediaTranscript < ApplicationRecord
   # text and the doc's body. Reloads and locks itself first, so a concurrent edit of another segment isn't
   # overwritten.
   #
-  # Its whole text is edited only for a segment with no denotations on it, whose positions inside it couldn't be
-  # followed; the denotations after it, in every project, move to follow.
+  # Its whole text is edited only for a segment with no denotations on it, which is edited piece by piece
+  # instead (see #update_segment_piece!); the denotations after it, in every project, move to follow.
   def update_segment!(segment, attributes)
     with_lock do
       position = whole_text_edit_position(segment) if attributes.key?(:text)
       set_segment_text(segment, attributes[:text]) if attributes.key?(:text)
       set_segment_line_break_after(segment, attributes[:line_break_after]) if attributes.key?(:line_break_after)
+      save_moving_denotations!(position)
+    end
+  end
+
+  # Replaces the piece [piece_begin, piece_end) of `segment`'s text (see #segment_pieces), which should still be
+  # `piece_text`, with `new_text`, normalized as segment text is, and saves it, rebuilding text and the doc's body
+  # and moving the denotations, in every project, to follow: those covering the piece grow or shrink with it,
+  # and those after it shift. Reloads and locks itself first, like #update_segment!.
+  def update_segment_piece!(segment, piece_begin, piece_end, piece_text, new_text)
+    with_lock do
+      current = current_segment(segment)
+      # Still one of its pieces, so no denotation boundary lies inside it, even one added since the page was loaded.
+      unless segment_pieces(current).any? { [it.begin, it.end, it.text] == [piece_begin, piece_end, piece_text] }
+        raise ArgumentError, 'The segment has changed since the page was loaded. Reload it and try again.'
+      end
+
+      normalized_text = TextNormalizable.normalize_inline_text(new_text.to_s)
+      raise ArgumentError, 'Text is missing.' if normalized_text.blank?
+
+      position = body_span_of(current)[:begin] + piece_end
+      current.text = current.text[0...piece_begin] + normalized_text + current.text[piece_end..]
+      # Out of the body, its denotations would be left with nothing to follow.
+      raise ArgumentError, "A segment with denotations on it can't become a non-speech label." unless current.speech?
+
       save_moving_denotations!(position)
     end
   end
@@ -184,6 +224,27 @@ class MediaTranscript < ApplicationRecord
     current.line_break_after = line_break_after
   end
 
+  # The offsets in `segment`'s text where it's split: the denotations' boundaries, and its beginning and end so the
+  # text before the first denotation and after the last is a piece too, in order without duplicates.
+  # `segment_begin` is where `segment` begins in the doc's body.
+  def piece_boundaries(segment, segment_begin, denotations)
+    denotation_boundaries = denotations.flat_map { [it.begin - segment_begin, it.end - segment_begin] }
+    (denotation_boundaries + [0, segment.text.length]).uniq.sort
+  end
+
+  # The piece of `segment`'s text in [`from`, `to`) without the spaces around it, with the denotations covering
+  # it, or nil for spaces only.
+  def segment_piece(segment, segment_begin, denotations, from, to)
+    raw = segment.text[from...to]
+    text = raw.strip
+    return if text.empty?
+
+    piece_begin = from + raw.length - raw.lstrip.length
+    piece_end = piece_begin + text.length
+    covering = denotations.select { it.begin - segment_begin <= piece_begin && it.end - segment_begin >= piece_end }
+    SegmentPiece.new(piece_begin, piece_end, text, covering)
+  end
+
   # The current one of `segment` among these (see #set_segment_text).
   def current_segment(segment)
     current_segments.find { it == segment } or
@@ -196,10 +257,11 @@ class MediaTranscript < ApplicationRecord
   # positions inside it couldn't be followed.
   def whole_text_edit_position(segment)
     current = current_segment(segment)
-    span = body_span_of(current)
-    if span && doc.denotations_within(span[:begin], span[:end]).exists?
+    if segment_pieces(current).any?
       raise ArgumentError, "A segment with denotations on it can't be edited as a whole."
     end
+
+    span = body_span_of(current)
     return span[:end] if span
 
     following = current_segments.drop(current_segments.index(current) + 1).find(&:speech?)
