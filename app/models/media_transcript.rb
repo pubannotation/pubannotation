@@ -224,8 +224,9 @@ class MediaTranscript < ApplicationRecord
     current.line_break_after = line_break_after
   end
 
-  # The offsets in `segment`'s text where it's split: its beginning and end and the denotations' boundaries, in
-  # order without duplicates. `segment_begin` is where `segment` begins in the doc's body.
+  # The offsets in `segment`'s text where it's split: the denotations' boundaries, and its beginning and end so the
+  # text before the first denotation and after the last is a piece too, in order without duplicates.
+  # `segment_begin` is where `segment` begins in the doc's body.
   def piece_boundaries(segment, segment_begin, denotations)
     denotation_boundaries = denotations.flat_map { [it.begin - segment_begin, it.end - segment_begin] }
     (denotation_boundaries + [0, segment.text.length]).uniq.sort
