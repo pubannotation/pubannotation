@@ -81,12 +81,22 @@ class MediaTranscript < ApplicationRecord
     span = body_span_of(segment)
     return [] unless span
 
-    denotations = doc.denotations_within(span[:begin], span[:end]).to_a
-    return [] if denotations.empty?
+    pieces_of(segment, span[:begin], doc.denotations_within(span[:begin], span[:end]).to_a)
+  end
 
-    # Each two boundaries next to each other make a piece, e.g. [0, 9, 19] to [0, 9] and [9, 19].
-    piece_boundaries(segment, span[:begin], denotations).each_cons(2).filter_map do |from, to|
-      segment_piece(segment, span[:begin], denotations, from, to)
+  # Each speech segment's pieces (see #segment_pieces) by the segment, for listing them all, with the spans
+  # computed and the denotations queried only once. None for a doc with no denotations.
+  def pieces_by_segment
+    denotations = doc.denotations.includes(:project).to_a
+    return {} if denotations.empty?
+
+    spans = speech_segment_spans
+    # By the speech segment each is on, found by the first span not ending before it begins.
+    denotations_by_index = denotations.group_by { |denotation| spans.bsearch_index { it[:end] >= denotation.begin } }
+    speech_segments.each_with_index.to_h do |segment, index|
+      span = spans[index]
+      on_segment = denotations_by_index.fetch(index, []).select { it.begin >= span[:begin] && it.end <= span[:end] }
+      [segment, pieces_of(segment, span[:begin], on_segment)]
     end
   end
 
@@ -222,6 +232,17 @@ class MediaTranscript < ApplicationRecord
     raise ArgumentError, 'No line break can follow this segment.' unless line_break_settable_after?(current)
 
     current.line_break_after = line_break_after
+  end
+
+  # `segment`'s pieces at the boundaries of `denotations`, those on it, with `segment_begin` where it begins in
+  # the doc's body.
+  def pieces_of(segment, segment_begin, denotations)
+    return [] if denotations.empty?
+
+    # Each two boundaries next to each other make a piece, e.g. [0, 9, 19] to [0, 9] and [9, 19].
+    piece_boundaries(segment, segment_begin, denotations).each_cons(2).filter_map do |from, to|
+      segment_piece(segment, segment_begin, denotations, from, to)
+    end
   end
 
   # The offsets in `segment`'s text where it's split: the denotations' boundaries, and its beginning and end so the

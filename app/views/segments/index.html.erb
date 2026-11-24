@@ -30,6 +30,7 @@
       <th></th>
     <% end -%>
   </tr>
+  <% pieces_by_segment = @media_transcript.pieces_by_segment if @editable -%>
   <% @media_transcript.segments.each_with_index do |segment, index| -%>
     <tr>
       <td><%= index %></td>
@@ -50,7 +51,7 @@
           <%= button_tag 'Edit', type: 'button', class: 'button edit-segment',
             data: { url: doc_segment_path(@doc, segment), index:, text: segment.text,
                     time: segment_time_range(segment),
-                    pieces: segment_pieces_json(@media_transcript.segment_pieces(segment), current_user) } %>
+                    pieces: segment_pieces_json(pieces_by_segment.fetch(segment, []), current_user) } %>
         </td>
       <% end -%>
     </tr>

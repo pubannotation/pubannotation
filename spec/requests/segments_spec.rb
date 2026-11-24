@@ -124,6 +124,18 @@ RSpec.describe 'The segments page', type: :request do
         expect(pieces).to eq([[{ 'begin' => 0, 'end' => 5, 'text' => 'Hello', 'labels' => ["#{project.name}: Protein"] }], []])
       end
 
+      it 'queries the denotations once for all the segments' do
+        project = create(:project)
+        create(:denotation, project:, doc:, begin: 0, end: 5)
+        create(:denotation, project:, doc:, begin: 6, end: 11)
+        queries = []
+        callback = ->(*, payload) { queries << payload[:sql] if payload[:sql].include?('FROM "denotations"') }
+
+        ActiveSupport::Notifications.subscribed(callback, 'sql.active_record') { get "/docs/#{doc.id}/segments" }
+
+        expect(queries.size).to eq(1)
+      end
+
       it 'no longer says the annotations after an edited segment are not moved' do
         get "/docs/#{doc.id}/segments"
 
