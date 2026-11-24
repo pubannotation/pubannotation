@@ -18,9 +18,9 @@ class SegmentsController < ApplicationController
   def update
     attributes = segment_params
     @text = attributes[:text]
-    # Reopened, for a failed piece edit, on that piece.
-    @piece = attributes.slice(:piece_begin, :piece_end, :piece_text) if attributes.key?(:piece_begin)
     if attributes.key?(:piece_begin)
+      # Reopened, for a failed piece edit, on that piece.
+      @piece = attributes.slice(:piece_begin, :piece_end, :piece_text)
       @media_transcript.update_segment_piece!(@segment, Integer(attributes[:piece_begin]), Integer(attributes[:piece_end]),
                                               attributes[:piece_text], attributes[:text])
     else
