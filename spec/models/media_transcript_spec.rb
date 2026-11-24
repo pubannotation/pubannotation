@@ -373,6 +373,28 @@ RSpec.describe MediaTranscript, type: :model do
 
       expect(piece.labels(create(:user))).to contain_exactly("#{project_a.name}: Gene", '(private project)')
     end
+
+    describe '#pieces_by_segment' do
+      it "gives each speech segment's pieces, as #segment_pieces does, with one query of the denotations" do
+        create(:denotation, project: project_a, doc:, begin: 0, end: 5)
+        create(:denotation, project: project_b, doc:, begin: 6, end: 9)
+        create(:denotation, project: project_a, doc:, begin: 10, end: 15)
+        queries = []
+        callback = ->(*, payload) { queries << payload[:sql] if payload[:sql].include?('FROM "denotations"') }
+
+        pieces = ActiveSupport::Notifications.subscribed(callback, 'sql.active_record') do
+          media_transcript.pieces_by_segment
+        end
+
+        expect(pieces).to eq(media_transcript.segments.to_h { [it, media_transcript.segment_pieces(it)] })
+        expect(pieces.values.map { it.map(&:text) }).to eq([%w[Hello big], %w[world]])
+        expect(queries.size).to eq(1)
+      end
+
+      it 'gives no pieces when the doc has no denotations' do
+        expect(media_transcript.pieces_by_segment).to eq({})
+      end
+    end
   end
 
   describe '#create_segment_blocks!' do
@@ -783,7 +805,7 @@ RSpec.describe MediaTranscript, type: :model do
 
       it 'refuses the whole text of a segment with denotations' do
         expect { media_transcript.update_segment!(hello, { text: 'Hi' }) }
-          .to raise_error(ArgumentError, "A segment with denotations on it can't be edited as a whole.")
+          .to raise_error(ArgumentError, 'Edit a segment with denotations piece by piece.')
         expect(doc.reload.body).to eq('Hello world')
       end
 

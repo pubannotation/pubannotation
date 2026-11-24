@@ -30,4 +30,13 @@
   .error {
     color: red;
   }
+
+  .segment-pieces {
+    margin-bottom: 1em;
+
+    td, th {
+      padding: 0 0.5em;
+      text-align: left;
+    }
+  }
 }

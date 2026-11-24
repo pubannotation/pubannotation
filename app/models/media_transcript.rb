@@ -81,12 +81,19 @@ class MediaTranscript < ApplicationRecord
     span = body_span_of(segment)
     return [] unless span
 
-    denotations = doc.denotations_within(span[:begin], span[:end]).to_a
-    return [] if denotations.empty?
+    pieces_of(segment, span[:begin], doc.denotations_within(span[:begin], span[:end]).to_a)
+  end
 
-    # Each two boundaries next to each other make a piece, e.g. [0, 9, 19] to [0, 9] and [9, 19].
-    piece_boundaries(segment, span[:begin], denotations).each_cons(2).filter_map do |from, to|
-      segment_piece(segment, span[:begin], denotations, from, to)
+  # Each speech segment's pieces (see #segment_pieces) by the segment, for listing them all, with the spans
+  # computed and the denotations queried only once. None for a doc with no denotations.
+  def pieces_by_segment
+    denotations = doc.denotations.includes(:project).to_a
+    return {} if denotations.empty?
+
+    spans = speech_segment_spans
+    denotations_by_index = denotations_by_span_index(denotations, spans)
+    speech_segments.each_with_index.to_h do |segment, index|
+      [segment, pieces_of(segment, spans[index][:begin], denotations_by_index.fetch(index, []))]
     end
   end
 
@@ -224,6 +231,29 @@ class MediaTranscript < ApplicationRecord
     current.line_break_after = line_break_after
   end
 
+  # `denotations` grouped by the index of the span, among `spans` in order, each is within, leaving out those
+  # within none.
+  def denotations_by_span_index(denotations, spans)
+    denotations.each_with_object({}) do |denotation, by_index|
+      # The only span it can be within: the first one not ending before it begins, found by a binary search.
+      index = spans.bsearch_index { it[:end] >= denotation.begin }
+      next unless index && denotation.begin >= spans[index][:begin] && denotation.end <= spans[index][:end]
+
+      (by_index[index] ||= []) << denotation
+    end
+  end
+
+  # `segment`'s pieces at the boundaries of `denotations`, those on it, with `segment_begin` where it begins in
+  # the doc's body.
+  def pieces_of(segment, segment_begin, denotations)
+    return [] if denotations.empty?
+
+    # Each two boundaries next to each other make a piece, e.g. [0, 9, 19] to [0, 9] and [9, 19].
+    piece_boundaries(segment, segment_begin, denotations).each_cons(2).filter_map do |from, to|
+      segment_piece(segment, segment_begin, denotations, from, to)
+    end
+  end
+
   # The offsets in `segment`'s text where it's split: the denotations' boundaries, and its beginning and end so the
   # text before the first denotation and after the last is a piece too, in order without duplicates.
   # `segment_begin` is where `segment` begins in the doc's body.
@@ -257,9 +287,7 @@ class MediaTranscript < ApplicationRecord
   # positions inside it couldn't be followed.
   def whole_text_edit_position(segment)
     current = current_segment(segment)
-    if segment_pieces(current).any?
-      raise ArgumentError, "A segment with denotations on it can't be edited as a whole."
-    end
+    raise ArgumentError, 'Edit a segment with denotations piece by piece.' if segment_pieces(current).any?
 
     span = body_span_of(current)
     return span[:end] if span
