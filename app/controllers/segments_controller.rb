@@ -33,6 +33,7 @@ class SegmentsController < ApplicationController
       # Reopens the dialog with the entered text and the error, for it to be fixed and saved again.
       @error = e.message
       @media_transcript.reload
+      set_segment # Its text may have changed too, which the dialog's pieces are cut from.
       render :index, status: :unprocessable_content
     else
       # A checkbox's change has nothing to fix in a dialog, so it goes back to the list with the error.

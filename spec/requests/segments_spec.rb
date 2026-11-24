@@ -152,6 +152,23 @@ RSpec.describe 'The segments page', type: :request do
         expect(doc.reload.body).to eq('Hello world')
       end
 
+      it 'reopens the dialog with the pieces of the segment as another request has just changed it' do
+        allow_any_instance_of(MediaTranscript).to receive(:with_lock).and_wrap_original do |original, *args, &block|
+          # Another request lengthens the segment, splitting the piece, just before this one locks the transcript.
+          MediaTranscript.find(media_transcript.id).tap { _1.set_segment_text(hello, 'Hello there') }.save!
+          create(:denotation, project: denotation.project, doc:, begin: 2, end: 5)
+          create(:denotation, project: denotation.project, doc:, begin: 6, end: 11)
+          original.call(*args, &block)
+        end
+
+        patch "/docs/#{doc.id}/segments/#{hello.id}",
+              params: { segment: { piece_begin: 0, piece_end: 5, piece_text: 'Hello', text: 'Goodbye' } }
+
+        expect(response).to have_http_status(:unprocessable_content)
+        dialog = Nokogiri::HTML(response.body).at_css('#segment-dialog')
+        expect(JSON.parse(dialog['data-pieces']).map { it['text'] }).to eq(%w[He llo there])
+      end
+
       it 'refuses the whole text of a segment with denotations' do
         patch "/docs/#{doc.id}/segments/#{hello.id}", params: { segment: { text: 'Hi' } }
 
