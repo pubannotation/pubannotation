@@ -91,12 +91,9 @@ class MediaTranscript < ApplicationRecord
     return {} if denotations.empty?
 
     spans = speech_segment_spans
-    # By the speech segment each is on, found by the first span not ending before it begins.
-    denotations_by_index = denotations.group_by { |denotation| spans.bsearch_index { it[:end] >= denotation.begin } }
+    denotations_by_index = denotations_by_span_index(denotations, spans)
     speech_segments.each_with_index.to_h do |segment, index|
-      span = spans[index]
-      on_segment = denotations_by_index.fetch(index, []).select { it.begin >= span[:begin] && it.end <= span[:end] }
-      [segment, pieces_of(segment, span[:begin], on_segment)]
+      [segment, pieces_of(segment, spans[index][:begin], denotations_by_index.fetch(index, []))]
     end
   end
 
@@ -232,6 +229,18 @@ class MediaTranscript < ApplicationRecord
     raise ArgumentError, 'No line break can follow this segment.' unless line_break_settable_after?(current)
 
     current.line_break_after = line_break_after
+  end
+
+  # `denotations` grouped by the index of the span, among `spans` in order, each is within, leaving out those
+  # within none.
+  def denotations_by_span_index(denotations, spans)
+    denotations.each_with_object({}) do |denotation, by_index|
+      # The only span it can be within: the first one not ending before it begins, found by a binary search.
+      index = spans.bsearch_index { it[:end] >= denotation.begin }
+      next unless index && denotation.begin >= spans[index][:begin] && denotation.end <= spans[index][:end]
+
+      (by_index[index] ||= []) << denotation
+    end
   end
 
   # `segment`'s pieces at the boundaries of `denotations`, those on it, with `segment_begin` where it begins in
