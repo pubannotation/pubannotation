@@ -197,6 +197,15 @@ RSpec.describe 'The segments page', type: :request do
         expect(response.body).to include('id="segment-dialog-no-speech"', 'data-text="(no speech)"')
       end
 
+      it 'lets the No speech button be shown only for a speech segment with another left' do
+        get "/docs/#{doc.id}/segments"
+        expect(Nokogiri::HTML(response.body).css('button.edit-segment').map { it['data-no-speech'] }).to eq(%w[true true])
+
+        media_transcript.update_segment!(hello, { text: NonSpeechTextMatcher::NO_SPEECH })
+        get "/docs/#{doc.id}/segments"
+        expect(Nokogiri::HTML(response.body).css('button.edit-segment').map { it['data-no-speech'] }).to eq(%w[false false])
+      end
+
       it 'takes the segment out of the text' do
         patch "/docs/#{doc.id}/segments/#{hello.id}", params: { segment: { text: NonSpeechTextMatcher::NO_SPEECH } }
 
@@ -211,6 +220,7 @@ RSpec.describe 'The segments page', type: :request do
 
         expect(response).to have_http_status(:unprocessable_content)
         expect(response.body).to include('Segments must have speech', 'data-open-on-load="true"')
+        expect(Nokogiri::HTML(response.body).at_css('#segment-dialog')['data-no-speech']).to eq('false')
         expect(doc.reload.body).to eq('world')
       end
     end

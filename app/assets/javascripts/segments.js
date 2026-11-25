@@ -34,7 +34,11 @@ class SegmentDialog {
   // that was a piece's edit, as the server filled its fields in.
   reopen() {
     const pieces = JSON.parse(this.dialog.dataset.pieces);
-    if (pieces.length > 0) this.showPieces(pieces, !this.pieceFields[0].disabled);
+    if (pieces.length > 0) {
+      this.showPieces(pieces, !this.pieceFields[0].disabled);
+    } else {
+      this.noSpeechButton.hidden = this.dialog.dataset.noSpeech !== 'true';
+    }
     this.dialog.showModal();
   }
 
@@ -52,7 +56,7 @@ class SegmentDialog {
       this.showPieces(pieces, false);
     } else {
       this.piecesTable.hidden = true;
-      this.noSpeechButton.hidden = false;
+      this.noSpeechButton.hidden = button.dataset.noSpeech !== 'true';
       this.showTextField(button.dataset.text);
     }
     this.dialog.showModal();

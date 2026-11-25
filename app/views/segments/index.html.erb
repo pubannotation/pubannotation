@@ -31,6 +31,7 @@
     <% end -%>
   </tr>
   <% pieces_by_segment = @media_transcript.pieces_by_segment if @editable -%>
+  <% no_speech_markable = @media_transcript.segments_markable_no_speech if @editable -%>
   <% @media_transcript.segments.each_with_index do |segment, index| -%>
     <tr>
       <td><%= index %></td>
@@ -51,7 +52,8 @@
           <%= button_tag 'Edit', type: 'button', class: 'button edit-segment',
             data: { url: doc_segment_path(@doc, segment), index:, text: segment.text,
                     time: segment_time_range(segment),
-                    pieces: segment_pieces_json(pieces_by_segment.fetch(segment, []), current_user) } %>
+                    pieces: segment_pieces_json(pieces_by_segment.fetch(segment, []), current_user),
+                    no_speech: no_speech_markable.include?(segment) } %>
         </td>
       <% end -%>
     </tr>
@@ -65,7 +67,8 @@
   <%# Filled in from the clicked Edit button; rendered open with the entered text after a failed save. A segment
       with denotations on it lists its pieces in the table instead, each edited in the text field once chosen. %>
   <dialog id="segment-dialog" aria-labelledby="segment-dialog-title" data-open-on-load="<%= @segment.present? %>"
-          data-pieces="<%= segment_pieces_json(@segment ? @media_transcript.segment_pieces(@segment) : [], current_user) %>">
+          data-pieces="<%= segment_pieces_json(@segment ? @media_transcript.segment_pieces(@segment) : [], current_user) %>"
+          data-no-speech="<%= no_speech_markable.include?(@segment) %>">
     <div class="segment-dialog-content">
       <h2 id="segment-dialog-title">Edit segment text</h2>
       <%= form_with scope: :segment, url: (doc_segment_path(@doc, @segment) if @segment), method: :patch do |f| %>
@@ -88,7 +91,8 @@
         </div>
         <div class="actions">
           <%= f.submit 'Save', id: 'segment-dialog-save' %>
-          <%# Hidden for a segment with denotations on it, which can't be taken out of the text. %>
+          <%# Shown only for a speech segment with another left, and not for one with denotations on it, which can't
+              be taken out of the text. %>
           <%= button_tag 'No speech', type: 'button', id: 'segment-dialog-no-speech', data: { text: NonSpeechTextMatcher::NO_SPEECH } %>
           <%= button_tag 'Cancel', type: 'button', id: 'segment-dialog-cancel' %>
         </div>
