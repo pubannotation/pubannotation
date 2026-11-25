@@ -113,6 +113,16 @@ class ProjectDoc < ActiveRecord::Base
     end
   end
 
+  # Replaces existing blocks of this obj only when their spans change, preserving
+  # their relations and attributes when the spans match.
+  def refresh_blocks_of(obj, spans)
+    old_spans = block_spans_of(obj)
+    return if old_spans.empty? || old_spans == spans
+
+    delete_blocks_of(obj)
+    create_blocks_of(obj, spans)
+  end
+
   # The spans ([begin, end]) of its blocks whose obj is `obj`, in order.
   def block_spans_of(obj)
     Block.where(project_id:, doc_id:, obj:).order(:begin, :end).pluck(:begin, :end)
