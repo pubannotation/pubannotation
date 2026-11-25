@@ -1,7 +1,9 @@
 # A piece of a segment's text between two of the boundaries of the denotations on it (see
 # MediaTranscript#segment_pieces): [begin, end) within the segment's text, without the spaces around it, and the
 # denotations covering it, each of which covers the whole piece, as the segment is split at all their boundaries.
-SegmentPiece = Data.define(:begin, :end, :text, :denotations) do
+class SegmentPiece
+  attr_reader :begin, :end, :text, :denotations
+
   class << self
     # `segment`'s pieces at the boundaries of `denotations`, those on it, with `segment_begin` where it begins in
     # the doc's body.
@@ -34,8 +36,30 @@ SegmentPiece = Data.define(:begin, :end, :text, :denotations) do
       piece_begin = from + raw.length - raw.lstrip.length
       piece_end = piece_begin + text.length
       covering = denotations.select { it.begin - segment_begin <= piece_begin && it.end - segment_begin >= piece_end }
-      SegmentPiece.new(piece_begin, piece_end, text, covering)
+      new(piece_begin, piece_end, text, covering)
     end
+  end
+
+  def initialize(piece_begin, piece_end, text, denotations)
+    @begin = piece_begin
+    @end = piece_end
+    @text = text
+    @denotations = denotations
+    freeze
+  end
+
+  def ==(other)
+    other.instance_of?(self.class) &&
+      [self.begin, self.end, text, denotations] == [other.begin, other.end, other.text, other.denotations]
+  end
+
+  def eql?(other)
+    other.instance_of?(self.class) &&
+      [self.begin, self.end, text, denotations].eql?([other.begin, other.end, other.text, other.denotations])
+  end
+
+  def hash
+    [self.class, self.begin, self.end, text, denotations].hash
   end
 
   # The label of each denotation (see Denotation#label).
