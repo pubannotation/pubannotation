@@ -41,8 +41,8 @@ RSpec.describe 'The segmentation editor', type: :request do
 
       links = Nokogiri::HTML(response.body).css('a.button').to_h { [it.text, it['href']] }
       expect(links).to include('Edit segment text' => "/docs/#{doc.id}/segments",
-                               'Segmentation' => "/docs/#{doc.id}/segmentation/edit?return_to=#{CGI.escape(doc_page)}")
-      expect(links.keys.each_cons(2)).to include(['Edit segment text', 'Segmentation'])
+                               'Edit segment boundaries' => "/docs/#{doc.id}/segmentation/edit?return_to=#{CGI.escape(doc_page)}")
+      expect(links.keys.each_cons(2)).to include(['Edit segment text', 'Edit segment boundaries'])
     end
 
     it 'has no link to it from the segment list' do
@@ -204,7 +204,7 @@ RSpec.describe 'The segmentation editor', type: :request do
 
       links = Nokogiri::HTML(response.body).css('a.button').to_h { [it.text, it['href']] }
       expect(links).to include('Segments' => "/docs/#{doc.id}/segments")
-      expect(links.keys).not_to include('Segmentation', 'Edit segment text')
+      expect(links.keys).not_to include('Edit segment boundaries', 'Edit segment text')
     end
   end
 
