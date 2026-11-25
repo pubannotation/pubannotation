@@ -318,18 +318,12 @@ class MediaTranscript < ApplicationRecord
     doc.update!(body: text) if doc.body != text
   end
 
-  # Rebuilds the AudioSegment blocks in each project that has them on the doc, to span the speech segments as
-  # they now are, unless they already do (e.g. as only a line break changed), since the relations and
-  # attributes on them go with them.
+  # Refreshes existing AudioSegment blocks to span the current speech segments.
   def rebuild_segment_blocks
     spans = segment_block_spans
 
     doc.project_docs.each do |project_doc|
-      old_spans = project_doc.block_spans_of(SEGMENT_BLOCK_OBJ)
-      next if old_spans.empty? || old_spans == spans
-
-      project_doc.delete_blocks_of(SEGMENT_BLOCK_OBJ)
-      project_doc.create_blocks_of(SEGMENT_BLOCK_OBJ, spans)
+      project_doc.refresh_blocks_of(SEGMENT_BLOCK_OBJ, spans)
     end
   end
 
