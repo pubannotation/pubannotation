@@ -27,6 +27,10 @@
     padding: 1em;
   }
 
+  #segment-dialog-text {
+    margin-bottom: 0.75em;
+  }
+
   .error {
     color: red;
   }
