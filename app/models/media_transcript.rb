@@ -81,7 +81,7 @@ class MediaTranscript < ApplicationRecord
     span = body_span_of(segment)
     return [] unless span
 
-    pieces_of(segment, span[:begin], doc.denotations_within(span[:begin], span[:end]).to_a)
+    SegmentPiece.from_segment(segment, span[:begin], doc.denotations_within(span[:begin], span[:end]).to_a)
   end
 
   # Each speech segment's pieces (see #segment_pieces) by the segment, for listing them all, with the spans
@@ -93,7 +93,7 @@ class MediaTranscript < ApplicationRecord
     spans = speech_segment_spans
     denotations_by_index = denotations_by_span_index(denotations, spans)
     speech_segments.each_with_index.to_h do |segment, index|
-      [segment, pieces_of(segment, spans[index][:begin], denotations_by_index.fetch(index, []))]
+      [segment, SegmentPiece.from_segment(segment, spans[index][:begin], denotations_by_index.fetch(index, []))]
     end
   end
 
@@ -241,38 +241,6 @@ class MediaTranscript < ApplicationRecord
 
       (by_index[index] ||= []) << denotation
     end
-  end
-
-  # `segment`'s pieces at the boundaries of `denotations`, those on it, with `segment_begin` where it begins in
-  # the doc's body.
-  def pieces_of(segment, segment_begin, denotations)
-    return [] if denotations.empty?
-
-    # Each two boundaries next to each other make a piece, e.g. [0, 9, 19] to [0, 9] and [9, 19].
-    piece_boundaries(segment, segment_begin, denotations).each_cons(2).filter_map do |from, to|
-      segment_piece(segment, segment_begin, denotations, from, to)
-    end
-  end
-
-  # The offsets in `segment`'s text where it's split: the denotations' boundaries, and its beginning and end so the
-  # text before the first denotation and after the last is a piece too, in order without duplicates.
-  # `segment_begin` is where `segment` begins in the doc's body.
-  def piece_boundaries(segment, segment_begin, denotations)
-    denotation_boundaries = denotations.flat_map { [it.begin - segment_begin, it.end - segment_begin] }
-    (denotation_boundaries + [0, segment.text.length]).uniq.sort
-  end
-
-  # The piece of `segment`'s text in [`from`, `to`) without the spaces around it, with the denotations covering
-  # it, or nil for spaces only.
-  def segment_piece(segment, segment_begin, denotations, from, to)
-    raw = segment.text[from...to]
-    text = raw.strip
-    return if text.empty?
-
-    piece_begin = from + raw.length - raw.lstrip.length
-    piece_end = piece_begin + text.length
-    covering = denotations.select { it.begin - segment_begin <= piece_begin && it.end - segment_begin >= piece_end }
-    SegmentPiece.new(piece_begin, piece_end, text, covering)
   end
 
   # The current one of `segment` among these (see #set_segment_text).
