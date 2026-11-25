@@ -3,6 +3,5 @@
 <%= render 'form' %>
 
 <div class="doc-edit-links">
-  <%= link_to t('views.shared.show'), @doc %> |
-  <%= link_to t('views.shared.back'), docs_path %>
+  <%= link_to t('views.shared.back'), @doc, onclick: 'if (window.history.length > 1) { window.history.back(); return false; }' %>
 </div>
