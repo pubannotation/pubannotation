@@ -426,6 +426,7 @@ ja:
       div: デイビジョン
       list_button: List all the divisions
     docs:
+      edit_document: ドキュメントの編集
       annotation_within_project: "<span class='meta'><span class='pname'>%{project_name}</span>プロジェクトでこのドキュメントに付けられた</span>アノテーション"
       annotation_within_spans: "<span class='meta'><span class='pname'>SPAN %{spans}</span>に付けられた</span>アノテーション"
       document_content: ドキュメントのコンテンツ

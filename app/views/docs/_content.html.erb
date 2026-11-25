@@ -9,10 +9,10 @@
 </tr>
 </table>
 
-<%= link_to t('views.shared.edit_model', :model => t('activerecord.models.doc')), edit_doc_path(@doc), :class => 'button'  if @doc.updatable_for?(current_user) -%>
+<%= link_to t('views.docs.edit_document'), edit_doc_path(@doc), class: 'button' if @doc.updatable_for?(current_user) -%>
 <% if segments_editable?(@doc) -%>
   <%= link_to 'Edit segment text', doc_segments_path(@doc), class: 'button' -%>
-  <%= link_to 'Segmentation', edit_doc_segmentation_path(@doc, return_to: request.path), class: 'button' -%>
+  <%= link_to 'Edit segment boundaries', edit_doc_segmentation_path(@doc, return_to: request.path), class: 'button' -%>
 <% elsif segments_listable?(@doc) -%>
   <%= link_to 'Segments', doc_segments_path(@doc), class: 'button' -%>
 <% end -%>
