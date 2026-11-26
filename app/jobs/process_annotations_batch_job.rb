@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'ostruct'
-
 class ProcessAnnotationsBatchJob < ApplicationJob
   queue_as :general  # Different queue to avoid competing with parent job
 

@@ -1,5 +1,8 @@
 # Ractor-based parallel text alignment service
 class ParallelTextAligner
+  FailureResult = Data.define(:denotations, :blocks, :error_message, :lost_annotations)
+  private_constant :FailureResult
+
   class << self
     def align_annotations(ref_text, annotations, options = {})
       # For now, fall back to regular alignment
@@ -15,7 +18,7 @@ class ParallelTextAligner
     rescue => e
       Rails.logger.error "Text alignment error: #{e.message}"
       # Return empty results to allow job to continue
-      annotations.map { |ann| OpenStruct.new(denotations: [], blocks: [], error_message: e.message, lost_annotations: []) }
+      annotations.map { FailureResult.new([], [], e.message, []) }
     end
 
     # Future Ractor implementation:
