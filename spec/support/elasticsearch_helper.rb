@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'securerandom'
+
 # Elasticsearch Test Helper
 #
 # Provides utilities for integration tests that require Elasticsearch.
@@ -19,9 +21,9 @@
 #   bundle exec rspec --tag ~elasticsearch
 
 module ElasticsearchTestHelper
-  TEST_INDEX_VERSION = 999
-  TEST_INDEX_NAME = "pubannotation_docs_v#{TEST_INDEX_VERSION}"
-  TEST_INDEX_ALIAS = 'pubannotation_docs_test'
+  RUN_ID = SecureRandom.hex(12)
+  TEST_INDEX_NAME = "pubannotation_docs_rspec_index_#{RUN_ID}"
+  TEST_INDEX_ALIAS = "pubannotation_docs_rspec_alias_#{RUN_ID}"
 
   class << self
     def elasticsearch_available?
@@ -44,40 +46,24 @@ module ElasticsearchTestHelper
     def setup_test_index
       return unless elasticsearch_available?
 
-      manager = Elasticsearch::IndexManager.new
-
-      # Delete test index if it exists
-      if manager.index_exists?(TEST_INDEX_NAME)
-        ELASTICSEARCH_CLIENT.indices.delete(index: TEST_INDEX_NAME)
-      end
-
-      # Create test index with mapping
       mapping_path = Rails.root.join('config', 'elasticsearch', 'mappings', 'docs_v1.json')
       settings_and_mappings = JSON.parse(File.read(mapping_path))
+      settings_and_mappings['aliases'] = { TEST_INDEX_ALIAS => {} }
 
       ELASTICSEARCH_CLIENT.indices.create(
         index: TEST_INDEX_NAME,
         body: settings_and_mappings
       )
 
-      # Point test alias to test index
-      begin
-        ELASTICSEARCH_CLIENT.indices.delete_alias(index: '_all', name: TEST_INDEX_ALIAS)
-      rescue Elastic::Transport::Transport::Errors::NotFound
-        # Alias doesn't exist, that's fine
-      end
-
-      ELASTICSEARCH_CLIENT.indices.put_alias(index: TEST_INDEX_NAME, name: TEST_INDEX_ALIAS)
+      @test_index_created = true
     end
 
     def teardown_test_index
-      return unless elasticsearch_available?
+      return unless @test_index_created
 
-      begin
-        ELASTICSEARCH_CLIENT.indices.delete(index: TEST_INDEX_NAME)
-      rescue Elastic::Transport::Transport::Errors::NotFound
-        # Index doesn't exist, that's fine
-      end
+      ELASTICSEARCH_CLIENT.indices.delete(index: TEST_INDEX_NAME)
+    rescue Elastic::Transport::Transport::Errors::NotFound
+      # The index and its alias are already gone.
     end
 
     def refresh_index
@@ -158,15 +144,11 @@ RSpec.configure do |config|
   end
 
   config.before(:suite) do
-    if ElasticsearchTestHelper.elasticsearch_available?
-      ElasticsearchTestHelper.setup_test_index
-    end
+    ElasticsearchTestHelper.setup_test_index
   end
 
   config.after(:suite) do
-    if ElasticsearchTestHelper.elasticsearch_available?
-      ElasticsearchTestHelper.teardown_test_index
-    end
+    ElasticsearchTestHelper.teardown_test_index
   end
 
   config.around(:each, :elasticsearch) do |example|
@@ -178,9 +160,11 @@ RSpec.configure do |config|
       original_alias = ELASTICSEARCH_INDEX_ALIAS
       silence_warnings { Object.const_set(:ELASTICSEARCH_INDEX_ALIAS, ElasticsearchTestHelper::TEST_INDEX_ALIAS) }
 
-      example.run
-
-      silence_warnings { Object.const_set(:ELASTICSEARCH_INDEX_ALIAS, original_alias) }
+      begin
+        example.run
+      ensure
+        silence_warnings { Object.const_set(:ELASTICSEARCH_INDEX_ALIAS, original_alias) }
+      end
     else
       skip 'Elasticsearch not available'
     end
