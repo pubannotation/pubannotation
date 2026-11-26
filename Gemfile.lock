@@ -461,7 +461,6 @@ DEPENDENCIES
   elasticsearch (~> 9.0)
   facebox-rails!
   factory_bot_rails
-  faraday
   font-awesome-rails
   friendly_id
   httpx (~> 1.2)

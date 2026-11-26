@@ -46,8 +46,7 @@ gem 'omniauth-google-oauth2'
 gem 'rubyzip', require: 'zip'
 # Elasticsearch 9.x - direct client without elasticsearch-model/rails
 gem 'elasticsearch', '~> 9.0'
-gem 'httpx', '~> 1.2'  # HTTP client for embedding service
-gem 'faraday'
+gem 'httpx', '~> 1.2'
 gem 'stardog-rb', git: 'https://github.com/jdkim/stardog-rb.git'
 gem 'tao_rdfizer', '~> 0.12.1'
 gem 'simple_inline_text_annotation'

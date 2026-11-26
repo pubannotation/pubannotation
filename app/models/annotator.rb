@@ -105,20 +105,21 @@ class Annotator < ActiveRecord::Base
       [_payload.to_json, 'application/json; charset=utf8']
     end
 
+    headers = {'Accept' => 'application/json'}
     response = if use_post_method? && payload.present?
-      Faraday.post(_url, payload) do |request|
-        request.headers['Content-Type'] = content_type
-        request.headers['Accept'] = 'application/json'
-      end
+      HTTPX.post(_url, body: payload, headers: headers.merge('Content-Type' => content_type))
     else
-      Faraday.get(_url, _params) do |request|
-        request.headers['Accept'] = 'application/json'
-      end
+      HTTPX.get(annotator_url_with_params(_url, _params), headers: headers)
     end
 
-    raise "Unsuccessful response from the annotator (#{response.status}: #{response.reason_phrase})" unless response.status == 200
+    response.raise_for_status if response.is_a?(HTTPX::ErrorResponse)
+    unless response.status == 200
+      reason = Rack::Utils::HTTP_STATUS_CODES[response.status]
+      status = [response.status, reason].compact.join(': ')
+      raise "Unsuccessful response from the annotator (#{status})"
+    end
 
-    JSON.parse(response.body).deep_symbolize_keys
+    JSON.parse(response.body.to_s).deep_symbolize_keys
   rescue => e
     raise "Could not obtain annotations: #{e.message}"
   end
@@ -258,6 +259,16 @@ class Annotator < ActiveRecord::Base
   end
 
   private
+    def annotator_url_with_params(url, params)
+      return url if params.blank?
+
+      uri = URI.parse(url)
+      params = params.stringify_keys
+      query = URI.decode_www_form(uri.query.to_s).reject { |key, _value| params.key?(key) }
+      uri.query = URI.encode_www_form(query + params.to_a)
+      uri
+    end
+
     def method_flagged?
       method == 1
     end
