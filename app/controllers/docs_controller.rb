@@ -1,5 +1,3 @@
-require 'zip/zip'
-
 class DocsController < ApplicationController
   include HttpBasicAuthenticatable
   include ArrayParameterConcern

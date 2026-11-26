@@ -1,5 +1,3 @@
-require 'zip/zip'
-
 class Block < ActiveRecord::Base
   include DocMemberConcern
   include RangeConcern

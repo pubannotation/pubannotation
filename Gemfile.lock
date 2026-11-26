@@ -441,8 +441,6 @@ GEM
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
     zeitwerk (2.8.3)
-    zip-zip (0.3)
-      rubyzip (>= 1.0.0)
 
 PLATFORMS
   arm64-darwin-23
@@ -497,7 +495,6 @@ DEPENDENCIES
   unicorn
   web-console
   wice_grid!
-  zip-zip
 
 RUBY VERSION
    ruby 4.0.10p0

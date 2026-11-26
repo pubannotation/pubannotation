@@ -43,8 +43,7 @@ gem 'devise'
 gem 'recaptcha'
 gem "omniauth-rails_csrf_protection"
 gem 'omniauth-google-oauth2'
-gem 'rubyzip'
-gem 'zip-zip'
+gem 'rubyzip', require: 'zip'
 # Elasticsearch 9.x - direct client without elasticsearch-model/rails
 gem 'elasticsearch', '~> 9.0'
 gem 'httpx', '~> 1.2'  # HTTP client for embedding service
