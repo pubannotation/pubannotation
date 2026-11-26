@@ -62,6 +62,13 @@ class MediaTranscript < ApplicationRecord
     current_segments.select(&:speech?)
   end
 
+  # The segments that can be marked as not speech: the speech ones, so long as another is left (see
+  # #segments_have_speech), as a Set for the segment list to look each one up in.
+  def segments_markable_no_speech
+    speech = speech_segments
+    speech.many? ? speech.to_set : Set.new
+  end
+
   # Whether it has segments, which an image caption's doesn't.
   def segmented?
     current_segments.any?

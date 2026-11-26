@@ -199,6 +199,24 @@ RSpec.describe MediaTranscript, type: :model do
     end
   end
 
+  describe '#segments_markable_no_speech' do
+    def transcript_of(*texts)
+      build(:media_transcript, segments: texts.each_with_index.map do |text, i|
+        build(:segment, :without_transcript, sort_order: i, text:, start_ms: i * 300, end_ms: (i + 1) * 300)
+      end)
+    end
+
+    it 'gives the speech segments, as another is left whichever is marked' do
+      media_transcript = transcript_of('Hello', '(music)', 'world')
+
+      expect(media_transcript.segments_markable_no_speech).to eq(Set[media_transcript.segments[0], media_transcript.segments[2]])
+    end
+
+    it 'gives none with only one speech segment, which must be left' do
+      expect(transcript_of('Hello', '(music)').segments_markable_no_speech).to be_empty
+    end
+  end
+
   describe '#segmented?' do
     it 'is true with segments' do
       expect(build(:media_transcript).segmented?).to be(true)
