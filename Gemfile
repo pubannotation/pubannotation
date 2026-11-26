@@ -62,8 +62,7 @@ group :development, :test do
 end
 
 # For term search, Union attrivutes term search results and denotations term search results.
-# Remove the GitHub specification below once the Rails 8-compatible version is released on RubyGems.
-gem "active_record_union", "~> 1.3", github: 'brianhempel/active_record_union'
+gem "active_record_union", "~> 1.4"
 
 group :production do
   gem 'unicorn'
