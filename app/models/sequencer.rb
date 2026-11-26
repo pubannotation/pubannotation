@@ -56,16 +56,25 @@ class Sequencer < ActiveRecord::Base
     messages = []
 
     sleep(0.1)
-    response = RestClient::Request.execute(method: :post, url: url, payload: ids.to_json, headers:{content_type: :json, accept: :json}, verify_ssl: false)
+    client = HTTPX.with(ssl: {verify_mode: OpenSSL::SSL::VERIFY_NONE})
+    headers = {'Accept' => 'application/json'}
+    response = client.post(url, body: ids.to_json, headers: headers.merge('Content-Type' => 'application/json'))
+    if response.is_a?(HTTPX::Response) && response.status == 303 && response.headers['location'].present?
+      redirect_url = URI.join(url, response.headers['location'])
+      response = HTTPX.plugin(:follow_redirects).with(ssl: {verify_mode: OpenSSL::SSL::VERIFY_NONE}, max_redirects: 9)
+                      .get(redirect_url, headers: headers)
+    end
+    raise HTTPX::Error, response.error.message if response.is_a?(HTTPX::ErrorResponse)
+    raise HTTPX::Error, "HTTP #{response.status}" unless (200..207).cover?(response.status)
 
-    r = JSON.parse response, :symbolize_names => true
+    r = JSON.parse(response.body.to_s, symbolize_names: true)
     docs = r[:docs]
     # messages = r[:messages] if r[:messages]
     [docs, []]
   rescue JSON::ParserError => e
     messages << {sourcedb: name, sourceid: ids, body: "JSON parsing error: #{e.message}"}
     [[], messages]
-  rescue RestClient::Exception => e
+  rescue HTTPX::Error => e
     if ids.length > 1
       mid_index = (ids.length / 2)
       half_l = ids[0 ... mid_index]

@@ -9,6 +9,16 @@ class Annotator < ActiveRecord::Base
   MaxWaitInProcessingBatch = 1.hour
   SkipInterval = 5
 
+  class ResponseError < StandardError
+    attr_reader :status, :location
+
+    def initialize(status, location)
+      @status = status
+      @location = location
+      super([status, Rack::Utils::HTTP_STATUS_CODES[status]].compact.join(' '))
+    end
+  end
+
   belongs_to :user
 
   friendly_id :name, use: :finders
@@ -231,23 +241,22 @@ class Annotator < ActiveRecord::Base
       [payload.to_json, 'application/json; charset=utf8']
     end
 
-    response = if method == :post && !payload.nil?
-      RestClient::Request.execute(method: method, url: url, payload: payload, max_redirects: 0, headers:{content_type: payload_type, accept: :json}, verify_ssl: false)
+    client = HTTPX.with(ssl: {verify_mode: OpenSSL::SSL::VERIFY_NONE})
+    headers = {'Accept' => 'application/json'}
+    response = if method == :post
+      client.post(url, body: payload, headers: headers.merge('Content-Type' => payload_type))
     else
-      RestClient::Request.execute(method: method, url: url, max_redirects: 0, headers:{params: params, accept: :json}, verify_ssl: false)
+      client.request(method, url, params: params, headers: headers)
     end
 
-    raise "Unexpected response: #{response}" unless response.respond_to?(:code)
-
-    if response.code == 200
-      result = begin
-        JSON.parse response, :symbolize_names => true
-      rescue => e
-        raise RuntimeError, "Received an invalid JSON object: [#{response}]"
-      end
-    else
-      raise RestClient::ExceptionWithResponse.new(response)
+    response.raise_for_status if response.is_a?(HTTPX::ErrorResponse)
+    unless response.status == 200
+      raise ResponseError.new(response.status, response.headers['location'])
     end
+
+    JSON.parse(response.body.to_s, symbolize_names: true)
+  rescue JSON::ParserError
+    raise RuntimeError, "Received an invalid JSON object: [#{response.body}]"
   end
 
   def payload_to_string

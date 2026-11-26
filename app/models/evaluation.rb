@@ -48,16 +48,22 @@ class Evaluation < ActiveRecord::Base
 
   def make_request(url, annotations_col)
     response = begin
-      RestClient::Request.execute(method: :post, url: url, payload: annotations_col.to_json, max_redirects: 0, headers:{content_type: 'application/json; charset=utf8', accept: :json}, verify_ssl: false)
+      client = HTTPX.with(ssl: {verify_mode: OpenSSL::SSL::VERIFY_NONE})
+      result = client.post(url, body: annotations_col.to_json, headers: {
+        'Content-Type' => 'application/json; charset=utf8',
+        'Accept' => 'application/json'
+      })
+      result.raise_for_status if result.is_a?(HTTPX::ErrorResponse)
+      raise "HTTP #{result.status}" unless (200..207).cover?(result.status)
+
+      result
     rescue => e
       raise "The evaluation service reported a problem: #{e.message}"
     end
 
-    begin
-      JSON.parse response, :symbolize_names => true
-    rescue => e
-      raise RuntimeError, "Received a non-JSON object: [#{response}]"
-    end
+    JSON.parse(response.body.to_s, symbolize_names: true)
+  rescue JSON::ParserError
+    raise RuntimeError, "Received a non-JSON object: [#{response.body}]"
   end
 
   def hresult

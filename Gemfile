@@ -35,7 +35,6 @@ gem "jquery-ui-rails", github: 'jquery-ui-rails/jquery-ui-rails'
 gem 'rails3-jquery-autocomplete'
 gem 'facebox-rails', github: 'KishiKyousuke/facebox-rails'
 gem 'color-generator'
-gem 'rest-client', github: 'jaredbeck/rest-client', branch: 'patch-1'
 
 gem 'csv'
 gem 'kaminari'

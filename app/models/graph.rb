@@ -16,35 +16,25 @@ class Graph
     params[:default_graph_uri] = default_graph_uri if default_graph_uri
     params[:named_graph_uri] = named_graph_uri if named_graph_uri
 
-    begin
-      response = RestClient::Request.execute(method: :get, url: ep_url, max_redirects: 0, headers:{params: params, accept: 'application/sparql-results+json'}, verify_ssl: false)
-    rescue RestClient::ExceptionWithResponse => e
-      raise e.response
-    end
+    client = HTTPX.with(ssl: {verify_mode: OpenSSL::SSL::VERIFY_NONE})
+    response = client.get(ep_url, params: params, headers: {'Accept' => 'application/sparql-results+json'})
+    response.raise_for_status if response.is_a?(HTTPX::ErrorResponse)
 
-    raise "Unexpected response: #{response}" unless response.respond_to?(:code)
-
-    case response.code
+    case response.status
     when 200
-      result = begin
-        JSON.parse response, :symbolize_names => true
-      rescue => e
-        raise RuntimeError, "Received an invalid JSON object: [#{response}]"
-      end
+      JSON.parse(response.body.to_s, symbolize_names: true)
     when 400
-      result = begin
-        JSON.parse response, :symbolize_names => true
-      rescue => e
-        raise RuntimeError, "Received an invalid JSON object: [#{response}]"
-      end
+      result = JSON.parse(response.body.to_s, symbolize_names: true)
       raise RuntimeError, result[:message]
     when 408, 504
       raise RuntimeError, "Request timeout: you are advised to re-try with a more specific query."
     when 502, 503
       raise RuntimeError, "SPARQL endpoint unavailable: please re-try after a few minutes, or contact the system administrator if the problem lasts long."
     else
-      raise RestClient::ExceptionWithResponse.new(response)
+      raise "HTTP #{response.status}"
     end
+  rescue JSON::ParserError
+    raise RuntimeError, "Received an invalid JSON object: [#{response.body}]"
   end
 
   QUERY_NUM_DOCUMENTS = <<~HEREDOC

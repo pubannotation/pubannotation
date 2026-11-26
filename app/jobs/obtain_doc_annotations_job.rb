@@ -40,19 +40,16 @@ class ObtainDocAnnotationsJob < ApplicationJob
         @job.add_message body: "Annotation obtained, sync (ttime:#{ttime}, stime:#{stime}, length:#{text_length}, num:#{annotations_num})"
       end
 
-    rescue RestClient::ExceptionWithResponse => e
-      if e.response.nil?
-        raise RuntimeError, e.message
+    rescue Annotator::ResponseError => e
+      case e.status
+      when 201
+        retrieve_and_store(e.location, annotator, project, options)
+      when 503
+        raise RuntimeError, "Service unavailable"
+      when 404
+        raise RuntimeError, "The annotation server does not know the path."
       else
-        if e.response.code == 201
-          retrieve_and_store(e.response.headers[:location], annotator, project, options)
-        elsif e.response.code == 503
-          raise RuntimeError, "Service unavailable"
-        elsif e.response.code == 404
-          raise RuntimeError, "The annotation server does not know the path."
-        else
-          raise RuntimeError, "Received the following message from the server: #{e.message} "
-        end
+        raise RuntimeError, "Received the following message from the server: #{e.message} "
       end
     rescue => e
       if @job

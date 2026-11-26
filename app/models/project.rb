@@ -239,14 +239,11 @@ class Project < ActiveRecord::Base
   end
 
   def get_conversion (annotation, converter, identifier = nil)
-    RestClient.post converter, annotation.to_json, :content_type => :json do |response, request, result|
-      case response.code
-      when 200
-        response.force_encoding(Encoding::UTF_8)
-      else
-        raise RuntimeError, "Bad response from the converter"
-      end
-    end
+    response = HTTPX.post(converter, body: annotation.to_json, headers: {'Content-Type' => 'application/json'})
+    response.raise_for_status if response.is_a?(HTTPX::ErrorResponse)
+    raise RuntimeError, "Bad response from the converter" unless response.status == 200
+
+    response.body.to_s.force_encoding(Encoding::UTF_8)
   end
 
   def annotations_rdf_filename
@@ -891,21 +888,20 @@ class Project < ActiveRecord::Base
                               [payload.to_json, 'application/json; charset=utf8']
                             end
 
-    response = if method == :post && !payload.nil?
-                 RestClient::Request.execute(method: method, url: url, payload: payload, max_redirects: 0, headers: { content_type: payload_type, accept: :json }, verify_ssl: false)
-               else
-                 RestClient::Request.execute(method: method, url: url, max_redirects: 0, headers: { params: params, accept: :json }, verify_ssl: false)
-               end
-
-    if response.code == 200
-      result = begin
-                 JSON.parse response, :symbolize_names => true
-               rescue => e
-                 raise RuntimeError, "Received a non-JSON object: [#{response}]"
-               end
+    client = HTTPX.with(ssl: {verify_mode: OpenSSL::SSL::VERIFY_NONE})
+    headers = {'Accept' => 'application/json'}
+    response = if method == :post
+      client.post(url, body: payload, headers: headers.merge('Content-Type' => payload_type))
     else
-      raise RestClient::ExceptionWithResponse.new(response)
+      client.request(method, url, params: params, headers: headers)
     end
+
+    response.raise_for_status if response.is_a?(HTTPX::ErrorResponse)
+    raise "HTTP #{response.status}" unless response.status == 200
+
+    JSON.parse(response.body.to_s, symbolize_names: true)
+  rescue JSON::ParserError
+    raise RuntimeError, "Received a non-JSON object: [#{response.body}]"
   end
 
   def get_textae_config
