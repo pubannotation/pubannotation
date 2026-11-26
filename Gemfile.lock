@@ -313,7 +313,7 @@ GEM
       stringio
     pubannotation_evaluator (3.0.1)
     public_suffix (7.0.5)
-    puma (8.0.2)
+    puma (8.1.3)
       nio4r (~> 2.0)
     racc (1.8.1)
     rack (3.2.8)
