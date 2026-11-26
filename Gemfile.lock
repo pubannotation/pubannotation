@@ -130,8 +130,6 @@ GEM
       securerandom (>= 0.3)
       tzinfo (~> 2.0, >= 2.0.5)
       uri (>= 0.13.1)
-    addressable (2.9.1)
-      public_suffix (>= 2.0.2, < 8.0)
     auth-sanitizer (0.2.1)
       version_gem (~> 1.1, >= 1.1.10)
     base64 (0.3.0)
@@ -174,7 +172,6 @@ GEM
       multi_json
     erb (6.0.7)
     erubi (1.13.1)
-    execjs (2.10.1)
     factory_bot (6.6.0)
       activesupport (>= 6.1.0)
     factory_bot_rails (6.5.1)
@@ -186,7 +183,6 @@ GEM
       logger
     faraday-net_http (3.4.4)
       net-http (~> 0.5)
-    flamegraph (0.9.5)
     font-awesome-rails (4.7.0.9)
       railties (>= 3.2, < 9.0)
     friendly_id (5.7.0)
@@ -230,7 +226,6 @@ GEM
       kaminari-core (= 1.2.2)
     kaminari-core (1.2.2)
     kgio (2.11.4)
-    libxml-ruby (6.0.0)
     logger (1.7.0)
     loofah (2.25.3)
       crass (~> 1.0.2)
@@ -310,7 +305,6 @@ GEM
       date
       stringio
     pubannotation_evaluator (3.0.1)
-    public_suffix (7.0.5)
     puma (8.1.3)
       nio4r (~> 2.0)
     racc (1.8.1)
@@ -352,8 +346,6 @@ GEM
     rails-html-sanitizer (1.7.2)
       loofah (~> 2.25, >= 2.25.3)
       nokogiri (>= 1.15.7, != 1.16.7, != 1.16.6, != 1.16.5, != 1.16.4, != 1.16.3, != 1.16.2, != 1.16.1, != 1.16.0.rc1, != 1.16.0)
-    rails-observers (0.1.5)
-      activemodel (>= 4.0)
     rails3-jquery-autocomplete (1.0.15)
       rails (>= 3.2)
     railties (8.1.4.1)
@@ -423,8 +415,6 @@ GEM
     string-similarity (2.1.0)
     stringio (3.2.0)
     tao_rdfizer (0.12.1)
-    terser (1.2.7)
-      execjs (>= 0.3.0, < 3)
     text_alignment (0.12.12)
       ruby-dictionary (~> 1.1, >= 1.1.1)
       string-similarity (~> 2.1)
@@ -452,8 +442,6 @@ GEM
       base64
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
-    wikipedia-client (1.17.0)
-      addressable (~> 2.7)
     zeitwerk (2.8.3)
     zip-zip (0.3)
       rubyzip (>= 1.0.0)
@@ -478,7 +466,6 @@ DEPENDENCIES
   facebox-rails!
   factory_bot_rails
   faraday
-  flamegraph
   font-awesome-rails
   friendly_id
   htmlentities
@@ -486,7 +473,6 @@ DEPENDENCIES
   jquery-rails
   jquery-ui-rails!
   kaminari
-  libxml-ruby
   memory_profiler
   omniauth-google-oauth2
   omniauth-rails_csrf_protection
@@ -497,14 +483,12 @@ DEPENDENCIES
   rack-cors
   rack-mini-profiler (~> 4.0)
   rails (~> 8.1.0)
-  rails-observers
   rails3-jquery-autocomplete
   rake
   recaptcha
   redis
   rest-client!
   rspec-rails
-  ruby-dictionary
   rubyzip
   sidekiq
   simple_inline_text_annotation
@@ -512,13 +496,11 @@ DEPENDENCIES
   stackprof
   stardog-rb!
   tao_rdfizer (~> 0.12.1)
-  terser
   text_alignment (~> 0.12.12)
   turbo-rails
   unicorn
   web-console
   wice_grid!
-  wikipedia-client
   zip-zip
 
 RUBY VERSION

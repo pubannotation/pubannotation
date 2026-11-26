@@ -13,8 +13,6 @@ gem 'sprockets-rails'
 gem 'turbo-rails'
 gem 'redis'
 
-gem 'terser'
-
 gem 'pg'
 gem 'friendly_id'
 # Reduces boot times through caching; required in config/boot.rb
@@ -26,7 +24,6 @@ group :development do
   gem 'debug'
   gem 'rack-mini-profiler', '~> 4.0'
   gem 'memory_profiler'     # for memory profiling
-  gem 'flamegraph'          # for flamegraph profiling
   gem 'stackprof'           # for flamegraph support
 end
 
@@ -43,9 +40,6 @@ gem 'rest-client', github: 'jaredbeck/rest-client', branch: 'patch-1'
 
 gem 'csv'
 gem 'htmlentities'
-gem 'libxml-ruby'
-gem 'wikipedia-client'
-gem 'ruby-dictionary'
 gem 'kaminari'
 gem 'devise'
 gem 'recaptcha'
@@ -61,8 +55,6 @@ gem 'stardog-rb', git: 'https://github.com/jdkim/stardog-rb.git'
 gem 'tao_rdfizer', '~> 0.12.1'
 gem 'simple_inline_text_annotation'
 
-# Use to clear page or fragment caches in app/controllers/doc_sweeper.rb
-gem 'rails-observers'
 gem 'diff-lcs'
 gem 'activejob-cancel'
 gem 'sidekiq'
