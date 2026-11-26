@@ -4,8 +4,9 @@ require 'rails_helper'
 
 RSpec.describe Elasticsearch::IndexManager, :elasticsearch do
   let(:manager) { described_class.new }
-  let(:test_version) { 998 }  # Different from helper's 999 to avoid conflicts
-  let(:test_index_name) { "pubannotation_docs_v#{test_version}" }
+  let(:test_version) { ElasticsearchTestHelper::RUN_ID.to_i(16) }
+  let(:test_index_name) { Elasticsearch::Config.index_name(test_version) }
+  let(:missing_version) { test_version + 1 }
 
   after do
     # Clean up test index
@@ -76,21 +77,13 @@ RSpec.describe Elasticsearch::IndexManager, :elasticsearch do
   end
 
   describe '#switch_alias' do
-    let(:test_alias) { 'test_alias_for_switching' }
+    let(:test_alias) { "test_alias_for_switching_#{ElasticsearchTestHelper::RUN_ID}" }
 
     before do
       manager.create_index(version: test_version)
 
       # Stub the alias name for this test
       allow(Elasticsearch::Config).to receive(:index_alias).and_return(test_alias)
-    end
-
-    after do
-      begin
-        ELASTICSEARCH_CLIENT.indices.delete_alias(index: test_index_name, name: test_alias)
-      rescue Elastic::Transport::Transport::Errors::NotFound
-        # Alias doesn't exist
-      end
     end
 
     it 'points alias to the specified index' do
@@ -102,7 +95,7 @@ RSpec.describe Elasticsearch::IndexManager, :elasticsearch do
 
     it 'raises error if target index does not exist' do
       expect {
-        manager.switch_alias(to_version: 12345)
+        manager.switch_alias(to_version: missing_version)
       }.to raise_error(ArgumentError, /does not exist/)
     end
   end
@@ -133,7 +126,7 @@ RSpec.describe Elasticsearch::IndexManager, :elasticsearch do
     end
 
     it 'handles non-existent index' do
-      stats = manager.index_stats(version: 12345)
+      stats = manager.index_stats(version: missing_version)
 
       expect(stats[:error]).to eq('Index not found')
     end
