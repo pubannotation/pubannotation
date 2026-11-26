@@ -38,7 +38,6 @@ gem 'color-generator'
 gem 'rest-client', github: 'jaredbeck/rest-client', branch: 'patch-1'
 
 gem 'csv'
-gem 'htmlentities'
 gem 'kaminari'
 gem 'devise'
 gem 'recaptcha'

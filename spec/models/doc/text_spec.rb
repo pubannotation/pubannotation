@@ -114,5 +114,13 @@ RSpec.describe Doc, 'text operations', type: :model do
       expect(doc.body).to be_ascii_only
       expect(Doc.find(doc.id).body).to eq(original)
     end
+
+    it 'preserves legacy entity markers and literal references in ASCII exports' do
+      doc = build(:doc, body: 'Α ‡ ∴ &alpha; ==amp== 漢 😀')
+
+      doc.set_ascii_body
+
+      expect(doc.body).to eq('alpha ==Dagger== &there4; &alpha; & 漢 😀')
+    end
   end
 end

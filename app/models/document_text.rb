@@ -1,6 +1,136 @@
 # frozen_string_literal: true
 
 class DocumentText
+  # Convert characters still present after Utfrewrite to the legacy ASCII export format.
+  ASCII_REPLACEMENTS = {
+    "&" => "==amp==",
+    "ˆ" => "==circ==",
+    "Α" => "alpha",
+    "Β" => "beta",
+    "Γ" => "gamma",
+    "Δ" => "delta",
+    "Ε" => "epsilon",
+    "Ζ" => "zeta",
+    "Η" => "eta",
+    "Θ" => "theta",
+    "Ι" => "iota",
+    "Κ" => "kappa",
+    "Λ" => "lambda",
+    "Μ" => "mu",
+    "Ν" => "nu",
+    "Ξ" => "xi",
+    "Ο" => "omicron",
+    "Π" => "pi",
+    "Ρ" => "rho",
+    "Σ" => "sigma",
+    "Τ" => "tau",
+    "Υ" => "upsilon",
+    "Φ" => "phi",
+    "Χ" => "chi",
+    "Ψ" => "psi",
+    "Ω" => "omega",
+    "α" => "alpha",
+    "β" => "beta",
+    "γ" => "gamma",
+    "δ" => "delta",
+    "ε" => "epsilon",
+    "ζ" => "zeta",
+    "η" => "eta",
+    "θ" => "theta",
+    "ι" => "iota",
+    "κ" => "kappa",
+    "λ" => "lambda",
+    "μ" => "mu",
+    "ν" => "nu",
+    "ξ" => "xi",
+    "ο" => "omicron",
+    "π" => "pi",
+    "ρ" => "rho",
+    "ς" => "==sigmaf==",
+    "σ" => "sigma",
+    "τ" => "tau",
+    "υ" => "upsilon",
+    "φ" => "phi",
+    "χ" => "chi",
+    "ψ" => "psi",
+    "ω" => "omega",
+    "ϑ" => "==thetasym==",
+    "ϒ" => "==upsih==",
+    "ϖ" => "==piv==",
+    "\u200C" => "==zwnj==",
+    "\u200D" => "==zwj==",
+    "\u200E" => "==lrm==",
+    "\u200F" => "==rlm==",
+    "†" => "==dagger==",
+    "‡" => "==Dagger==",
+    "…" => "...",
+    "‰" => "==permil==",
+    "‹" => "==lsaquo==",
+    "›" => "==rsaquo==",
+    "‾" => "==oline==",
+    "⁄" => "==frasl==",
+    "€" => "==euro==",
+    "ℑ" => "==image==",
+    "℘" => "==weierp==",
+    "ℜ" => "==real==",
+    "™" => "(TM)",
+    "ℵ" => "==alefsym==",
+    "←" => "==larr==",
+    "↑" => "==uarr==",
+    "→" => " to ",
+    "↓" => "==darr==",
+    "↔" => "==harr==",
+    "↵" => "==crarr==",
+    "⇐" => "==lArr==",
+    "⇑" => "==uArr==",
+    "⇒" => "==rArr==",
+    "⇓" => "==dArr==",
+    "⇔" => "==hArr==",
+    "∀" => "==forall==",
+    "∂" => "==part==",
+    "∃" => "==exist==",
+    "∅" => "==empty==",
+    "∇" => "==nabla==",
+    "∈" => "==isin==",
+    "∉" => "==notin==",
+    "∋" => "==ni==",
+    "∏" => "==prod==",
+    "∑" => "==sum==",
+    "√" => "==radic==",
+    "∝" => "==prop==",
+    "∞" => "==infin==",
+    "∠" => "==ang==",
+    "∧" => "==and==",
+    "∨" => "==or==",
+    "∩" => "==cap==",
+    "∪" => "==cup==",
+    "∫" => "==int==",
+    "∴" => "&there4;",
+    "≅" => "==cong==",
+    "≈" => "==asymp==",
+    "≠" => "==ne==",
+    "≡" => "==equiv==",
+    "⊂" => "==sub==",
+    "⊃" => "==sup==",
+    "⊄" => "==nsub==",
+    "⊆" => "==sube==",
+    "⊇" => "==supe==",
+    "⊕" => "==oplus==",
+    "⊗" => "==otimes==",
+    "⊥" => "==perp==",
+    "⋅" => "==sdot==",
+    "⌈" => "==lceil==",
+    "⌉" => "==rceil==",
+    "⌊" => "==lfloor==",
+    "⌋" => "==rfloor==",
+    "◊" => "==loz==",
+    "♠" => "==spades==",
+    "♣" => "==clubs==",
+    "♥" => "==hearts==",
+    "♦" => "==diams==",
+  }.freeze
+  private_constant :ASCII_REPLACEMENTS
+
   def initialize(body)
     @body = body
   end
@@ -74,52 +204,11 @@ class DocumentText
   end
 
   def to_ascii
-    rewritetext = Utfrewrite.utf8_to_ascii(body)
-
-    # escape non-ascii characters
-    coder = HTMLEntities.new
-    asciitext = coder.encode(rewritetext, :named)
-    # restore back
-    # greek letters
-    asciitext.gsub!(/&[Aa]lpha;/, "alpha")
-    asciitext.gsub!(/&[Bb]eta;/, "beta")
-    asciitext.gsub!(/&[Gg]amma;/, "gamma")
-    asciitext.gsub!(/&[Dd]elta;/, "delta")
-    asciitext.gsub!(/&[Ee]psilon;/, "epsilon")
-    asciitext.gsub!(/&[Zz]eta;/, "zeta")
-    asciitext.gsub!(/&[Ee]ta;/, "eta")
-    asciitext.gsub!(/&[Tt]heta;/, "theta")
-    asciitext.gsub!(/&[Ii]ota;/, "iota")
-    asciitext.gsub!(/&[Kk]appa;/, "kappa")
-    asciitext.gsub!(/&[Ll]ambda;/, "lambda")
-    asciitext.gsub!(/&[Mm]u;/, "mu")
-    asciitext.gsub!(/&[Nn]u;/, "nu")
-    asciitext.gsub!(/&[Xx]i;/, "xi")
-    asciitext.gsub!(/&[Oo]micron;/, "omicron")
-    asciitext.gsub!(/&[Pp]i;/, "pi")
-    asciitext.gsub!(/&[Rr]ho;/, "rho")
-    asciitext.gsub!(/&[Ss]igma;/, "sigma")
-    asciitext.gsub!(/&[Tt]au;/, "tau")
-    asciitext.gsub!(/&[Uu]psilon;/, "upsilon")
-    asciitext.gsub!(/&[Pp]hi;/, "phi")
-    asciitext.gsub!(/&[Cc]hi;/, "chi")
-    asciitext.gsub!(/&[Pp]si;/, "psi")
-    asciitext.gsub!(/&[Oo]mega;/, "omega")
-
-    # symbols
-    asciitext.gsub!(/&apos;/, "'")
-    asciitext.gsub!(/&lt;/, "<")
-    asciitext.gsub!(/&gt;/, ">")
-    asciitext.gsub!(/&quot;/, '"')
-    asciitext.gsub!(/&trade;/, '(TM)')
-    asciitext.gsub!(/&rarr;/, ' to ')
-    asciitext.gsub!(/&hellip;/, '...')
-
-    # change escape characters
-    asciitext.gsub!(/&([a-zA-Z]{1,10});/, '==\1==')
-    asciitext.gsub!('==amp==', '&')
-
-    asciitext
+    text = Utfrewrite.utf8_to_ascii(body).encode(Encoding::UTF_8)
+    text = text.gsub(/[^\x00-\x7F]|&/) { |char| ASCII_REPLACEMENTS.fetch(char, char) }
+    # The legacy export also turns literal markers in the input back into ampersands.
+    text.gsub!('==amp==', '&')
+    text.match?(/\A[\x01-\x7F]*\z/) ? text.encode(Encoding::US_ASCII) : text
   end
 
   private
