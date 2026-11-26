@@ -155,22 +155,22 @@ The embedding service and Stardog are not included. Features
 using those external services require additional configuration. Inside a
 container, `localhost` refers to that container, not the host machine.
 
-### Setup and Start
+### Local Setup and Start
 
 1. git clone https://github.com/pubannotation/pubannotation.git
 2. cd pubannotation
 3. bin/setup
 
-`bin/setup` installs dependencies, prepares the database, clears logs and temporary files, and starts the development processes through `bin/dev`.
+`bin/setup` installs dependencies, prepares the database, and clears logs and temporary files.
 
-If you only want to set up the application without starting the server, run:
+Start Rails and Sidekiq in separate terminals:
+
 ```
-bin/setup --skip-server
+bin/rails server
 ```
 
-To start the development processes later, run:
 ```
-bin/dev
+bundle exec sidekiq -C config/sidekiq.yml
 ```
 
 ### Test

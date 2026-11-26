@@ -67,8 +67,6 @@ gem 'diff-lcs'
 gem 'activejob-cancel'
 gem 'sidekiq'
 
-gem "foreman"
-
 # For the RSpec
 group :development, :test do
   gem 'rspec-rails'
